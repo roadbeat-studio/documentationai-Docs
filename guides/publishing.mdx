@@ -1,0 +1,163 @@
+---
+title: Publishing
+description: Publish content to Discovery Nodes with Ed25519 signed teasers and manage the distribution pipeline.
+---
+
+## Overview
+
+Publishing in roadbeat Studio is a two-step process:
+
+1. **Publishing locally** — setting content status to `published`, making it available via the Delivery API
+2. **Distributing to Discovery Nodes** — pushing a cryptographically signed teaser to the search network
+
+This separation means you can serve content from your own infrastructure (via the Delivery API) while also making it discoverable through the federated roadbeat network.
+
+## Publishing Pipeline
+
+When you publish content, Studio executes this pipeline:
+
+<Steps>
+  <Step title="Validate" icon="check-circle">
+    The content is validated against its JSON Schema. Required fields are checked, and reference integrity is verified. If validation fails, the publish is blocked with a detailed error.
+  </Step>
+  <Step title="Generate Teaser" icon="file-text">
+    A teaser is generated from the full content using the content type's **teaser schema**. The teaser contains only the fields needed for search and preview — title, description, classification, temporal and geographic data.
+  </Step>
+  <Step title="Sign with Ed25519" icon="key">
+    The teaser is signed with the publisher's **Ed25519 private key**. Discovery Nodes verify this signature to ensure content authenticity and prevent tampering.
+  </Step>
+  <Step title="Distribute" icon="send">
+    The signed teaser is pushed to all configured **Discovery Nodes**. Each node indexes the teaser for search and serves it to consumers.
+  </Step>
+  <Step title="Verify" icon="shield">
+    Studio confirms receipt from each Discovery Node and records the publish status. Failed deliveries are retried automatically.
+  </Step>
+</Steps>
+
+## Discovery Nodes
+
+Discovery Nodes are the search infrastructure of the roadbeat network. You configure which nodes to publish to in **Settings → Discovery Nodes**.
+
+### Adding a Discovery Node
+
+```bash
+POST /api/v1/manage/discovery-nodes
+{
+  "name": "EU News Node",
+  "endpoint": "https://news-eu-1.roadbeat.net",
+  "contentTypes": ["news", "press-releases"],
+  "enabled": true
+}
+```
+
+### Publish Status
+
+Check the publish status of any content item:
+
+```bash
+GET /api/v1/manage/publishing/content/:id/status
+```
+
+Returns the status per Discovery Node:
+
+```json
+{
+  "data": {
+    "contentId": "uuid",
+    "nodes": [
+      {
+        "nodeId": "news-eu-1",
+        "status": "published",
+        "publishedAt": "2026-01-24T14:30:00Z",
+        "teaserId": "teaser-uuid"
+      },
+      {
+        "nodeId": "news-eu-2",
+        "status": "failed",
+        "error": "Connection timeout",
+        "lastAttempt": "2026-01-24T14:30:05Z"
+      }
+    ]
+  }
+}
+```
+
+## Publisher Keys
+
+Studio uses **Ed25519 key pairs** for teaser signing. Discovery Nodes use the public key to verify that teasers genuinely came from your Studio instance.
+
+### Key Management
+
+```bash
+# List publisher keys (public keys only — private keys are never exposed)
+GET /api/v1/manage/publishing/keys
+
+# Get a specific public key
+GET /api/v1/manage/publishing/keys/:id/public
+
+# Rotate keys (generates new key, revokes previous)
+POST /api/v1/manage/publishing/keys/rotate
+```
+
+<Callout kind="alert">
+  Rotating keys invalidates all previously signed teasers on Discovery Nodes. Only rotate if your private key has been compromised.
+</Callout>
+
+## Teaser Preview
+
+Preview the teaser that would be generated for a content item without actually publishing:
+
+```bash
+GET /api/v1/manage/publishing/content/:id/teaser-preview
+```
+
+This is useful for verifying that the teaser schema extracts the right fields before distributing.
+
+## Retry Failed Publishes
+
+If distribution to a Discovery Node fails, you can retry manually:
+
+```bash
+POST /api/v1/manage/publishing/content/:id/retry/:nodeId
+```
+
+Studio also supports automatic retries with configurable backoff:
+
+```bash
+# Default retry config
+PUBLISHING_MAX_RETRIES=3
+PUBLISHING_BACKOFF_MS=1000,5000,30000
+```
+
+## Withdrawing Content
+
+To remove content from Discovery Nodes (unpublish from the network):
+
+```bash
+POST /api/v1/manage/publishing/content/:id/withdraw
+```
+
+This sends an unpublish request to all nodes that have the teaser.
+
+## Automatic Publishing
+
+The publishing pipeline is triggered automatically when:
+
+- Content status changes to `published` via the UI or API
+- Content is updated while in `published` status (re-distributes the updated teaser)
+- Content is unpublished or deleted (sends withdrawal to Discovery Nodes)
+
+This is handled by the `PublishingEventListener` which listens to `content.afterPublish`, `content.afterUnpublish`, and `content.afterDelete` events.
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/v1/manage/publishing/content/:id/distribute` | Distribute to all Discovery Nodes |
+| `POST` | `/api/v1/manage/publishing/content/:id/withdraw` | Withdraw from all Discovery Nodes |
+| `POST` | `/api/v1/manage/publishing/content/:id/retry/:nodeId` | Retry failed publish |
+| `GET` | `/api/v1/manage/publishing/content/:id/status` | Get publish status per node |
+| `GET` | `/api/v1/manage/publishing/content/:id/teaser-preview` | Preview generated teaser |
+| `GET` | `/api/v1/manage/publishing/keys` | List publisher keys |
+| `GET` | `/api/v1/manage/publishing/keys/:id/public` | Get public key |
+| `POST` | `/api/v1/manage/publishing/keys/rotate` | Rotate publisher keys |

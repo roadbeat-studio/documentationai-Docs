@@ -1,0 +1,193 @@
+---
+title: Localization
+description: Multi-language content management with 24 EU locales, translation workflows, and RTL support.
+---
+
+## Overview
+
+roadbeat Studio includes a comprehensive localization system supporting all **24 official EU languages**. The system covers locale management, translation workflows, content variants, machine translation integration, and right-to-left (RTL) language support.
+
+<Callout kind="info">
+  Localization is a **CE feature** — available in the Community Edition. It is not a Pro plugin.
+</Callout>
+
+## Supported Locales
+
+Studio supports all 24 EU official languages:
+
+| Code | Language | Code | Language |
+|------|----------|------|----------|
+| `bg` | Bulgarian | `lt` | Lithuanian |
+| `cs` | Czech | `lv` | Latvian |
+| `da` | Danish | `mt` | Maltese |
+| `de` | German | `nl` | Dutch |
+| `el` | Greek | `pl` | Polish |
+| `en` | English | `pt` | Portuguese |
+| `es` | Spanish | `ro` | Romanian |
+| `et` | Estonian | `sk` | Slovak |
+| `fi` | Finnish | `sl` | Slovenian |
+| `fr` | French | `sv` | Swedish |
+| `ga` | Irish | `hr` | Croatian |
+| `hu` | Hungarian | `it` | Italian |
+
+## Locale Management
+
+### Default Locale
+
+Every organization has a **default locale** (typically `en` or `de`). Content created without specifying a locale uses the default.
+
+### Fallback Chains
+
+Configure fallback chains so missing translations gracefully fall back to another locale:
+
+```json
+{
+  "de": ["de"],
+  "en": ["en", "de"],
+  "fr": ["fr", "en", "de"],
+  "es": ["es", "en", "de"]
+}
+```
+
+<Callout kind="tip">
+  The fallback chain includes circular dependency detection — Studio prevents configurations that would cause infinite loops.
+</Callout>
+
+### API Endpoints
+
+```bash
+# List enabled locales
+GET /api/v1/manage/locales/enabled
+
+# Get default locale
+GET /api/v1/manage/locales/default
+
+# Create a locale
+POST /api/v1/manage/locales
+{ "id": "fr", "name": "French", "direction": "ltr" }
+
+# Set default locale
+POST /api/v1/manage/locales/:id/default
+
+# Get fallback chain
+GET /api/v1/manage/locales/:id/fallback-chain
+```
+
+## Translation Workflow
+
+Studio provides a translation workflow to track the status of content translations across locales.
+
+### Translation Tasks
+
+For each content item and target locale, you can create a **translation task**:
+
+```bash
+POST /api/v1/manage/translations/content/:contentId/tasks/:targetLocale
+{
+  "assigneeId": "user-uuid",
+  "priority": "high",
+  "dueDate": "2026-02-15T00:00:00Z"
+}
+```
+
+### Task Statuses
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Translation not started |
+| `in_progress` | Translator is working on it |
+| `review` | Translation complete, needs review |
+| `complete` | Translation approved and saved |
+
+### Copy from Locale
+
+Copy content data from one locale to another as a starting point for translation:
+
+```bash
+POST /api/v1/manage/translations/content/:contentId/copy-locale
+{
+  "sourceLocale": "en",
+  "targetLocale": "de",
+  "fields": ["title", "description", "body"]
+}
+```
+
+## Content Variants
+
+Content variants allow you to create **locale-specific versions** of a content item. Variants share a `variantGroupId` so they can be linked and navigated as a group.
+
+```bash
+# Create a variant for a specific locale
+POST /api/v1/manage/content/:id/variants/:locale
+
+# Get all variants for a content item
+GET /api/v1/manage/content/:id/variants
+
+# Get the variant for a specific locale
+GET /api/v1/manage/content/:id/variants/:locale
+
+# Sync a field value across all variants
+POST /api/v1/manage/content/:id/sync-field
+{ "fieldPath": "metadata.category", "value": "politics" }
+```
+
+## Machine Translation
+
+Studio includes a **provider-agnostic** machine translation interface. Configure a translation provider to auto-translate content between locales.
+
+### Supported Providers
+
+| Provider | Env Variable | Status |
+|----------|-------------|--------|
+| **DeepL** | `DEEPL_API_KEY` | Ready |
+| **Google Translate** | `GOOGLE_TRANSLATE_KEY` | Ready |
+| **Azure Translator** | `AZURE_TRANSLATOR_KEY` | Ready |
+| **None (Noop)** | — | Default (no auto-translation) |
+
+### Using Machine Translation
+
+```bash
+# Detect language of text
+POST /api/v1/manage/machine-translation/detect
+{ "text": "Bundeskanzler kündigt neue Klimapolitik an" }
+# Returns: { "language": "de", "confidence": 0.98 }
+
+# Translate a full content item
+POST /api/v1/manage/machine-translation/content/:contentId
+{
+  "sourceLocale": "de",
+  "targetLocale": "en"
+}
+
+# Translate a single field
+POST /api/v1/manage/machine-translation/content/:contentId/field/:fieldId
+{
+  "sourceLocale": "de",
+  "targetLocale": "en"
+}
+
+# Get supported languages
+GET /api/v1/manage/machine-translation/languages
+```
+
+## RTL Support
+
+Studio supports **right-to-left** (RTL) languages with automatic direction detection:
+
+**RTL locales:** `ar` (Arabic), `he` (Hebrew), `fa` (Persian), `ur` (Urdu), `yi` (Yiddish), `ps` (Pashto), `sd` (Sindhi), `ku` (Kurdish)
+
+The `ContentDirectionService` provides:
+
+- **Direction detection** — automatically determines text direction from locale
+- **Bidirectional text wrapping** — wraps mixed LTR/RTL text correctly
+- **HTML direction attributes** — adds `dir="rtl"` to HTML content
+
+## Localized Content Resolution
+
+The `LocalizedContentResolver` handles field-level localization:
+
+- **Localized fields** — different value per locale (e.g., title, description)
+- **Shared fields** — same value across all locales (e.g., publish date, category)
+- **Locale-specific fields** — only relevant for certain locales
+
+The resolver walks the fallback chain to find the best available value for each field.

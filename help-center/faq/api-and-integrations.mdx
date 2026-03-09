@@ -1,0 +1,124 @@
+---
+title: API & Integrations FAQ
+description: Frequently asked questions about the Studio API, webhooks, and external integrations.
+---
+
+## API
+
+<Expandable title="What APIs does Studio provide?" default-open="true">
+  Studio provides two REST APIs:
+
+  - **Management API** (`/api/v1/manage/...`) — authenticated with JWT tokens, used by the admin UI and internal tools for full CRUD operations
+  - **Delivery API** (`/api/v1/delivery/...`) — authenticated with API keys, read-only access to published content for websites and apps
+
+  Interactive Swagger documentation is available at `http://localhost:3000/api/docs`.
+</Expandable>
+
+<Expandable title="How do I authenticate with the API?" default-open="false">
+  **Management API:** Send email/password to `POST /api/v1/auth/login` to get a JWT token. Include it in the `Authorization: Bearer <token>` header.
+
+  **Delivery API:** Create an API key in Settings > API Keys. Include it as `X-Api-Key: rbk_...` or `Authorization: Bearer rbk_...`.
+
+  See [Authentication](/api-reference/authentication) for complete details.
+</Expandable>
+
+<Expandable title="What are the rate limits?" default-open="false">
+  | Endpoint | Limit |
+  |----------|-------|
+  | Global (all endpoints) | 100 requests/minute per IP |
+  | Login | 5 requests/minute per IP |
+  | Password forgot | 3 requests/minute per IP |
+
+  When exceeded, the API returns `429 Too Many Requests` with `X-RateLimit-Reset` header indicating when the window resets.
+</Expandable>
+
+<Expandable title="Is there a GraphQL API?" default-open="false">
+  GraphQL is available as a **Pro plugin** (`pro-graphql`). It auto-generates a GraphQL schema from your content types with:
+
+  - Per-type queries and collections
+  - Filtering, pagination, and ordering
+  - Asset resolution with responsive images
+  - Reference resolution
+
+  CE provides only the REST API.
+</Expandable>
+
+<Expandable title="How do I paginate API results?" default-open="false">
+  Use `page` and `pageSize` query parameters:
+
+  ```bash
+  GET /api/v1/manage/content?page=2&pageSize=20
+  ```
+
+  The response includes pagination metadata:
+
+  ```json
+  {
+    "meta": { "total": 156, "page": 2, "pageSize": 20, "totalPages": 8 }
+  }
+  ```
+</Expandable>
+
+## Webhooks
+
+<Expandable title="How do I set up webhooks?" default-open="false">
+  1. Go to **Settings > Webhooks**
+  2. Click **Add Webhook**
+  3. Enter the target URL and select events to listen for
+  4. Save — Studio generates a signing secret for HMAC verification
+
+  CE supports up to 3 webhooks. Pro has unlimited. See the [Webhooks](/guides/webhooks) guide.
+</Expandable>
+
+<Expandable title="How do I verify webhook signatures?" default-open="false">
+  Every webhook delivery includes an `X-Webhook-Signature` header with an HMAC-SHA256 signature. Verify it using your webhook's signing secret:
+
+  ```javascript
+  const crypto = require('crypto');
+  const expected = crypto.createHmac('sha256', secret).update(body).digest('hex');
+  const valid = crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  ```
+</Expandable>
+
+<Expandable title="What events can I listen for?" default-open="false">
+  | Event | Trigger |
+  |-------|---------|
+  | `content.afterCreate` | New content created |
+  | `content.afterUpdate` | Content updated |
+  | `content.afterDelete` | Content deleted |
+  | `content.afterPublish` | Content published |
+  | `content.afterUnpublish` | Content unpublished |
+  | `asset.afterUpload` | Asset uploaded |
+  | `asset.afterDelete` | Asset deleted |
+  | `user.afterCreate` | User created |
+  | `user.afterLogin` | User logged in |
+</Expandable>
+
+## Integrations
+
+<Expandable title="How does Studio connect to the Schema Registry?" default-open="false">
+  Studio connects to the Schema Registry via the `SCHEMA_REGISTRY_URL` environment variable. From the admin UI, go to **Content Types > Import from Registry** to browse and import content type schemas.
+
+  The Schema Registry provides standardized content type definitions (metadata, form, and teaser schemas) that Studio can use directly.
+</Expandable>
+
+<Expandable title="How does Studio connect to Discovery Nodes?" default-open="false">
+  Configure Discovery Nodes in **Settings > Discovery Nodes** or via the API:
+
+  ```bash
+  POST /api/v1/manage/discovery-nodes
+  { "name": "EU News", "endpoint": "https://news-eu.roadbeat.net", "contentTypes": ["news"] }
+  ```
+
+  When content is published, Studio signs a teaser with Ed25519 and pushes it to all configured nodes.
+</Expandable>
+
+<Expandable title="Can I use Studio with Next.js / Nuxt / Angular?" default-open="false">
+  Yes. Studio's Delivery API is framework-agnostic. Use it with any frontend:
+
+  - **Next.js** — fetch in `getServerSideProps` or `getStaticProps`
+  - **Nuxt** — use `useFetch` or `useAsyncData`
+  - **Angular** — use `HttpClient` with the API key
+
+  See the [Delivery API](/api-reference/delivery-api#integration-examples) for framework-specific examples.
+</Expandable>

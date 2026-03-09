@@ -1,0 +1,129 @@
+---
+title: Backup & Export
+description: Back up your Studio data and export content for portability and disaster recovery.
+---
+
+## Overview
+
+roadbeat Studio provides built-in backup and export capabilities to ensure data portability and disaster recovery. You can export your entire database, individual content items, or generate Content Pod bundles for static hosting.
+
+## Database Backup
+
+### Full Backup
+
+Create a full backup archive (ZIP) of content, content types, assets metadata, and settings:
+
+```bash
+POST /api/v1/export/backups
+{
+  "label": "Pre-migration backup",
+  "includeContent": true,
+  "includeAssets": true,
+  "includeConfig": true
+}
+```
+
+This creates a backup containing:
+
+- All content items (with version history)
+- All content types and schemas
+- All assets (metadata only — files are in S3)
+- All users and organization settings
+- Webhook configurations
+- API keys (hashed)
+
+<Callout kind="alert">
+  Backups contain sensitive data including hashed passwords and API key hashes. Store them securely and restrict access.
+</Callout>
+
+### Listing and Downloading Backups
+
+```bash
+# List all backups
+GET /api/v1/export/backups
+
+# Get backup status
+GET /api/v1/export/backups/:id
+
+# Download backup archive (ZIP)
+GET /api/v1/export/backups/:id/download
+
+# Delete a backup
+DELETE /api/v1/export/backups/:id
+```
+
+### Restoring from Backup
+
+```bash
+POST /api/v1/export/backups/:id/restore
+{
+  "restoreContent": true,
+  "restoreAssets": true,
+  "restoreConfig": true
+}
+```
+
+<Callout kind="danger">
+  Restoring a backup **replaces existing data** for the selected categories. This action cannot be undone. Always create a fresh backup before restoring.
+</Callout>
+
+## Content Pod Export
+
+Generate a **Content Pod** — a portable archive of published content with JSON files, manifest, and HTML index:
+
+```bash
+POST /api/v1/export/pods
+{
+  "contentTypeId": "news",
+  "status": "published",
+  "label": "News Export Q1 2026"
+}
+```
+
+The Content Pod bundle includes:
+
+- Content data as JSON files
+- HTML rendered pages (via templates)
+- Referenced asset files
+- A `manifest.json` describing the bundle
+- Content integrity signatures
+
+<Callout kind="info">
+  Content Pods are a key part of the roadbeat ecosystem, enabling individuals and small publishers to host content without running a full Studio instance. See the Content Pod documentation for details.
+</Callout>
+
+## Pro: Advanced Export
+
+With the `pro-export` plugin, you get additional capabilities:
+
+- **CSV export** with configurable field mappings and transforms
+- **Export templates** — reusable export configurations
+- **Field transforms** — lowercase, uppercase, trim, date formatting, truncation
+- **Scheduled exports** — automatic recurring exports
+- **Export job management** — track export progress and download results
+
+## Automated Backups
+
+For production deployments, set up automated backups:
+
+<Tabs>
+  <Tab title="PostgreSQL" icon="database">
+    Use `pg_dump` for native PostgreSQL backups:
+
+    ```bash
+    # Daily backup via cron
+    pg_dump -U postgres roadbeat_studio > backup_$(date +%Y%m%d).sql
+    ```
+  </Tab>
+  <Tab title="Docker" icon="server">
+    If running via Docker Compose, backup the database volume:
+
+    ```bash
+    docker compose exec postgres pg_dump -U studio studio > backup.sql
+    ```
+  </Tab>
+</Tabs>
+
+<Callout kind="tip">
+  For asset files stored in S3-compatible storage, use the provider's native backup tools (e.g., `aws s3 sync` or Hetzner Object Storage versioning).
+</Callout>

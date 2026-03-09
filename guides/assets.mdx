@@ -1,0 +1,193 @@
+---
+title: Asset Management
+description: Upload, organize, tag, and manage media files in the Studio Asset Library.
+---
+
+## Overview
+
+The **Asset Library** is Studio's central media management system. It handles images, videos, documents, and other files with automatic metadata extraction, folder organization, tagging, and usage tracking.
+
+## Uploading Assets
+
+<Tabs>
+  <Tab title="Admin UI" icon="monitor">
+    1. Navigate to **Assets** in the sidebar
+    2. Click **Upload** or drag files directly into the browser
+    3. Select one or more files (max 50 MB per file)
+    4. Optionally choose a target folder
+    5. Files are uploaded and metadata is extracted automatically
+  </Tab>
+  <Tab title="API" icon="code">
+    ```bash
+    curl -X POST http://localhost:3000/api/v1/assets/upload \
+      -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+      -F "file=@photo.jpg" \
+      -F "folderId=folder-uuid"
+    ```
+  </Tab>
+</Tabs>
+
+### Automatic Metadata Extraction
+
+When you upload an image, Studio automatically extracts:
+
+- **Dimensions** — width and height in pixels
+- **EXIF data** — camera model, exposure, GPS coordinates, etc.
+- **File info** — MIME type, file size, original filename
+
+## Organizing with Folders
+
+Assets can be organized into a folder hierarchy:
+
+- Create folders and nested subfolders
+- Move assets between folders
+- Browse folders in the sidebar tree
+
+```bash
+# Create a folder
+POST /api/v1/assets/folders
+{
+  "name": "2026 Campaign",
+  "parentId": null
+}
+
+# List folders
+GET /api/v1/assets/folders
+```
+
+## Tagging
+
+Tags help you categorize and find assets quickly:
+
+- Add multiple tags to any asset
+- Browse popular tags across the organization
+- Filter assets by tag in the search
+
+```bash
+# Add tags
+POST /api/v1/assets/:id/tags
+{ "tags": ["hero-image", "campaign-2026"] }
+
+# Remove tags
+DELETE /api/v1/assets/:id/tags
+{ "tags": ["outdated"] }
+
+# Get popular tags
+GET /api/v1/assets/tags?limit=20
+```
+
+## Asset Search
+
+The Asset Library supports advanced search with multiple filters:
+
+| Filter | Description |
+|--------|-------------|
+| **Text** | Search by filename, title, or description |
+| **MIME Type** | Filter by file type (image, video, audio, document) |
+| **Folder** | Browse within a specific folder |
+| **Tags** | Filter by assigned tags |
+| **Date** | Filter by upload date |
+
+```bash
+GET /api/v1/assets/search?q=hero&mimeType=image&sort=newest
+```
+
+### Facets
+
+Get counts of assets by type:
+
+```bash
+GET /api/v1/assets/facets
+# Returns: { images: 234, videos: 12, audio: 5, documents: 45, other: 3 }
+```
+
+## Asset Metadata
+
+Each asset has editable metadata:
+
+| Field | Description |
+|-------|-------------|
+| **Title** | Display name for the asset |
+| **Description** | Longer description text |
+| **Alt Text** | Accessibility text for images |
+| **Custom Metadata** | Free-form JSON metadata |
+
+```bash
+PUT /api/v1/assets/:id/metadata
+{
+  "title": "Climate Summit 2026",
+  "description": "Opening ceremony photo",
+  "altText": "Delegates at the climate summit opening ceremony",
+  "custom": { "photographer": "Jane Doe", "license": "CC BY 4.0" }
+}
+```
+
+## Usage Tracking
+
+Studio tracks which content items reference each asset. This helps you:
+
+- See where an asset is used before deleting it
+- Find unused assets that can be cleaned up
+- Understand asset impact across your content
+
+```bash
+# Check which content references this asset
+GET /api/v1/assets/:id/usage
+
+# Check if an asset can be safely deleted
+GET /api/v1/assets/:id/can-delete
+
+# Find unused assets
+GET /api/v1/assets/unused?olderThan=2026-01-01&limit=50
+```
+
+## Storage Limits
+
+| Edition | Storage Limit | Per-File Limit |
+|---------|--------------|----------------|
+| **CE** | 5 GB total | 50 MB per file |
+| **Pro** | Unlimited | Configurable |
+
+Check current storage usage:
+
+```bash
+GET /api/v1/assets/storage
+# Returns: { usedBytes: 1073741824, limitBytes: 5368709120, percentUsed: 20.0 }
+```
+
+## Storage Providers
+
+Studio uses an **S3-compatible storage** interface. Configure your storage provider in `.env`:
+
+```bash
+STORAGE_PROVIDER=local    # Options: local, s3
+S3_ENDPOINT=https://s3.eu-central-1.amazonaws.com
+S3_BUCKET=studio-assets
+S3_ACCESS_KEY=your-access-key
+S3_SECRET_KEY=your-secret-key
+S3_REGION=eu-central-1
+```
+
+<Callout kind="tip">
+  For development, the `local` storage provider stores files on disk. For production, use S3-compatible storage (AWS S3, Hetzner Object Storage, MinIO, etc.).
+</Callout>
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/assets` | List assets with filters |
+| `GET` | `/api/v1/assets/search` | Advanced asset search |
+| `GET` | `/api/v1/assets/facets` | Asset type counts |
+| `GET` | `/api/v1/assets/tags` | Popular tags |
+| `GET` | `/api/v1/assets/unused` | Find unreferenced assets |
+| `GET` | `/api/v1/assets/storage` | Storage usage stats |
+| `POST` | `/api/v1/assets/upload` | Upload a file |
+| `GET` | `/api/v1/assets/:id` | Get asset by ID |
+| `PATCH` | `/api/v1/assets/:id` | Update asset (rename, move) |
+| `DELETE` | `/api/v1/assets/:id` | Delete asset and file |
+| `PUT` | `/api/v1/assets/:id/metadata` | Update metadata |
+| `POST` | `/api/v1/assets/:id/tags` | Add tags |
+| `DELETE` | `/api/v1/assets/:id/tags` | Remove tags |
+| `GET` | `/api/v1/assets/:id/usage` | Content references |
+| `GET` | `/api/v1/assets/:id/can-delete` | Safe-delete check |

@@ -1,0 +1,178 @@
+---
+title: Setting Up Webhooks
+description: Step-by-step guide to configuring outbound webhooks for real-time notifications.
+---
+
+## Overview
+
+Webhooks allow Studio to notify external systems in real-time when content events occur. This guide walks you through setting up your first webhook, verifying deliveries, and handling common issues.
+
+## Prerequisites
+
+- You need **admin** access to Studio
+- A publicly accessible HTTPS endpoint that can receive POST requests
+- For local development, use a tunnel service like [ngrok](https://ngrok.com) or [localtunnel](https://localtunnel.github.io/localtunnel/)
+
+## Setting Up a Webhook
+
+<Steps>
+  <Step title="Navigate to Settings" icon="settings">
+    Go to **Settings > Webhooks** in the sidebar. You'll see a list of existing webhooks (if any).
+  </Step>
+  <Step title="Add a new webhook" icon="plus">
+    Click **Add Webhook** and fill in:
+
+    - **URL** — your endpoint (e.g., `https://example.com/webhooks/studio`)
+    - **Events** — select which events to listen for:
+      - `content.afterCreate` — new content created
+      - `content.afterUpdate` — content modified
+      - `content.afterPublish` — content published
+      - `content.afterDelete` — content deleted
+      - `asset.afterUpload` — new asset uploaded
+    - **Enabled** — toggle on
+  </Step>
+  <Step title="Save and note the secret" icon="key">
+    After saving, Studio generates a **signing secret**. Copy and store it securely — you'll need it to verify webhook signatures.
+  </Step>
+  <Step title="Test the webhook" icon="zap">
+    Click the **Test** button next to your webhook. Studio sends a test payload to your endpoint. Verify you receive it.
+  </Step>
+</Steps>
+
+## Building a Webhook Receiver
+
+Here's a minimal webhook receiver:
+
+<Tabs>
+  <Tab title="Node.js (Express)" icon="code">
+    ```javascript
+    const express = require('express');
+    const crypto = require('crypto');
+
+    const app = express();
+    const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+
+    app.post('/webhooks/studio', express.raw({ type: 'application/json' }), (req, res) => {
+      // Verify signature
+      const signature = req.headers['x-webhook-signature'];
+      const expected = crypto
+        .createHmac('sha256', WEBHOOK_SECRET)
+        .update(req.body)
+        .digest('hex');
+
+      if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
+
+      // Process the event
+      const event = JSON.parse(req.body);
+      console.log(`Received: ${event.event}`, event.data);
+
+      // Respond quickly — do heavy processing async
+      res.status(200).json({ received: true });
+    });
+
+    app.listen(3001, () => console.log('Webhook receiver on :3001'));
+    ```
+  </Tab>
+  <Tab title="Python (Flask)" icon="code">
+    ```python
+    import hmac
+    import hashlib
+    import json
+    from flask import Flask, request, jsonify
+
+    app = Flask(__name__)
+    WEBHOOK_SECRET = 'your-signing-secret'
+
+    @app.route('/webhooks/studio', methods=['POST'])
+    def handle_webhook():
+        signature = request.headers.get('X-Webhook-Signature')
+        expected = hmac.new(
+            WEBHOOK_SECRET.encode(),
+            request.data,
+            hashlib.sha256
+        ).hexdigest()
+
+        if not hmac.compare_digest(signature, expected):
+            return jsonify({'error': 'Invalid signature'}), 401
+
+        event = json.loads(request.data)
+        print(f"Received: {event['event']}", event['data'])
+
+        return jsonify({'received': True}), 200
+    ```
+  </Tab>
+</Tabs>
+
+## Payload Format
+
+Every webhook delivery sends a JSON payload:
+
+```json
+{
+  "event": "content.afterPublish",
+  "timestamp": "2026-01-24T14:30:00Z",
+  "data": {
+    "contentId": "uuid",
+    "contentTypeId": "news",
+    "organizationId": "org-uuid",
+    "userId": "user-uuid",
+    "status": "published"
+  }
+}
+```
+
+## Verifying Deliveries
+
+After creating a webhook, check the delivery log:
+
+1. Open the webhook in **Settings > Webhooks**
+2. The detail view shows recent deliveries with:
+   - Timestamp
+   - HTTP status code returned by your endpoint
+   - Response time
+   - Success or failure reason
+
+<Callout kind="tip">
+  Your endpoint should respond with a **2xx status code** within **10 seconds**. Non-2xx responses or timeouts are treated as failures and trigger retries.
+</Callout>
+
+## Retry Behavior
+
+If a delivery fails, Studio retries automatically:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st retry | 1 second |
+| 2nd retry | 5 seconds |
+| 3rd retry | 30 seconds |
+
+After 3 failed attempts, the delivery is marked as permanently failed. You can see failed deliveries in the webhook's delivery log.
+
+## Troubleshooting
+
+<Expandable title="Webhook not firing" default-open="false">
+  - Check that the webhook is **enabled**
+  - Verify the selected events match what you're testing (e.g., `content.afterPublish` only fires when content is published, not when saved as draft)
+  - Check the delivery log for errors
+</Expandable>
+
+<Expandable title="Signature verification failing" default-open="false">
+  - Ensure you're using the **raw request body** (not parsed JSON) for HMAC computation
+  - Check that the signing secret matches exactly (no extra whitespace)
+  - Verify you're using SHA-256 as the hash algorithm
+</Expandable>
+
+<Expandable title="Endpoint returning 5xx" default-open="false">
+  - Check your server logs for errors
+  - Ensure your endpoint handles the payload format correctly
+  - Respond quickly (within 10 seconds) and process heavy work asynchronously
+</Expandable>
+
+## Limits
+
+| Edition | Webhook Limit |
+|---------|--------------|
+| **CE** | 3 webhooks |
+| **Pro** | Unlimited |

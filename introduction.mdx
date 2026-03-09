@@ -1,78 +1,77 @@
 ---
-title: Set Up Your Documentation
-description: 'A minimal, editable starting point for your own documentation site.'
+title: Introduction
+description: roadbeat Studio is a self-hosted headless CMS for structured content publishing within the roadbeat ecosystem.
 ---
-## Start here (5–10 minutes)
 
-1. Edit this page so it describes your product and audience.
+**roadbeat Studio** is a full-scale, self-hosted headless CMS designed for organizations and power-users who need complete control over their content publishing infrastructure. It serves as the primary authoring, management, and publishing system for structured content in the roadbeat ecosystem.
 
-2. Customize your onboarding flow in the [Quickstart](/quickstart) page.
-
-3. Delete or rewrite any sections and pages you do not plan to use.
-
-4. Invite a teammate to review the structure and concepts starting from [Core Concepts](/concepts).
-
-<Callout kind="alert" collapsed="false">
-  This site ships with placeholder content. Edit the text, links, and examples so they match your product before sharing it with others.
+<Callout kind="info">
+  Studio is available as a free, open-source **Community Edition (CE)** under AGPL 3.0, with optional commercial **Pro plugins** for advanced features like workflows, SSO, audit logging, and more.
 </Callout>
 
-## What you get
+## Why roadbeat Studio?
 
-<Columns cols="3">
-  <Card title="Docs structure" href="/quickstart" icon="book-open" horizontal="false">
-    A clear navigation layout with starter pages you can rename or replace.
+<Columns cols={3}>
+  <Card title="Schema-Driven" icon="file-text" href="/concepts">
+    Content types are loaded from the Schema Registry with rich JSON Schema definitions, form structures, and validation rules.
   </Card>
-
-  <Card title="Components" href="#try-a-few-components" icon="layout-grid" horizontal="false" target="_self">
-    Prebuilt blocks like Callouts, Steps, Tabs, and Cards to keep pages clean.
+  <Card title="Self-Hosted" icon="server" href="/deployment/self-hosting">
+    Deploy on your own infrastructure. Your data stays under your control with full portability.
   </Card>
-
-  <Card title="API reference hook" href="/authentication" icon="code" horizontal="false">
-    A placeholder `openapi.yaml` you can swap with your real API spec.
+  <Card title="Plugin Architecture" icon="plug" href="/plugins/overview">
+    Pro features are loadable plugins that never touch CE code. Extend Studio without vendor lock-in.
   </Card>
 </Columns>
 
-## Make your first edit
+## Key Features
 
-<Steps>
-  <Step title="Rewrite this page" icon="edit" title-type="p">
-    Update the title, description, and sections in `introduction` so they reflect your product and documentation goals.
-  </Step>
-
-  <Step title="Customize Quickstart" icon="zap" title-type="p">
-    Replace the steps in `quickstart` with your real onboarding flow so new readers know exactly how to get started.
-  </Step>
-
-  <Step title="Remove or repurpose samples" icon="trash" title-type="p">
-    Delete unused sample sections and pages, or rewrite them with your own content to keep navigation focused.
-  </Step>
-</Steps>
-
-## Try a few components
-
-You can browse the component gallery in the [Components](/components) page for ready-to-use examples of Cards, Callouts, Steps, Tabs, and more.
-
-## Continue to the rest of the sample
-
-<Columns cols="2">
-  <Card title="Quickstart" href="/quickstart" icon="zap" horizontal="false">
-    See the minimal setup flow.
+<Columns cols={2}>
+  <Card title="Content Management" icon="edit" href="/guides/content-management">
+    Create, version, and publish structured content with dynamic forms generated from JSON Schema.
   </Card>
-
-  <Card title="Core Concepts" href="/concepts" icon="layers" horizontal="false">
-    Learn how pages, navigation, and components fit together.
+  <Card title="Asset Library" icon="image" href="/guides/assets">
+    Upload, organize, tag, and search media files with folder management and usage tracking.
   </Card>
-
-  <Card title="Components" href="/components" icon="code" horizontal="false">
-    A small gallery of built-in components.
+  <Card title="Publishing Pipeline" icon="send" href="/guides/publishing">
+    Sign and distribute content teasers to Discovery Nodes with Ed25519 cryptographic signatures.
   </Card>
-
-  <Card title="Authentication" href="/authentication" icon="lock" horizontal="false">
-    Example layout for an auth guide.
+  <Card title="Delivery API" icon="globe" href="/api-reference/delivery-api">
+    Read-only API for websites, mobile apps, and third-party consumers, authenticated via API keys.
   </Card>
+  <Card title="Localization" icon="globe" href="/guides/localization">
+    24 EU locales, translation workflows, content variants, machine translation support, and RTL.
+  </Card>
+  <Card title="Full-Text Search" icon="search" href="/guides/search">
+    MeiliSearch-powered search across content, assets, and users with a Ctrl+K command palette.
+  </Card>
+</Columns>
 
-  <Card title="Help Center" href="/help-center" icon="help-circle" horizontal="false">
-    Starter FAQ, guides, and troubleshooting templates.
+## Editions
+
+| Feature | Community Edition (CE) | Pro Edition |
+|---------|----------------------|-------------|
+| **License** | AGPL 3.0 (open source) | Commercial plugins |
+| **Users** | 3 | Unlimited |
+| **Webhooks** | 3 | Unlimited |
+| **API Keys** | 2 | Unlimited |
+| **Content Versions** | 10 | Unlimited |
+| **Storage** | 5 GB | Unlimited |
+| **Workflows** | Simple draft/published | Multi-stage approval |
+| **SSO** | — | SAML, OIDC |
+| **Audit Logging** | — | Full audit trail |
+| **GraphQL** | — | Auto-generated schema |
+
+## Get Started
+
+<Columns cols={3}>
+  <Card title="Quickstart" icon="zap" href="/quickstart">
+    Get Studio running locally in under 5 minutes.
+  </Card>
+  <Card title="Core Concepts" icon="layers" href="/concepts">
+    Understand content types, schemas, publishing, and the ecosystem.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore the Management and Delivery APIs.
   </Card>
 </Columns>
 

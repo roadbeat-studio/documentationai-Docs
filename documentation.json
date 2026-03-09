@@ -1,5 +1,6 @@
 {
-  "name": "Starter Kit",
+  "name": "roadbeat Studio",
+  "initialRoute": "introduction",
   "colors": {
     "light": {
       "brand": "#F97316"
@@ -15,7 +16,7 @@
         "icon": "book",
         "groups": [
           {
-            "group": "Start Here",
+            "group": "Getting Started",
             "icon": "rocket",
             "pages": [
               {
@@ -29,45 +30,148 @@
                 "icon": "zap"
               },
               {
-                "title": "Components",
-                "path": "components",
-                "icon": "code"
+                "title": "Core Concepts",
+                "path": "concepts",
+                "icon": "layers"
+              },
+              {
+                "title": "Architecture",
+                "path": "architecture",
+                "icon": "server"
               }
             ]
           },
           {
-            "group": "Components",
-            "icon": "layers",
+            "group": "Guides",
+            "icon": "book-open",
             "pages": [
               {
-                "title": "Images",
-                "path": "components/images",
+                "title": "Content Types",
+                "path": "guides/content-types",
+                "icon": "file-text"
+              },
+              {
+                "title": "Content Management",
+                "path": "guides/content-management",
+                "icon": "edit"
+              },
+              {
+                "title": "Asset Management",
+                "path": "guides/assets",
                 "icon": "image"
               },
               {
-                "title": "Cards",
-                "path": "components/cards",
-                "icon": "square"
+                "title": "Publishing",
+                "path": "guides/publishing",
+                "icon": "send"
               },
               {
-                "title": "Code",
-                "path": "components/code",
+                "title": "Localization",
+                "path": "guides/localization",
+                "icon": "globe"
+              },
+              {
+                "title": "Users & Roles",
+                "path": "guides/users-and-roles",
+                "icon": "users"
+              },
+              {
+                "title": "Webhooks",
+                "path": "guides/webhooks",
+                "icon": "webhook"
+              },
+              {
+                "title": "Search",
+                "path": "guides/search",
+                "icon": "search"
+              },
+              {
+                "title": "Backup & Export",
+                "path": "guides/backup-and-export",
+                "icon": "download"
+              },
+              {
+                "title": "Content Relations",
+                "path": "guides/content-relations",
+                "icon": "link"
+              },
+              {
+                "title": "Content Layouts",
+                "path": "guides/content-layouts",
+                "icon": "layout"
+              },
+              {
+                "title": "CDN Integration",
+                "path": "guides/cdn",
+                "icon": "zap"
+              },
+              {
+                "title": "Consumer Features",
+                "path": "guides/consumer-features",
+                "icon": "compass"
+              }
+            ]
+          },
+          {
+            "group": "For Editors",
+            "icon": "pen-tool",
+            "pages": [
+              {
+                "title": "Editor Guide",
+                "path": "editors/guide",
+                "icon": "book-open"
+              },
+              {
+                "title": "Content Editor",
+                "path": "editors/content-editor",
+                "icon": "edit"
+              },
+              {
+                "title": "Rich Text Editor",
+                "path": "editors/rich-text",
+                "icon": "type"
+              },
+              {
+                "title": "Working with Assets",
+                "path": "editors/working-with-assets",
+                "icon": "image"
+              }
+            ]
+          },
+          {
+            "group": "Deployment",
+            "icon": "cloud",
+            "pages": [
+              {
+                "title": "Self-Hosting",
+                "path": "deployment/self-hosting",
+                "icon": "server"
+              },
+              {
+                "title": "Configuration",
+                "path": "deployment/configuration",
+                "icon": "settings"
+              }
+            ]
+          },
+          {
+            "group": "Extending Studio",
+            "icon": "puzzle",
+            "pages": [
+              {
+                "title": "Plugin System",
+                "path": "plugins/overview",
+                "icon": "plug"
+              },
+              {
+                "title": "Developing Plugins",
+                "path": "plugins/developing-plugins",
                 "icon": "code"
               },
               {
-                "title": "Callouts",
-                "path": "components/callouts",
-                "icon": "message-square"
-              },
-              {
-                "title": "Steps",
-                "path": "components/steps",
-                "icon": "list-ordered"
-              },
-              {
-                "title": "Tabs",
-                "path": "components/tabs",
-                "icon": "columns"
+                "title": "CE vs Pro",
+                "path": "plugins/ce-vs-pro",
+                "icon": "shield"
               }
             ]
           }
@@ -82,14 +186,24 @@
             "icon": "file-text",
             "pages": [
               {
+                "title": "API Overview",
+                "path": "api-reference/overview",
+                "icon": "book"
+              },
+              {
                 "title": "Authentication",
-                "path": "authentication",
+                "path": "api-reference/authentication",
                 "icon": "lock"
+              },
+              {
+                "title": "Delivery API",
+                "path": "api-reference/delivery-api",
+                "icon": "globe"
               }
             ]
           },
           {
-            "group": "Sample Endpoints",
+            "group": "Endpoints",
             "openapi": "openapi.yaml"
           }
         ]
@@ -109,8 +223,16 @@
             "expandable": false,
             "pages": [
               {
-                "title": "Documentation Source",
-                "path": "help-center/faq/getting-started"
+                "title": "General",
+                "path": "help-center/faq/general"
+              },
+              {
+                "title": "Content & Publishing",
+                "path": "help-center/faq/content-and-publishing"
+              },
+              {
+                "title": "API & Integrations",
+                "path": "help-center/faq/api-and-integrations"
               }
             ]
           },
@@ -120,8 +242,12 @@
             "expandable": false,
             "pages": [
               {
-                "title": "Page Missing in Sidebar",
-                "path": "help-center/troubleshooting/install-error"
+                "title": "Common Errors",
+                "path": "help-center/troubleshooting/common-errors"
+              },
+              {
+                "title": "Database Issues",
+                "path": "help-center/troubleshooting/database-issues"
               }
             ]
           },
@@ -131,8 +257,12 @@
             "expandable": false,
             "pages": [
               {
-                "title": "Create Your First Page",
-                "path": "help-center/guides/setup-project"
+                "title": "First Content Type",
+                "path": "help-center/guides/first-content-type"
+              },
+              {
+                "title": "Setting Up Webhooks",
+                "path": "help-center/guides/setting-up-webhooks"
               }
             ]
           }

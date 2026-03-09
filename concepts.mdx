@@ -1,54 +1,142 @@
 ---
 title: Core Concepts
-description: The basic building blocks of this starter kit.
+description: Understand the fundamental building blocks of roadbeat Studio and how they fit together.
 ---
 
-## Overview
+## The roadbeat Ecosystem
 
-<Callout kind="alert">
-This page is an example. Replace every concept with the real terms your product uses.
-</Callout>
+roadbeat Studio is one component in a larger decentralized content platform. Understanding how these pieces connect helps you get the most out of Studio.
 
-## The building blocks
-
-<Columns cols={2}>
-  <Card title="Pages" icon="file-text">
-    Every page is an `.mdx` file. Content lives in the repo and is safe to edit.
-  </Card>
-  <Card title="Navigation" icon="list">
-    Sidebar structure comes from `documentation.json`.
-  </Card>
-  <Card title="Components" icon="layout-grid">
-    Reusable blocks like Callouts, Steps, Tabs, and Cards keep pages consistent.
-  </Card>
-  <Card title="API Reference" icon="code">
-    If you use it, the API tab reads from `openapi.yaml`.
-  </Card>
-</Columns>
-
-## Navigation shape (sample)
-
-```json
-{
-  "tab": "Documentation",
-  "groups": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        { "title": "Introduction", "path": "introduction" }
-      ]
-    }
-  ]
-}
+```mermaid
+graph TD
+    SR[Schema Registry] -->|Pull content type schemas| S[Studio Node]
+    S -->|Publish teasers| DN[Discovery Nodes]
+    S -->|Serve full content| FE[Websites & Apps]
+    CD[Context Directory] -->|User goals & preferences| FC[Fat Client / Web Client]
+    FC -->|Search & discover| DN
+    FC -->|Fetch full content| S
 ```
 
-## How to adapt this page
+## Content Types
+
+A **content type** defines the structure of a piece of content. Instead of generic "posts", roadbeat uses precise types like News, Events, Job Offers, Recipes, or Real Estate Listings — each with its own rich metadata schema.
+
+Content types are defined as **JSON Schemas** and can be:
+
+- **Imported** from the central [Schema Registry](/guides/content-types#importing-from-the-schema-registry) with one click
+- **Created manually** using the visual [Content Type Builder](/guides/content-types#content-type-builder)
+
+Each content type includes three schemas:
+
+| Schema | Purpose |
+|--------|---------|
+| **Metadata Schema** | Core definition — fields, types, validation rules |
+| **Form Schema** | Layout definition — tabs, sections, field ordering, UI hints |
+| **Teaser Schema** | Subset of fields sent to Discovery Nodes for search and preview |
+
+## Content Lifecycle
+
+Every content item follows a defined lifecycle:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft: Create
+    Draft --> Published: Publish
+    Published --> Draft: Unpublish
+    Published --> Archived: Archive
+    Draft --> Draft: Edit
+    Published --> Published: Update (new version)
+```
+
+| Status | Description | API Visible |
+|--------|-------------|-------------|
+| **Draft** | Work in progress, editable | No |
+| **Published** | Live content, served via Delivery API | Yes |
+| **Archived** | Historical record, read-only | No |
+
+<Callout kind="tip">
+  With Pro plugins, additional workflow stages like **In Review**, **Approved**, and **Scheduled** become available.
+</Callout>
+
+## Versioning
+
+Every save creates a new **version** of the content. You can view the version history, compare changes, and restore any previous version.
+
+- **CE** retains up to 10 versions per content item
+- **Pro** has unlimited version retention
+
+## Assets
+
+Assets are media files (images, videos, documents) managed in the **Asset Library**. Assets are:
+
+- Uploaded with automatic metadata extraction (EXIF, dimensions)
+- Organized in **folders**
+- Tagged and searchable
+- Tracked for usage across content items
+
+## Publishing
+
+Publishing in roadbeat Studio means two things:
+
+1. **Setting status to published** — makes content available via the Delivery API
+2. **Distributing to Discovery Nodes** — pushes a signed teaser to the search network
+
+The publishing pipeline:
 
 <Steps>
-  <Step title="Replace the terms" icon="edit">
-    Swap "Pages" and "Components" for your real domain language.
+  <Step title="Validate" icon="check-circle">
+    Schema validation, required fields check, reference integrity.
   </Step>
-  <Step title="Add your concepts" icon="plus">
-    Create a section for the ideas your users must learn first.
+  <Step title="Generate Teaser" icon="file-text">
+    Extract teaser fields from the full content using the teaser schema.
+  </Step>
+  <Step title="Sign" icon="key">
+    Sign the teaser with the publisher's Ed25519 private key.
+  </Step>
+  <Step title="Distribute" icon="send">
+    Push the signed teaser to all configured Discovery Nodes.
   </Step>
 </Steps>
+
+## APIs
+
+Studio provides two distinct APIs:
+
+<Tabs>
+  <Tab title="Management API" icon="settings">
+    Authenticated with **JWT tokens**. Used by the admin UI and internal tools.
+
+    - Full CRUD for content, assets, users, content types
+    - Publishing actions
+    - Organization settings
+
+    Base path: `/api/v1/manage/...`
+  </Tab>
+  <Tab title="Delivery API" icon="globe">
+    Authenticated with **API keys**. Used by websites, mobile apps, and third-party consumers.
+
+    - Read-only access to published content
+    - Content type schemas
+    - Asset metadata
+
+    Base path: `/api/v1/delivery/...`
+  </Tab>
+</Tabs>
+
+## Organizations
+
+Studio is **multi-tenant** at the data level. Each installation has one organization, and all content, users, and assets belong to that organization. Users are assigned roles within the organization.
+
+## Roles
+
+CE provides three built-in roles:
+
+| Role | Permissions |
+|------|------------|
+| **Admin** | Full access — users, settings, content, publishing |
+| **Editor** | Create, edit, publish content and manage assets |
+| **Viewer** | Read-only access to content and assets |
+
+<Callout kind="info">
+  Pro plugins like `pro-advanced-roles` add granular per-content-type permissions and custom roles.
+</Callout>

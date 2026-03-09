@@ -1,0 +1,92 @@
+---
+title: First Content Type
+description: Step-by-step guide to importing or creating your first content type in roadbeat Studio.
+---
+
+## Overview
+
+Before you can create content in Studio, you need at least one **content type** — the schema that defines what fields your content has. This guide walks you through two approaches: importing from the Schema Registry or building one from scratch.
+
+## Option A: Import from the Schema Registry
+
+The fastest approach — import a pre-built, standardized content type.
+
+<Steps>
+  <Step title="Navigate to Content Types" icon="file-text">
+    Click **Content Types** in the sidebar.
+  </Step>
+  <Step title="Open the Registry Browser" icon="globe">
+    Click the **Import from Registry** button in the top-right corner. The Registry Browser overlay opens, showing all available content types from the central Schema Registry.
+  </Step>
+  <Step title="Browse or search" icon="search">
+    Use the category sidebar (e.g., News & Publications, Events & Activities) or the search bar to find the content type you need.
+
+    Popular starting types:
+    - **News** — articles, press releases, blog posts
+    - **Event** — conferences, meetups, workshops
+    - **Cooking Recipe** — recipes with ingredients, steps, nutrition
+    - **Job Offer** — job postings with requirements, salary, location
+  </Step>
+  <Step title="Import" icon="download">
+    Click **Import to Studio** on your chosen content type. Studio fetches the metadata schema, form schema, and teaser schema. The content type appears in your list immediately.
+  </Step>
+  <Step title="Create your first content" icon="edit">
+    Go to **Content > New Content**, select your imported content type, and start filling in the form. The editor renders all the fields defined in the schema — tabs, sections, validation, and all.
+  </Step>
+</Steps>
+
+<Callout kind="info">
+  The Schema Registry must be accessible via the `SCHEMA_REGISTRY_URL` environment variable. The default is `http://localhost:3200`.
+</Callout>
+
+## Option B: Build a Content Type from Scratch
+
+If you need a custom content type, use the visual Content Type Builder.
+
+<Steps>
+  <Step title="Navigate to Content Types" icon="file-text">
+    Click **Content Types** in the sidebar.
+  </Step>
+  <Step title="Create new" icon="plus">
+    Click **Create Content Type**. Enter a name (e.g., "Blog Post") and a unique ID (e.g., `blog-post`).
+  </Step>
+  <Step title="Add fields" icon="columns">
+    The builder opens with a 3-panel layout:
+
+    1. **Field Palette** (left) — drag field types onto the canvas
+    2. **Canvas** (center) — your fields in order
+    3. **Settings** (right) — configure the selected field
+
+    Start with essential fields:
+    - **Title** (text, required)
+    - **Slug** (slug, auto-generated from title)
+    - **Body** (rich text)
+    - **Hero Image** (image)
+    - **Category** (enum with predefined values)
+    - **Published Date** (date)
+  </Step>
+  <Step title="Configure validation" icon="check-circle">
+    For each field, set validation rules:
+
+    - **Required** — must have a value to publish
+    - **Min/Max Length** — character limits for text fields
+    - **Pattern** — regex validation (e.g., URL format)
+  </Step>
+  <Step title="Save" icon="save">
+    Click **Save** to create the content type. Studio generates the JSON Schema, form schema, and a basic teaser schema automatically.
+  </Step>
+  <Step title="Create content" icon="edit">
+    Go to **Content > New Content**, select your new content type, and start creating.
+  </Step>
+</Steps>
+
+## What's Next?
+
+<Columns cols={2}>
+  <Card title="Create Content" icon="edit" href="/guides/content-management">
+    Start creating and publishing structured content with your new content type.
+  </Card>
+  <Card title="Set Up Publishing" icon="send" href="/guides/publishing">
+    Configure Discovery Nodes to distribute your content to the roadbeat network.
+  </Card>
+</Columns>

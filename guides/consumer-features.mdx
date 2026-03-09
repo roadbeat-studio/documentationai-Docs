@@ -1,0 +1,321 @@
+---
+title: Consumer Features
+description: Goal-driven content discovery features integrated into Studio via the @roadbeat/consumer library.
+---
+
+## Overview
+
+roadbeat Studio includes a built-in **consumer experience** — a set of content discovery features that let Studio users explore content from the broader roadbeat network. These features are powered by the `@roadbeat/consumer` Angular library and backed by 14 NestJS backend-for-frontend (BFF) modules.
+
+The consumer features appear in the **DISCOVER** section of the Studio sidebar, above the content management area.
+
+<Callout kind="info">
+  The same `@roadbeat/consumer` library is shared between Studio and the standalone Web Client. In Studio, it's mounted at `/consumer/*`; in the Web Client, it's the primary experience.
+</Callout>
+
+## Features
+
+<Columns cols={2}>
+  <Card title="Compass" icon="compass" href="#compass">
+    Goal portfolio management with categories, templates, time horizons, and progress tracking.
+  </Card>
+  <Card title="Discover" icon="search" href="#discover">
+    Federated search across Discovery Nodes with facets, goal tabs, calendar view, and transparency drawer.
+  </Card>
+  <Card title="Publishers" icon="users" href="#publishers">
+    Searchable publisher directory with trust badges, profiles, and follow system.
+  </Card>
+  <Card title="Bookmarks" icon="bookmark" href="#bookmarks">
+    Save and organize content into collections with drag-to-reorder and optimistic updates.
+  </Card>
+  <Card title="Notifications" icon="bell" href="#notifications">
+    Notification center with filtering, preferences, and 5-minute polling.
+  </Card>
+  <Card title="Content Detail" icon="file-text" href="#content-detail">
+    Rich teaser views for 6+ content types with type-specific sections.
+  </Card>
+</Columns>
+
+## Context Directory Integration
+
+Consumer features require a **Context Directory** account. Studio automatically provisions a CD account for each user on first access to any consumer feature.
+
+The account linking is managed via:
+
+```bash
+# Check CD account link status
+GET /api/v1/consumer/account/status
+
+# Manually trigger CD account linking
+POST /api/v1/consumer/account/link
+
+# Remove CD account link
+DELETE /api/v1/consumer/account/link
+```
+
+Configure the Context Directory URL in `.env`:
+
+```bash
+CONTEXT_DIRECTORY_URL=http://localhost:3100
+```
+
+## Compass
+
+The **Compass** is the goal management center. Users define personal goals across time horizons, and the system matches content to those goals.
+
+### Goal Management
+
+```bash
+# Get user's goal portfolio
+GET /api/v1/consumer/goals
+
+# Save updated goal portfolio
+PUT /api/v1/consumer/goals
+{ "goals": [...] }
+
+# Get goal categories
+GET /api/v1/consumer/goals/categories
+
+# Get goal templates for a category
+GET /api/v1/consumer/goals/templates/:categoryId
+```
+
+### Goal Structure
+
+Goals are organized hierarchically:
+
+- **Category** — e.g., Learning & Knowledge, Career & Professional
+- **Subcategory** — e.g., Books & Reading, Language Learning
+- **Goal** — e.g., "Read {{number}} books about {{topic}}"
+- **Time Horizon** — Life, Year, Month, Week, Day
+
+## Discover
+
+The **Discover** page provides federated search across all configured Discovery Nodes.
+
+### Search API
+
+```bash
+# Federated search
+POST /api/v1/consumer/discover/search
+{
+  "query": "climate policy",
+  "contentType": "news",
+  "filters": { "location.country": "DE" },
+  "page": 1,
+  "pageSize": 20
+}
+
+# Goal-based search
+POST /api/v1/consumer/discover/by-goal
+{ "goalId": "goal-uuid" }
+
+# Autocomplete suggestions
+GET /api/v1/consumer/discover/suggestions?q=clim
+
+# Available Discovery Nodes and their status
+GET /api/v1/consumer/discover/nodes
+
+# Facet configuration for a content type
+GET /api/v1/consumer/discover/facets/:contentType
+```
+
+### Frontend Features
+
+- **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles)
+- **Goal tabs** — filter results by active goals with count badges
+- **View modes** — List, Cards, Calendar
+- **Sort controls** — by relevance, date, or other fields
+- **"Why am I seeing this?"** — transparency drawer explaining content matching
+- **Active filter pills** — dismissible badges showing current filters
+
+## Publishers
+
+Browse and follow publishers across the roadbeat network.
+
+```bash
+# Search publishers
+GET /api/v1/consumer/publishers?q=news&filter=verified&page=1&limit=20
+
+# Get publisher detail
+GET /api/v1/consumer/publishers/:id
+
+# Get publisher's content
+GET /api/v1/consumer/publishers/:id/content
+```
+
+### Following
+
+```bash
+# Get followed publishers
+GET /api/v1/consumer/follows
+
+# Follow a publisher
+POST /api/v1/consumer/follows/:publisherId
+
+# Unfollow a publisher
+DELETE /api/v1/consumer/follows/:publisherId
+
+# Sync full follow list
+PUT /api/v1/consumer/follows
+{ "publisherIds": ["id-1", "id-2"] }
+```
+
+### Trust Badges
+
+Publishers have 4 trust levels displayed as colored badges:
+
+| Level | Badge | Meaning |
+|-------|-------|---------|
+| **Unverified** | Gray | No verification |
+| **Domain** | Blue | Domain ownership verified |
+| **Organization** | Green | Organization identity verified |
+| **Trusted** | Gold | Full editorial verification |
+
+## Bookmarks
+
+Save content and organize into collections.
+
+```bash
+# Get bookmarks (paginated, filterable)
+GET /api/v1/consumer/bookmarks?collection=uuid&sort=newest&page=1
+
+# Add bookmark
+POST /api/v1/consumer/bookmarks
+{ "teaserId": "teaser-uuid" }
+
+# Remove bookmark
+DELETE /api/v1/consumer/bookmarks/:teaserId
+
+# Check if bookmarked
+GET /api/v1/consumer/bookmarks/:teaserId/status
+```
+
+### Collections
+
+```bash
+# List collections with item counts
+GET /api/v1/consumer/bookmarks/collections
+
+# Create collection
+POST /api/v1/consumer/bookmarks/collections
+{ "name": "Research" }
+
+# Update collection
+PUT /api/v1/consumer/bookmarks/collections/:id
+{ "name": "Climate Research" }
+
+# Delete collection
+DELETE /api/v1/consumer/bookmarks/collections/:id
+
+# Add item to collection
+POST /api/v1/consumer/bookmarks/collections/:id/items
+{ "teaserId": "teaser-uuid" }
+
+# Remove item from collection
+DELETE /api/v1/consumer/bookmarks/collections/:id/items/:teaserId
+```
+
+## Notifications
+
+```bash
+# Get notifications (paginated, filterable by type)
+GET /api/v1/consumer/notifications?type=content&page=1
+
+# Get unread count
+GET /api/v1/consumer/notifications/unread-count
+
+# Mark as read
+PUT /api/v1/consumer/notifications/:id/read
+
+# Mark all as read
+PUT /api/v1/consumer/notifications/read-all
+
+# Get/update notification preferences
+GET /api/v1/consumer/notifications/preferences
+PUT /api/v1/consumer/notifications/preferences
+```
+
+## Content Detail
+
+Rich teaser detail views with content-type-specific sections:
+
+```bash
+# Get teaser detail
+GET /api/v1/consumer/discover/teaser/:contentType/:slug
+
+# Get related content
+POST /api/v1/consumer/discover/related
+{ "contentType": "news", "categories": ["politics"], "tags": ["climate"] }
+```
+
+Content-type-specific sections include:
+
+| Content Type | Special Fields |
+|-------------|---------------|
+| **News** | Publication date, source, reading time |
+| **Events** | Date/time, venue, ticket price, registration |
+| **Jobs** | Company, salary, employment type, deadline |
+| **Recipes** | Prep/cook time, servings, difficulty |
+| **Real Estate** | Price, rooms, area, address |
+| **Courses** | Duration, skill level, format |
+
+## Mobile Sync
+
+Sync user data to mobile apps:
+
+```bash
+# Generate sync package
+GET /api/v1/consumer/sync/package
+
+# Create single-use sync token
+POST /api/v1/consumer/sync/token
+
+# Get package by token (public endpoint)
+GET /api/v1/consumer/sync/token/:token
+
+# Get QR code data for mobile deep link
+GET /api/v1/consumer/sync/qr
+```
+
+## User Profile & Settings
+
+```bash
+# Get/update profile
+GET /api/v1/consumer/user/profile
+PUT /api/v1/consumer/user/profile
+
+# Change password
+PUT /api/v1/consumer/user/password
+
+# Get/update preferences
+GET /api/v1/consumer/user/preferences
+PUT /api/v1/consumer/user/preferences
+
+# GDPR data export
+POST /api/v1/consumer/user/export
+GET /api/v1/consumer/user/export/:token
+
+# Account deletion (30-day grace period)
+POST /api/v1/consumer/user/delete
+POST /api/v1/consumer/user/delete/cancel
+```
+
+## Shared Services
+
+The `@roadbeat/consumer` library provides shared services used across all features:
+
+| Service | Description |
+|---------|-------------|
+| **ThemeService** | Light/dark/system mode with `matchMedia` detection |
+| **I18nService** | 24 EU locales with lazy-loaded JSON and `{{param}}` interpolation |
+| **SeoService** | Dynamic meta/OG/Twitter Card tags, canonical URLs, JSON-LD |
+| **FocusManagementService** | Route-change focus, scroll-to-top, ARIA live announcements |
+
+## Consumer Health
+
+```bash
+GET /api/v1/consumer/health
+GET /api/v1/consumer/health/ready
+GET /api/v1/consumer/health/live
+```

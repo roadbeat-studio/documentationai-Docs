@@ -1,58 +1,95 @@
 ---
 title: Quickstart
-description: Minimal steps to customize this sample starter kit.
+description: Get roadbeat Studio running locally in under 5 minutes.
 ---
-## Overview
 
-<Callout kind="alert" collapsed="false">
-  This site ships with placeholder content. Use this quickstart to replace it with your real product docs.
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- **Node.js 20 LTS** or later
+- **pnpm** package manager (`npm install -g pnpm`)
+- **PostgreSQL 16+** running locally or via Docker
+- **Redis 7** running locally or via Docker
+
+<Callout kind="tip">
+  The easiest way to start PostgreSQL and Redis is with Docker. See the [Self-Hosting](/deployment/self-hosting) guide for a full Docker Compose setup.
 </Callout>
 
-## 1. Update a page
+## Setup
 
 <Steps>
-  <Step title="Edit introduction" icon="edit" title-type="p">
-    Replace the sample introduction with a concise overview of your product and the key actions you want new users to take first.
+  <Step title="Clone and install">
+    ```bash
+    git clone https://github.com/roadbeat/studio.git
+    cd studio
+    pnpm install
+    ```
   </Step>
 
-  <Step title="Preview your change" icon="monitor" title-type="p">
-    Use your dashboard board editor to confirm the updated introduction looks and reads as expected.
+  <Step title="Configure environment">
+    Copy the example environment file and edit it with your database credentials.
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    At minimum, configure these variables in `.env`:
+
+    ```bash
+    DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/roadbeat_studio
+    REDIS_HOST=localhost
+    REDIS_PORT=6379
+    JWT_SECRET=your-secret-key-at-least-32-characters
+    ```
+  </Step>
+
+  <Step title="Run database migrations">
+    ```bash
+    pnpm --filter api prisma:migrate
+    ```
+
+    This creates all required tables in your PostgreSQL database.
+  </Step>
+
+  <Step title="Start the API server">
+    ```bash
+    pnpm --filter api dev
+    ```
+
+    The API starts at `http://localhost:3000`. Swagger docs are available at `http://localhost:3000/api/docs`.
+  </Step>
+
+  <Step title="Start the Admin UI">
+    In a new terminal:
+
+    ```bash
+    pnpm --filter web dev
+    ```
+
+    The Angular admin UI starts at `http://localhost:4200`.
+  </Step>
+
+  <Step title="Complete initial setup">
+    Navigate to `http://localhost:4200` in your browser. The setup wizard guides you through creating your first **admin account** and **organization**.
   </Step>
 </Steps>
 
-## 2. Add a new page
+## What's next?
 
-<Steps>
-  <Step title="Add a page" icon="file-text" title-type="p">
-    Create a new `page` by clicking on the + button from the left navigation bar of dashboard. If you are using git, create the .mdx file and add to navigation bar using documentation.json
-  </Step>
-</Steps>
+After setup, you'll land on the **Dashboard**. From here you can:
 
-## Example onboarding flow (replace with yours)
-
-1. Sign up for an account and verify your email.
-
-2. Create your first workspace, project, or environment.
-
-3. Add one integration or data source to connect your existing tools.
-
-4. Complete a guided action (for example, run your first job or publish your first resource).
-
-5. Invite a teammate and assign a basic role or permission.
-
-## 3. Connect API Reference (optional)
-
-If you have an API, replace `openapi.yaml` with your real OpenAPI file. If you do not need an API reference, remove that tab either from dashboard or  `documentation.json`.
-
-## Next steps
-
-<Columns cols="2">
-  <Card title="Core Concepts" href="/concepts" icon="layers" horizontal="false">
-    Keep the mental model simple and easy to scan.
+<Columns cols={2}>
+  <Card title="Import a Content Type" icon="file-text" href="/guides/content-types">
+    Browse and import content types from the Schema Registry, or create your own with the visual builder.
   </Card>
-
-  <Card title="Authentication" href="/authentication" icon="lock" horizontal="false">
-    Add your real auth flows and security notes.
+  <Card title="Create Content" icon="edit" href="/guides/content-management">
+    Start creating structured content with dynamic forms generated from your content type schemas.
+  </Card>
+  <Card title="Set Up Publishing" icon="send" href="/guides/publishing">
+    Configure Discovery Nodes and publish your content to the roadbeat network.
+  </Card>
+  <Card title="Explore the API" icon="code" href="/api-reference/overview">
+    Use the Management API or Delivery API to integrate Studio with your applications.
   </Card>
 </Columns>
-

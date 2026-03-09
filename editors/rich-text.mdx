@@ -1,0 +1,141 @@
+---
+title: Rich Text Editor
+description: Use the WYSIWYG rich text editor to create beautifully formatted content.
+---
+
+## Overview
+
+roadbeat Studio includes a powerful **WYSIWYG rich text editor** built on TipTap / ProseMirror. It provides a familiar word-processor-like experience for formatting text, adding links, inserting images, and structuring content.
+
+## Formatting Toolbar
+
+The toolbar appears at the top of every rich text field:
+
+| Button | Action | Shortcut |
+|--------|--------|----------|
+| **B** | Bold | Ctrl+B |
+| *I* | Italic | Ctrl+I |
+| ~~S~~ | Strikethrough | Ctrl+Shift+X |
+| `</>` | Inline code | Ctrl+E |
+| **H1–H3** | Heading levels | — |
+| **"** | Blockquote | — |
+| **•** | Bullet list | — |
+| **1.** | Ordered list | — |
+| **—** | Horizontal rule | — |
+
+## Text Formatting
+
+### Headings
+
+Use headings to structure your content. The editor supports three heading levels:
+
+- **Heading 1** — main sections
+- **Heading 2** — subsections
+- **Heading 3** — sub-subsections
+
+<Callout kind="tip">
+  The page title comes from the content type's title field — don't duplicate it as a Heading 1 inside the body text.
+</Callout>
+
+### Paragraphs
+
+Press **Enter** to create a new paragraph. Press **Shift+Enter** for a line break within the same paragraph.
+
+### Text Alignment
+
+Align text using the alignment buttons in the toolbar:
+
+- **Left** (default)
+- **Center**
+- **Right**
+- **Justify**
+
+## Links
+
+<Steps>
+  <Step title="Select text">
+    Highlight the text you want to turn into a link.
+  </Step>
+  <Step title="Click the Link button">
+    Click the chain icon in the toolbar (or press **Ctrl+K**).
+  </Step>
+  <Step title="Enter URL">
+    Paste or type the URL. Choose whether to open in a new tab.
+  </Step>
+  <Step title="Confirm">
+    Click **Apply** to create the link. Click any link to edit or remove it.
+  </Step>
+</Steps>
+
+## Images
+
+Insert images from the Asset Library directly into your rich text content:
+
+<Steps>
+  <Step title="Place your cursor">
+    Click where you want the image to appear.
+  </Step>
+  <Step title="Click the Image button">
+    Click the image icon in the toolbar.
+  </Step>
+  <Step title="Select from Asset Library">
+    The Asset Library picker opens. Select an existing image or upload a new one.
+  </Step>
+  <Step title="Adjust">
+    After insertion, you can add alt text and adjust the image display.
+  </Step>
+</Steps>
+
+<Callout kind="info">
+  Images inserted into rich text are stored in the Asset Library and referenced by ID. If you update the asset (e.g., replace the file), all references update automatically.
+</Callout>
+
+## Lists
+
+### Bullet Lists
+
+Click the bullet list button or type `- ` (dash + space) at the start of a line to create a bullet list. Press **Tab** to indent (nested list) and **Shift+Tab** to outdent.
+
+### Ordered Lists
+
+Click the ordered list button or type `1. ` at the start of a line. Numbering is automatic.
+
+## Blockquotes
+
+Click the quote button or type `> ` at the start of a line to create a blockquote. Blockquotes are visually styled with a left border and indentation.
+
+## Code
+
+### Inline Code
+
+Select text and click the code button (or press **Ctrl+E**) to mark it as inline code.
+
+### Code Blocks
+
+For multi-line code, use the code block option from the toolbar dropdown. Code blocks support syntax highlighting by specifying a language.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| **Ctrl+B** | Bold |
+| **Ctrl+I** | Italic |
+| **Ctrl+U** | Underline |
+| **Ctrl+E** | Inline code |
+| **Ctrl+K** | Insert/edit link |
+| **Ctrl+Z** | Undo |
+| **Ctrl+Shift+Z** | Redo |
+| **Ctrl+Shift+7** | Ordered list |
+| **Ctrl+Shift+8** | Bullet list |
+| **Enter** | New paragraph |
+| **Shift+Enter** | Line break |
+| **Tab** | Indent list item |
+| **Shift+Tab** | Outdent list item |
+
+## Tips for Editors
+
+- **Keep formatting consistent** — use headings hierarchically (H1 → H2 → H3)
+- **Use alt text on images** — this is important for accessibility and SEO
+- **Avoid excessive formatting** — bold and italic lose impact when overused
+- **Use lists for scannable content** — readers can quickly find what they need
+- **Preview your content** — check how it looks before publishing

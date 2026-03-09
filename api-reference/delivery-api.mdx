@@ -1,0 +1,281 @@
+---
+title: Delivery API
+description: Read-only API for serving published content to websites, mobile apps, and third-party consumers.
+---
+
+## Overview
+
+The **Delivery API** is a read-only, high-performance API designed for frontend applications. It serves published content, content type schemas, asset metadata, and content layouts — authenticated via API keys.
+
+<Callout kind="info">
+  The Delivery API only returns content with status `published`. Drafts and archived items are never exposed.
+</Callout>
+
+## Authentication
+
+All Delivery API endpoints require an API key. Pass it via header:
+
+```bash
+Authorization: Bearer rbk_your_api_key_here
+# or
+X-Api-Key: rbk_your_api_key_here
+```
+
+See [Authentication](/api-reference/authentication#api-key-authentication-delivery-api) for details on creating and managing API keys.
+
+## Content Endpoints
+
+### List Published Content
+
+```bash
+GET /api/v1/delivery/content
+```
+
+<ParamField query="contentType" param-type="string" required="false">
+  Filter by content type ID (e.g., `news`, `event`).
+</ParamField>
+
+<ParamField query="locale" param-type="string" required="false">
+  Filter by locale code (e.g., `en`, `de`). Default: all locales.
+</ParamField>
+
+<ParamField query="fields" param-type="string" required="false">
+  Comma-separated list of fields to include in the response (field projection).
+</ParamField>
+
+<ParamField query="page" param-type="integer" required="false">
+  Page number (default: 1).
+</ParamField>
+
+<ParamField query="pageSize" param-type="integer" required="false">
+  Items per page (default: 20, max: 100).
+</ParamField>
+
+<ParamField query="sort" param-type="string" required="false">
+  Sort field: `createdAt`, `updatedAt`, `publishedAt`, `title`.
+</ParamField>
+
+<ParamField query="order" param-type="string" required="false">
+  Sort order: `asc` or `desc` (default: `desc`).
+</ParamField>
+
+**Example:**
+
+```bash
+curl "http://localhost:3000/api/v1/delivery/content?contentType=news&locale=en&pageSize=10" \
+  -H "X-Api-Key: rbk_your_key"
+```
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "contentType": "news",
+      "status": "published",
+      "locale": "en",
+      "data": {
+        "title": "Chancellor Announces New Climate Policy",
+        "slug": "chancellor-announces-climate-policy",
+        "description": "The federal government today...",
+        "body": "..."
+      },
+      "publishedAt": "2026-01-24T14:30:00Z",
+      "createdAt": "2026-01-24T10:00:00Z"
+    }
+  ],
+  "meta": { "total": 42, "page": 1, "pageSize": 10 }
+}
+```
+
+### Get Content by ID
+
+```bash
+GET /api/v1/delivery/content/:id
+```
+
+<ParamField path="id" param-type="string" required="true">
+  Content UUID.
+</ParamField>
+
+<ParamField query="fields" param-type="string" required="false">
+  Comma-separated field list for projection.
+</ParamField>
+
+### Get Content by Slug
+
+```bash
+GET /api/v1/delivery/content/:contentTypeId/:slug
+```
+
+<ParamField path="contentTypeId" param-type="string" required="true">
+  Content type ID (e.g., `news`).
+</ParamField>
+
+<ParamField path="slug" param-type="string" required="true">
+  Content slug (URL-safe identifier).
+</ParamField>
+
+<ParamField query="locale" param-type="string" required="false">
+  Locale code (default: `en`).
+</ParamField>
+
+<ParamField query="fields" param-type="string" required="false">
+  Comma-separated field list for projection.
+</ParamField>
+
+**Example:**
+
+```bash
+curl "http://localhost:3000/api/v1/delivery/content/news/chancellor-announces-climate-policy?locale=de" \
+  -H "X-Api-Key: rbk_your_key"
+```
+
+## Content Type Endpoints
+
+### List Content Types
+
+```bash
+GET /api/v1/delivery/content-types
+```
+
+Returns all available content types with their schemas.
+
+### Get Content Type
+
+```bash
+GET /api/v1/delivery/content-types/:id
+```
+
+<ParamField path="id" param-type="string" required="true">
+  Content type ID (e.g., `news`).
+</ParamField>
+
+Returns the full content type definition including metadata schema, form schema, and teaser schema.
+
+## Asset Endpoints
+
+### List Assets
+
+```bash
+GET /api/v1/delivery/assets
+```
+
+<ParamField query="mimeType" param-type="string" required="false">
+  Filter by MIME type prefix (e.g., `image`, `video`).
+</ParamField>
+
+<ParamField query="limit" param-type="integer" required="false">
+  Max results (default: 25, max: 100).
+</ParamField>
+
+<ParamField query="offset" param-type="integer" required="false">
+  Offset for pagination.
+</ParamField>
+
+### Get Asset
+
+```bash
+GET /api/v1/delivery/assets/:id
+```
+
+<ParamField path="id" param-type="string" required="true">
+  Asset UUID.
+</ParamField>
+
+Returns asset metadata including filename, MIME type, dimensions, URL, and custom metadata.
+
+## Layout Endpoints
+
+### List Layouts for Content Type
+
+```bash
+GET /api/v1/delivery/layouts/:contentTypeId
+```
+
+<ParamField path="contentTypeId" param-type="string" required="true">
+  Content type ID.
+</ParamField>
+
+### Get Layout Definition
+
+```bash
+GET /api/v1/delivery/layouts/:contentTypeId/:layoutId
+```
+
+<ParamField path="contentTypeId" param-type="string" required="true">
+  Content type ID.
+</ParamField>
+
+<ParamField path="layoutId" param-type="string" required="true">
+  Layout identifier (e.g., `news--default`).
+</ParamField>
+
+## Caching
+
+The Delivery API includes `Cache-Control` headers for optimal frontend performance:
+
+| Endpoint | Cache Duration |
+|----------|---------------|
+| Content list | 60 seconds |
+| Content by ID/slug | 60 seconds |
+| Content types | 5 minutes |
+| Assets | 5 minutes |
+| Layouts | 5 minutes |
+
+<Callout kind="tip">
+  For production deployments, place a CDN or reverse proxy (like Caddy or Cloudflare) in front of the Delivery API to leverage these cache headers.
+</Callout>
+
+## Integration Examples
+
+<Tabs>
+  <Tab title="Next.js" icon="code">
+    ```typescript
+    const API_URL = process.env.STUDIO_API_URL;
+    const API_KEY = process.env.STUDIO_API_KEY;
+
+    async function getNews() {
+      const res = await fetch(
+        `${API_URL}/api/v1/delivery/content?contentType=news`,
+        {
+          headers: { 'X-Api-Key': API_KEY },
+          next: { revalidate: 60 },
+        }
+      );
+      return res.json();
+    }
+    ```
+  </Tab>
+  <Tab title="Angular" icon="code">
+    ```typescript
+    @Injectable({ providedIn: 'root' })
+    export class StudioService {
+      private apiUrl = environment.studioApiUrl;
+      private apiKey = environment.studioApiKey;
+
+      constructor(private http: HttpClient) {}
+
+      getContent(type: string) {
+        return this.http.get(`${this.apiUrl}/api/v1/delivery/content`, {
+          params: { contentType: type },
+          headers: { 'X-Api-Key': this.apiKey },
+        });
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="cURL" icon="terminal">
+    ```bash
+    # List published news
+    curl "https://studio.example.com/api/v1/delivery/content?contentType=news" \
+      -H "X-Api-Key: rbk_your_key"
+
+    # Get by slug
+    curl "https://studio.example.com/api/v1/delivery/content/news/my-article" \
+      -H "X-Api-Key: rbk_your_key"
+    ```
+  </Tab>
+</Tabs>

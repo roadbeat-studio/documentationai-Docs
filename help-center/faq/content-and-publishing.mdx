@@ -1,0 +1,122 @@
+---
+title: Content & Publishing FAQ
+description: Frequently asked questions about content management and publishing in roadbeat Studio.
+---
+
+## Content Management
+
+<Expandable title="How do I create content?" default-open="true">
+  1. Navigate to **Content** in the sidebar
+  2. Click **New Content** and select a content type
+  3. Fill in the form fields — they are generated dynamically from the content type's schema
+  4. Click **Save** to create a draft, or **Publish** to make it live immediately
+
+  See the [Content Management](/guides/content-management) guide for details.
+</Expandable>
+
+<Expandable title="What content types are available?" default-open="false">
+  Content types are configured by your admin. They can be:
+
+  - **Imported** from the Schema Registry (50+ standardized types like News, Events, Recipes)
+  - **Created** using the visual Content Type Builder
+
+  Navigate to **Content Types** in the sidebar to see all available types.
+</Expandable>
+
+<Expandable title="How does auto-save work?" default-open="false">
+  Studio auto-saves your work every **5 seconds** after your last change. You'll see a status indicator:
+
+  - **Saving...** — changes are being saved
+  - **Saved** — all changes are persisted
+  - **Unsaved changes** — you have edits that haven't been saved yet
+
+  You can also press **Ctrl+S** (Cmd+S on macOS) to save manually. If you navigate away with unsaved changes, a confirmation dialog appears.
+</Expandable>
+
+<Expandable title="Can I restore a previous version?" default-open="false">
+  Yes. Every save creates a new version. To restore:
+
+  1. Open the content item
+  2. Click the version indicator in the status bar
+  3. Browse the version history
+  4. Select a version and click **Restore**
+
+  Restoring creates a new version with the old data — the current version is preserved in history. CE keeps up to 10 versions per item.
+</Expandable>
+
+<Expandable title="How do I delete content?" default-open="false">
+  Only **admins** can delete content. Open the content item and click **Delete** in the toolbar, or select items in the content list and use **Bulk Delete**.
+
+  Deleting content emits a `content.beforeDelete` event — Pro plugins like `pro-locking` can prevent deletion if the item is locked.
+</Expandable>
+
+## Publishing
+
+<Expandable title="How do I publish to Discovery Nodes?" default-open="false">
+  Publishing to Discovery Nodes happens automatically when you publish content:
+
+  1. Click **Publish** on a content item
+  2. Studio validates the content against its schema
+  3. A teaser is generated and signed with your Ed25519 key
+  4. The signed teaser is distributed to all configured Discovery Nodes
+
+  You need at least one Discovery Node configured in **Settings > Discovery Nodes**. See the [Publishing](/guides/publishing) guide for details.
+</Expandable>
+
+<Expandable title="What is a teaser?" default-open="false">
+  A **teaser** is a lightweight summary of your content that gets sent to Discovery Nodes. It includes:
+
+  - Title, description, and classification metadata
+  - Geographic and temporal information
+  - Publisher identity and trust information
+  - Access type (free/paid) and language availability
+
+  Teasers allow users to discover your content without accessing the full article. When they want to read more, they are directed to your Studio's Delivery API.
+</Expandable>
+
+<Expandable title="What happens when publishing fails?" default-open="false">
+  If distribution to a Discovery Node fails:
+
+  - Studio retries automatically (3 attempts with exponential backoff: 1s, 5s, 30s)
+  - The publish status shows "failed" for that specific node
+  - You can manually retry via **Publishing > Retry** or the API
+
+  The content is still published locally (available via the Delivery API) even if Discovery Node distribution fails.
+</Expandable>
+
+<Expandable title="How do I unpublish content?" default-open="false">
+  1. Open the published content item
+  2. Click **Unpublish** in the toolbar
+
+  This:
+  - Changes the status back to `draft`
+  - Removes the content from the Delivery API
+  - Sends a withdrawal request to Discovery Nodes
+</Expandable>
+
+## Delivery API
+
+<Expandable title="How do I fetch content from my website?" default-open="false">
+  Use the **Delivery API** with an API key:
+
+  ```bash
+  curl "https://your-studio.com/api/v1/delivery/content?contentType=news" \
+    -H "X-Api-Key: rbk_your_api_key"
+  ```
+
+  Create an API key in **Settings > API Keys**. See the [Delivery API](/api-reference/delivery-api) guide for full documentation.
+</Expandable>
+
+<Expandable title="Can I fetch content by slug instead of ID?" default-open="false">
+  Yes. Use the slug endpoint:
+
+  ```bash
+  GET /api/v1/delivery/content/:contentType/:slug
+  ```
+
+  For example:
+  ```bash
+  curl "https://your-studio.com/api/v1/delivery/content/news/my-article-slug" \
+    -H "X-Api-Key: rbk_your_api_key"
+  ```
+</Expandable>

@@ -1,0 +1,197 @@
+---
+title: CE vs Pro
+description: Understand the differences between Community Edition and Pro Edition features.
+---
+
+## Overview
+
+roadbeat Studio is available in two editions:
+
+| Edition | License | Repository |
+|---------|---------|------------|
+| **Community Edition (CE)** | AGPL 3.0 (open source) | `studio` (public) |
+| **Pro Edition** | Commercial plugins (proprietary) | `studio-pro` (private) |
+
+CE is a fully functional headless CMS. Pro adds enterprise features like workflows, SSO, audit logging, and advanced permissions via loadable plugins.
+
+## Feature Comparison
+
+### Content Management
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Content CRUD | ✅ | ✅ |
+| Content versioning | ✅ (10 versions) | ✅ (unlimited) |
+| Draft/Published lifecycle | ✅ | ✅ |
+| Content relationships | ✅ | ✅ |
+| Comments | ✅ | ✅ |
+| Content scheduling | — | ✅ `pro-scheduling` |
+| Content locking | — | ✅ `pro-locking` |
+| Content import (CSV/JSON) | — | ✅ `pro-import` |
+| Advanced export (CSV/JSON with templates) | — | ✅ `pro-export` |
+| Version comparison (side-by-side diff) | — | ✅ `pro-versioning` |
+
+### Content Modeling
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Content type builder | ✅ | ✅ |
+| Schema Registry import | ✅ | ✅ |
+| JSON Schema validation | ✅ | ✅ |
+| All field types | ✅ | ✅ |
+| Content type inheritance | ✅ | ✅ |
+
+### Asset Management
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Upload, folders, tags | ✅ | ✅ |
+| Metadata extraction | ✅ | ✅ |
+| Usage tracking | ✅ | ✅ |
+| Storage limit | 5 GB | Unlimited |
+| Video processing | — | ✅ `pro-media` |
+| Bulk operations | — | ✅ `pro-media` |
+
+### Localization
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| 24 EU locales | ✅ | ✅ |
+| Locale management | ✅ | ✅ |
+| Fallback chains | ✅ | ✅ |
+| Translation tasks | ✅ | ✅ |
+| Content variants | ✅ | ✅ |
+| Machine translation | ✅ | ✅ |
+| RTL support | ✅ | ✅ |
+
+<Callout kind="info">
+  Localization is a CE feature — it was designed as essential for the European market and is not gated behind Pro.
+</Callout>
+
+### Users & Authentication
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| User management | ✅ (3 users) | ✅ (unlimited) |
+| JWT authentication | ✅ | ✅ |
+| Password management | ✅ | ✅ |
+| 3 fixed roles (admin/editor/viewer) | ✅ | ✅ |
+| Per-content-type permissions | — | ✅ `pro-advanced-roles` |
+| SSO (SAML, OIDC) | — | ✅ `pro-sso` |
+| Audit logging | — | ✅ `pro-audit` |
+
+### APIs
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| REST Management API | ✅ | ✅ |
+| Delivery API (API key auth) | ✅ | ✅ |
+| Swagger/OpenAPI docs | ✅ | ✅ |
+| API keys | ✅ (2 keys) | ✅ (unlimited) |
+| Rate limiting | ✅ | ✅ |
+| GraphQL API | — | ✅ `pro-graphql` |
+| WebSocket real-time | — | ✅ `pro-realtime` |
+
+### Workflows
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Simple draft/published | ✅ | ✅ |
+| Multi-stage workflows | — | ✅ `pro-workflows` |
+| Task assignment | — | ✅ `pro-workflows` |
+| Scheduled publishing | — | ✅ `pro-scheduling` |
+| Releases (grouped publishing) | — | ✅ `pro-scheduling` |
+
+### Publishing
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Discovery Node publishing | ✅ | ✅ |
+| Ed25519 teaser signing | ✅ | ✅ |
+| Content Pod export | ✅ | ✅ |
+| Backup/restore | ✅ | ✅ |
+
+### Infrastructure
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Docker deployment | ✅ | ✅ |
+| Health checks | ✅ | ✅ |
+| Webhooks | ✅ (3) | ✅ (unlimited) |
+| MeiliSearch integration | ✅ | ✅ |
+| Environments (dev/staging/prod) | — | ✅ `pro-environments` |
+
+## CE Limits
+
+| Resource | CE Limit | Pro |
+|----------|---------|-----|
+| **Users** | 3 | Unlimited |
+| **Webhooks** | 3 | Unlimited |
+| **API Keys** | 2 | Unlimited |
+| **Content Versions** | 10 per item | Unlimited |
+| **Storage** | 5 GB | Unlimited |
+
+Limits are enforced by the `FeatureGateService` and checked at the API level.
+
+## Licensing
+
+### CE: AGPL 3.0
+
+- Free to use, modify, and distribute
+- If you offer Studio as a service, you must open-source your modifications
+- Protects against SaaS competitors taking CE without contributing back
+
+### Pro: Commercial License
+
+- Proprietary plugins in a private repository
+- Delivered via Docker image (CE base + Pro plugins layered on top)
+- Licensed per organization with annual renewal
+- Offline validation — no phone-home required
+
+## Delivery
+
+<Tabs>
+  <Tab title="CE (Docker)" icon="server">
+    ```bash
+    # Pull the public CE image
+    docker pull ghcr.io/roadbeat/studio:latest
+    docker compose up -d
+    ```
+  </Tab>
+  <Tab title="Pro (Docker)" icon="shield">
+    ```bash
+    # Pull the private Pro image (requires registry credentials)
+    docker pull registry.roadbeat.dev/studio-pro:latest
+
+    # Set license key
+    ROADBEAT_LICENSE_KEY=eyJhbGciOiJFZDI1NTE5...
+
+    docker compose up -d
+    ```
+
+    The Pro image is CE + Pro plugins pre-installed. Same deployment flow, same ops experience.
+  </Tab>
+</Tabs>
+
+## Upgrading from CE to Pro
+
+Upgrading is seamless:
+
+<Steps>
+  <Step title="Purchase a license">
+    Contact roadbeat to purchase a Pro license for your organization.
+  </Step>
+  <Step title="Swap the Docker image">
+    Replace the CE image with the Pro image in your `docker-compose.yml`.
+  </Step>
+  <Step title="Set the license key">
+    Add `ROADBEAT_LICENSE_KEY` to your environment variables.
+  </Step>
+  <Step title="Restart">
+    Restart the containers. Pro plugins load automatically based on your license.
+  </Step>
+</Steps>
+
+<Callout kind="success">
+  No data migration is needed. Pro plugins add new tables alongside the existing CE database. All your content, users, and settings are preserved.
+</Callout>

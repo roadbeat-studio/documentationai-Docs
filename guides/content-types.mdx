@@ -1,0 +1,189 @@
+---
+title: Content Types
+description: Define, import, and manage content type schemas in roadbeat Studio.
+---
+
+## Overview
+
+Content types are the backbone of roadbeat Studio. Each content type defines the structure, validation rules, and form layout for a category of content — such as News articles, Events, Job Offers, or Recipes.
+
+Unlike traditional CMSs that use a single "post" format, roadbeat enforces **precise, schema-driven content types** with rich metadata, enabling powerful search, filtering, and matching.
+
+## Importing from the Schema Registry
+
+The fastest way to add content types is to import them from the central **Schema Registry**, which maintains a curated catalog of 50+ standardized content types.
+
+<Steps>
+  <Step title="Open Content Types">
+    Navigate to **Content Types** in the sidebar.
+  </Step>
+  <Step title="Click Import from Registry">
+    Click the **Import from Registry** button in the top-right corner. This opens the Registry Browser overlay.
+  </Step>
+  <Step title="Browse and search">
+    Browse by category (e.g., News & Publications, Events & Activities) or use the search bar. Each content type shows its description, category, and version.
+  </Step>
+  <Step title="Import">
+    Click **Import to Studio** on the content type you want. Studio fetches the metadata schema, form schema, and teaser schema, then creates the content type locally.
+  </Step>
+</Steps>
+
+<Callout kind="info">
+  The Schema Registry connection is configured via the `SCHEMA_REGISTRY_URL` environment variable (default: `http://localhost:3200`).
+</Callout>
+
+## Content Type Builder
+
+You can also create content types from scratch using the visual **Content Type Builder**.
+
+The builder uses a 3-panel layout:
+
+1. **Field Palette** (left) — drag field types onto the canvas
+2. **Canvas** (center) — arrange and organize fields
+3. **Field Settings** (right) — configure the selected field
+
+### Available Field Types
+
+<Tabs>
+  <Tab title="Basic" icon="type">
+    | Type | Description |
+    |------|-------------|
+    | **Text** | Single-line string |
+    | **Number** | Integer or decimal |
+    | **Boolean** | True/false toggle |
+    | **Date** | Date or datetime picker |
+    | **Enum** | Dropdown selection from predefined values |
+  </Tab>
+  <Tab title="Rich" icon="file-text">
+    | Type | Description |
+    |------|-------------|
+    | **Rich Text** | WYSIWYG editor with formatting |
+    | **Markdown** | Markdown with preview |
+    | **Structured Text** | Block-based structured content |
+    | **Multilingual Text** | Text with per-locale variants |
+  </Tab>
+  <Tab title="Media" icon="image">
+    | Type | Description |
+    |------|-------------|
+    | **Image** | Image picker from Asset Library |
+    | **File** | Generic file attachment |
+    | **Video** | Video reference |
+  </Tab>
+  <Tab title="Advanced" icon="settings">
+    | Type | Description |
+    |------|-------------|
+    | **JSON** | Free-form JSON data |
+    | **Color** | Color picker (hex) |
+    | **Location** | Latitude/longitude with optional address |
+    | **Slug** | URL-safe identifier (auto-generated) |
+    | **Reference** | Link to another content item |
+    | **SEO** | Meta title, description, OG image |
+  </Tab>
+</Tabs>
+
+### Field Validation
+
+Each field supports validation rules:
+
+- **Required** — field must have a value
+- **Min/Max Length** — for text fields
+- **Min/Max Value** — for number fields
+- **Pattern** — regex validation for text
+- **Unique** — value must be unique across all content of this type
+
+## Schema Structure
+
+Behind the scenes, every content type is stored as three JSON schemas:
+
+```json
+{
+  "typeId": "news",
+  "name": "News Article",
+  "version": "1.0.0",
+  "schema": { /* JSON Schema for the content data */ },
+  "formSchema": { /* Form layout: tabs, sections, field order, UI hints */ },
+  "teaserSchema": { /* Fields included in the teaser for Discovery Nodes */ }
+}
+```
+
+### Form Schema
+
+The form schema controls how the content editor renders. It supports:
+
+- **Tabs** — top-level tab navigation (e.g., Basic Info, Content, Media, SEO)
+- **Sections** — collapsible groups within tabs
+- **Basic/Extended mode** — fields marked as `extended` are hidden in basic view
+
+```json
+{
+  "layout": {
+    "type": "tabs",
+    "tabs": [
+      {
+        "id": "basic",
+        "label": "Basic Info",
+        "icon": "file-text",
+        "sections": [
+          {
+            "id": "identification",
+            "label": "Identification",
+            "fields": ["title", "slug", "description"]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Content Type Categories
+
+Content types are organized into 14 categories:
+
+| Category | Examples |
+|----------|----------|
+| **People & Profiles** | Company profiles, user profiles, artist profiles |
+| **Employment & Opportunities** | Job offers, internships, freelance gigs |
+| **Commerce & Listings** | Real estate, products, services, classifieds |
+| **Food & Dining** | Recipes, restaurants, food reviews |
+| **Events & Activities** | Events, workshops, conferences, webinars |
+| **Education & Learning** | Courses, tutorials, learning materials |
+| **Media & Entertainment** | Songs, podcasts, videos |
+| **News & Publications** | News, press releases, blog posts |
+| **Social & Microcontent** | Social posts, quotes, polls |
+| **Knowledge & Reference** | FAQs, glossary entries, case studies |
+| **Travel & Places** | Travel guides, accommodations, points of interest |
+| **Lifestyle & Hobbies** | Hobby guides, DIY projects |
+| **Technology & Development** | Tech articles, tools, frameworks |
+| **Innovation & Collaboration** | Research, open-source projects |
+
+## Managing Content Types
+
+### Editing
+
+Content types can be modified after creation. Changes to the schema affect how existing content is validated — be careful when removing or renaming fields that already have data.
+
+### Deleting
+
+<Callout kind="alert">
+  Deleting a content type also removes **all content** of that type. This action cannot be undone.
+</Callout>
+
+### API Access
+
+Content types are available via the Management API:
+
+```bash
+# List all content types
+GET /api/v1/manage/content-types
+
+# Get a specific content type
+GET /api/v1/manage/content-types/:typeId
+```
+
+And via the Delivery API for frontends:
+
+```bash
+# List content types (API key auth)
+GET /api/v1/delivery/content-types
+```

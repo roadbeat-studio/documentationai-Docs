@@ -1,0 +1,188 @@
+---
+title: Plugin System
+description: Understand how roadbeat Studio's plugin architecture enables Pro features without modifying CE code.
+---
+
+## Overview
+
+roadbeat Studio uses a **plugin architecture** to separate Community Edition (CE) features from Pro features. CE defines well-documented extension points; Pro features are developed as separate plugin packages that are loaded at runtime.
+
+```mermaid
+graph LR
+    CE[Studio CE<br/>AGPL 3.0] -->|exports| SDK[@roadbeat/plugin-sdk]
+    SDK -->|imports| WF[pro-workflows]
+    SDK -->|imports| AU[pro-audit]
+    SDK -->|imports| SC[pro-scheduling]
+    SDK -->|imports| GQ[pro-graphql]
+    SDK -->|imports| RT[pro-realtime]
+    CE -->|loads at runtime| WF
+    CE -->|loads at runtime| AU
+    CE -->|loads at runtime| SC
+    CE -->|loads at runtime| GQ
+    CE -->|loads at runtime| RT
+```
+
+**Key principles:**
+
+- CE **never** imports Pro code
+- Pro plugins import **only** from `@roadbeat/plugin-sdk`
+- Plugins are loaded dynamically at runtime from the `PLUGINS_DIR` directory
+- Each plugin is a self-contained NestJS module
+- License validation is offline (no phone-home) via Ed25519 signed JWT
+
+## How It Works
+
+<Steps>
+  <Step title="Plugin Discovery" icon="search">
+    On startup, Studio scans the `PLUGINS_DIR` directory for plugin packages. Each plugin must have a `manifest.json` and an entry point file.
+  </Step>
+  <Step title="License Validation" icon="key">
+    The `ROADBEAT_LICENSE_KEY` environment variable is validated offline using an Ed25519 public key embedded in CE. The license token specifies which plugins are allowed.
+  </Step>
+  <Step title="Module Registration" icon="plug">
+    Licensed plugins have their NestJS modules registered dynamically into the application. Controllers, services, and event handlers become available.
+  </Step>
+  <Step title="Frontend Loading" icon="monitor">
+    Plugin frontend bundles are served as **web components** via `@angular/elements`. The CE admin UI loads them dynamically based on the plugin manifest.
+  </Step>
+</Steps>
+
+## Extension Points
+
+Plugins can extend Studio in several ways:
+
+| Extension | Description |
+|-----------|-------------|
+| **NestJS Module** | Register controllers, services, and providers |
+| **Admin Routes** | Add pages to the admin UI |
+| **Menu Items** | Add entries to the sidebar navigation |
+| **Editor Extensions** | Add sidebar panels to the content editor |
+| **Dashboard Widgets** | Add widgets to the dashboard |
+| **Event Handlers** | Listen to CE lifecycle events |
+| **Database Tables** | Add tables via migration SQL files |
+
+## Available Pro Plugins
+
+| Plugin | Description |
+|--------|-------------|
+| **pro-workflows** | Editorial workflows with multi-stage approval, tasks |
+| **pro-scheduling** | Scheduled publish/unpublish, releases |
+| **pro-audit** | Full audit trail, compliance reports, retention policies |
+| **pro-advanced-roles** | Per-content-type permissions, custom roles |
+| **pro-locking** | Pessimistic content locking with heartbeat |
+| **pro-graphql** | Auto-generated GraphQL API from content types |
+| **pro-export** | Advanced CSV/JSON export with templates and transforms |
+| **pro-import** | CSV/JSON import with field mapping and transforms |
+| **pro-versioning** | Side-by-side version comparison with field-level diffs |
+| **pro-environments** | Dev/staging/production environments with content promotion |
+| **pro-media** | Video processing, transcoding, thumbnail generation |
+| **pro-realtime** | WebSocket real-time updates, presence, collaborative cursors |
+
+## License System
+
+### License Token
+
+The license is an Ed25519-signed JWT containing:
+
+```json
+{
+  "sub": "customer-uuid",
+  "org": "Organization Name",
+  "tier": "team",
+  "features": ["pro-workflows", "pro-audit", "pro-scheduling"],
+  "max_users": 15,
+  "iat": 1740000000,
+  "exp": 1771536000,
+  "iss": "license.roadbeat.dev"
+}
+```
+
+### Configuration
+
+Set the license key in your `.env`:
+
+```bash
+ROADBEAT_LICENSE_KEY=eyJhbGciOiJFZDI1NTE5...
+PLUGINS_DIR=./plugins
+```
+
+### Grace Period
+
+If a license expires:
+
+- **7-day grace period** — Pro features keep working, admin sees a renewal warning
+- **After 7 days** — Pro features disable gracefully, CE features remain fully functional
+- **Content is never locked** — all data remains accessible in CE mode
+
+### CE Limits
+
+Without Pro, CE enforces these defaults:
+
+| Limit | CE Default | Pro |
+|-------|-----------|-----|
+| Users | 3 | Unlimited |
+| Webhooks | 3 | Unlimited |
+| API Keys | 2 | Unlimited |
+| Content Versions | 10 per item | Unlimited |
+| Storage | 5 GB | Unlimited |
+
+## Event System
+
+Plugins interact with CE primarily through the **event system**. CE emits lifecycle events that plugins can listen to:
+
+### Content Events
+
+| Event | Trigger | Preventable |
+|-------|---------|-------------|
+| `content.beforeCreate` | Before content is saved | Yes (can modify data) |
+| `content.afterCreate` | After content is created | No |
+| `content.beforeUpdate` | Before content is updated | Yes |
+| `content.afterUpdate` | After content is updated | No |
+| `content.beforeDelete` | Before content is deleted | Yes |
+| `content.afterDelete` | After content is deleted | No |
+| `content.beforePublish` | Before content is published | Yes |
+| `content.afterPublish` | After content is published | No |
+| `content.beforeUnpublish` | Before content is unpublished | Yes |
+| `content.afterUnpublish` | After content is unpublished | No |
+
+### Preventable Events
+
+"Before" events can be **prevented** by plugins. For example, the `pro-workflows` plugin prevents publishing if content hasn't been approved:
+
+```typescript
+@OnEvent('content.beforePublish')
+async checkApproval(event: ContentBeforePublishEvent) {
+  if (!await this.isApproved(event.contentId)) {
+    event.prevent('Content must be approved before publishing');
+  }
+}
+```
+
+When an event is prevented, CE throws a `ForbiddenException` with the prevention reason.
+
+## Plugin Manifest
+
+The plugin manifest at `GET /api/v1/plugins/manifest` exposes loaded plugin information to the frontend:
+
+```json
+{
+  "plugins": [
+    {
+      "id": "pro-workflows",
+      "name": "Editorial Workflows",
+      "version": "1.0.0",
+      "adminRoutes": [{ "path": "workflows", "label": "Workflows" }],
+      "menuItems": [{ "section": "content", "label": "Workflows" }],
+      "editorExtensions": [{ "id": "workflow-status", "type": "sidebar-panel" }]
+    }
+  ],
+  "license": {
+    "tier": "team",
+    "features": ["pro-workflows", "pro-audit"],
+    "maxUsers": 15,
+    "expiresAt": "2027-01-01T00:00:00Z"
+  }
+}
+```
+
+The frontend uses this to conditionally render Pro UI elements.

@@ -1,0 +1,173 @@
+---
+title: Common Errors
+description: Solutions for common errors you may encounter when using roadbeat Studio.
+---
+
+## HTTP Error Codes
+
+### 401 Unauthorized
+
+**Symptoms:** API requests return `401 Unauthorized`.
+
+**Causes and solutions:**
+
+<Expandable title="JWT token expired" default-open="true">
+  Access tokens expire after 24 hours by default. Use the refresh token to obtain new tokens:
+
+  ```bash
+  POST /api/v1/auth/refresh
+  { "refreshToken": "your-refresh-token" }
+  ```
+
+  If the refresh token is also expired, log in again via `POST /api/v1/auth/login`.
+</Expandable>
+
+<Expandable title="Missing Authorization header" default-open="false">
+  Ensure you're sending the token in the correct format:
+
+  ```bash
+  # Management API (JWT)
+  Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+
+  # Delivery API (API key)
+  X-Api-Key: rbk_a1b2c3d4...
+  ```
+
+  Note the space after `Bearer`.
+</Expandable>
+
+<Expandable title="API key revoked or deleted" default-open="false">
+  Check if the API key still exists in **Settings > API Keys**. If it was deleted, create a new one. The full key value is only shown once at creation — if lost, create a new key.
+</Expandable>
+
+### 403 Forbidden
+
+**Symptoms:** API requests return `403 Forbidden` despite being authenticated.
+
+<Expandable title="Insufficient role" default-open="true">
+  Some endpoints require specific roles:
+
+  - **Admin-only:** User management, organization settings, API keys, webhooks, content deletion
+  - **Editor+:** Content creation, editing, publishing, asset upload
+  - **Viewer:** Read-only access
+
+  Check your role in **Profile** or ask an admin to update it.
+</Expandable>
+
+<Expandable title="Pro plugin blocking action" default-open="false">
+  Pro plugins can prevent actions via the event system. For example:
+
+  - `pro-workflows` blocks publishing if content is not approved
+  - `pro-locking` blocks editing if another user holds an exclusive lock
+
+  Check the error message for the specific prevention reason.
+</Expandable>
+
+### 429 Too Many Requests
+
+**Symptoms:** API returns `429` with rate limit headers.
+
+<Expandable title="Rate limit exceeded" default-open="true">
+  Default limits:
+
+  - **Global:** 100 requests/minute per IP
+  - **Login:** 5 requests/minute per IP
+  - **Password forgot:** 3 requests/minute per IP
+
+  Check the `X-RateLimit-Reset` header for when the window resets. Implement exponential backoff in your client code.
+</Expandable>
+
+### 409 Conflict
+
+**Symptoms:** `409 Conflict` on setup or user creation.
+
+<Expandable title="Setup already completed" default-open="false">
+  The `POST /api/v1/auth/setup` endpoint only works when no organizations exist. If you see a 409, setup has already been completed. Use `POST /api/v1/auth/login` instead.
+</Expandable>
+
+<Expandable title="Duplicate email" default-open="false">
+  User emails must be unique within an organization. Check if a user with that email already exists.
+</Expandable>
+
+## Application Errors
+
+### "Cannot connect to Redis"
+
+<Expandable title="Redis not running or misconfigured" default-open="true">
+  Verify Redis is running and accessible:
+
+  ```bash
+  # Check if Redis is running
+  redis-cli ping
+  # Should return: PONG
+
+  # Check your .env configuration
+  REDIS_HOST=localhost
+  REDIS_PORT=6379
+  ```
+
+  If using Docker Compose, ensure the Redis service is up: `docker compose ps redis`.
+</Expandable>
+
+### "MeiliSearch unavailable"
+
+<Expandable title="MeiliSearch not running" default-open="false">
+  MeiliSearch is optional. If not running, Studio falls back to PostgreSQL full-text search. To fix:
+
+  ```bash
+  # Check if MeiliSearch is running
+  curl http://localhost:7700/health
+
+  # Verify .env configuration
+  MEILISEARCH_HOST=http://localhost:7700
+  MEILISEARCH_API_KEY=your-master-key
+  ```
+</Expandable>
+
+### "Storage limit exceeded"
+
+<Expandable title="CE 5 GB limit reached" default-open="false">
+  CE has a **5 GB** storage limit. To free space:
+
+  1. Go to **Assets** and use **Find Unused** to identify unreferenced assets
+  2. Delete assets you no longer need
+  3. Check storage usage at `GET /api/v1/assets/storage`
+
+  Alternatively, upgrade to Pro for unlimited storage.
+</Expandable>
+
+### "User limit reached"
+
+<Expandable title="CE 5 user limit" default-open="false">
+  CE allows a maximum of **3 users** per organization. To add more:
+
+  - Delete inactive users
+  - Or upgrade to Pro for unlimited users
+</Expandable>
+
+## Publishing Errors
+
+### "Schema validation failed"
+
+<Expandable title="Content doesn't match its content type schema" default-open="false">
+  Publishing validates content against the JSON Schema. Common issues:
+
+  - Missing required fields (check the error `details` array for specific fields)
+  - Invalid field values (wrong type, format, or constraint violation)
+  - Broken references (linked content was deleted)
+
+  Fix the validation errors and try publishing again.
+</Expandable>
+
+### "Discovery Node unreachable"
+
+<Expandable title="Network or configuration issue" default-open="false">
+  If teaser distribution fails:
+
+  1. Verify the Discovery Node URL is correct in **Settings > Discovery Nodes**
+  2. Check network connectivity: `curl https://node-url/api/v1/health`
+  3. Studio retries automatically (3 attempts with backoff)
+  4. Manually retry via the API: `POST /api/v1/manage/publishing/content/:id/retry/:nodeId`
+
+  Content is still published locally even if Discovery Node distribution fails.
+</Expandable>

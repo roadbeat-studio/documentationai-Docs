@@ -1,0 +1,91 @@
+---
+title: General FAQ
+description: Frequently asked questions about roadbeat Studio.
+---
+
+## General
+
+<Expandable title="What is roadbeat Studio?" default-open="true">
+  roadbeat Studio is a self-hosted headless CMS for structured content publishing. It is part of the roadbeat ecosystem — a decentralized content platform that uses goal-driven discovery instead of algorithmic feeds. Studio lets organizations create, manage, and publish structured content with rich schemas, then distribute it to the roadbeat network.
+</Expandable>
+
+<Expandable title="Is Studio free to use?" default-open="false">
+  Yes. The **Community Edition (CE)** is free and open source under the AGPL 3.0 license. It includes full CMS functionality with content management, asset library, REST API, publishing pipeline, localization, and more.
+
+  The **Pro Edition** adds enterprise features like workflows, SSO, audit logging, and GraphQL via commercial plugins.
+</Expandable>
+
+<Expandable title="What are the CE limits?" default-open="false">
+  CE enforces these limits per organization:
+
+  | Resource | CE Limit |
+  |----------|---------|
+  | Users | 3 |
+  | Webhooks | 3 |
+  | API Keys | 2 |
+  | Content Versions | 10 per item |
+  | Storage | 5 GB |
+
+  Pro removes all limits.
+</Expandable>
+
+<Expandable title="Can I self-host Studio?" default-open="false">
+  Yes — self-hosting is the primary deployment model. Studio runs on your own infrastructure using Docker Compose. See the [Self-Hosting](/deployment/self-hosting) guide for detailed instructions.
+</Expandable>
+
+<Expandable title="What databases does Studio support?" default-open="false">
+  Studio requires **PostgreSQL 16+** as its primary database. It also uses **Redis 7** for caching and job queues, and optionally **MeiliSearch** for full-text search.
+</Expandable>
+
+## Account & Access
+
+<Expandable title="How do I reset my password?" default-open="false">
+  1. On the login page, click **Forgot Password**
+  2. Enter your email address
+  3. Check your email for the reset link (in development mode, the token is logged to the console)
+  4. Click the link and set a new password
+
+  The reset token expires after 1 hour and is single-use. See [Users & Roles](/guides/users-and-roles#password-management) for API details.
+</Expandable>
+
+<Expandable title="How do I add more users?" default-open="false">
+  Admins can add users via **Users** in the sidebar or the API:
+
+  ```bash
+  POST /api/v1/manage/users
+  { "email": "new@example.com", "name": "New User", "role": "editor", "password": "..." }
+  ```
+
+  CE allows up to 3 users. Pro has unlimited users.
+</Expandable>
+
+<Expandable title="What roles are available?" default-open="false">
+  CE includes three roles:
+
+  - **Admin** — full access to all features
+  - **Editor** — create, edit, and publish content
+  - **Viewer** — read-only access
+
+  Pro's `pro-advanced-roles` plugin adds per-content-type permissions and custom roles.
+</Expandable>
+
+## Upgrading
+
+<Expandable title="How do I upgrade from CE to Pro?" default-open="false">
+  Upgrading is seamless:
+
+  1. Purchase a Pro license from roadbeat
+  2. Swap the Docker image from `ghcr.io/roadbeat/studio` to `registry.roadbeat.dev/studio-pro`
+  3. Set the `ROADBEAT_LICENSE_KEY` environment variable
+  4. Restart — Pro plugins load automatically
+
+  No data migration is needed. See [CE vs Pro](/plugins/ce-vs-pro#upgrading-from-ce-to-pro) for details.
+</Expandable>
+
+<Expandable title="What happens if my Pro license expires?" default-open="false">
+  - **7-day grace period** — Pro features keep working, admin sees a renewal warning
+  - **After 7 days** — Pro features disable gracefully
+  - **Content is never locked** — all data remains accessible in CE mode
+
+  You can always downgrade back to CE without losing any data.
+</Expandable>

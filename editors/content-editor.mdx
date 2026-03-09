@@ -1,0 +1,153 @@
+---
+title: Content Editor
+description: Master the content editing interface — forms, tabs, auto-save, versioning, and publishing.
+---
+
+## Overview
+
+The content editor is where you spend most of your time in Studio. It renders a **dynamic form** based on the content type's schema, organizing fields into tabs and sections for a clean editing experience.
+
+## Editor Layout
+
+The editor consists of several areas:
+
+- **Toolbar** (top) — Save, Publish/Unpublish buttons, and status indicators
+- **Tab bar** — Navigate between content sections (e.g., Basic Info, Content, Media, SEO)
+- **Form area** (center) — The actual fields you fill in
+- **Status bar** (bottom) — Current status, version number, last saved time
+
+## Working with Tabs
+
+Content types with a **form schema** organize fields into tabs. Common tab layouts include:
+
+| Tab | Typical Fields |
+|-----|---------------|
+| **Basic Info** | Title, slug, description, category |
+| **Content** | Article body, structured text, main content |
+| **Media** | Hero image, gallery, video attachments |
+| **SEO** | Meta title, meta description, OG image |
+| **Settings** | Publication date, access type, language |
+
+Click a tab to switch between sections. Fields in the current tab are validated inline as you type.
+
+## Basic vs Extended Mode
+
+Many content types have fields marked as **extended** — advanced fields that most editors don't need daily. Toggle between modes using the **Basic / Extended** switch in the toolbar.
+
+- **Basic mode** — shows only essential fields for a streamlined editing experience
+- **Extended mode** — shows all fields including advanced metadata and configuration
+
+<Callout kind="tip">
+  Your mode preference is saved per content type in localStorage, so it persists across sessions.
+</Callout>
+
+## Field Types
+
+The editor renders different input components based on field type:
+
+<Tabs>
+  <Tab title="Text Fields" icon="type">
+    - **Single-line text** — standard input field
+    - **Multi-line text** — textarea for longer text
+    - **Multilingual text** — locale tabs for each configured language
+    - **Slug** — auto-generated URL-safe identifier from the title
+    - **Enum** — dropdown selector from predefined values
+  </Tab>
+  <Tab title="Rich Content" icon="file-text">
+    - **Rich text** — full WYSIWYG editor (see [Rich Text Editor](/editors/rich-text))
+    - **Markdown** — markdown editor with preview
+    - **Structured text** — block-based content with defined block types
+  </Tab>
+  <Tab title="Numbers & Dates" icon="calendar">
+    - **Number** — integer or decimal input with min/max validation
+    - **Boolean** — toggle switch
+    - **Date** — date picker
+    - **DateTime** — date and time picker
+  </Tab>
+  <Tab title="Media & References" icon="image">
+    - **Image** — click to open Asset Library picker
+    - **File** — generic file attachment from Asset Library
+    - **Reference** — link to another content item (with type filtering)
+    - **Multi-reference** — link to multiple content items
+  </Tab>
+  <Tab title="Advanced" icon="settings">
+    - **JSON** — free-form JSON editor with syntax highlighting
+    - **Color** — color picker with hex value
+    - **Location** — latitude/longitude inputs with optional address
+    - **SEO** — combined meta title, description, and OG image fields
+  </Tab>
+</Tabs>
+
+## Auto-Save
+
+The editor automatically saves your work:
+
+- **Debounce interval**: 5 seconds after the last change
+- **Status indicator**: Shows "Saving...", "Saved", or "Unsaved changes" in the status bar
+- **Manual save**: Press **Ctrl+S** / **Cmd+S** to save immediately
+
+## Unsaved Changes Protection
+
+If you try to navigate away with unsaved changes, a confirmation dialog appears asking if you want to:
+
+- **Save and leave** — saves changes, then navigates
+- **Leave without saving** — discards unsaved changes
+- **Stay** — cancels navigation
+
+This is implemented via Angular's `CanDeactivate` guard.
+
+## Version History
+
+Every save creates a new version. Access version history from the status bar:
+
+<Steps>
+  <Step title="Click the version number" icon="history">
+    In the status bar (e.g., "Version 5"), click to open the version history panel.
+  </Step>
+  <Step title="Browse versions" icon="list">
+    Each version shows who made the change, when, and a summary of what changed.
+  </Step>
+  <Step title="Restore if needed" icon="rotate-ccw">
+    Select a previous version and click **Restore** to create a new version with that data. The current version is preserved in history.
+  </Step>
+</Steps>
+
+<Callout kind="info">
+  CE retains up to 10 versions per content item. Pro has unlimited version history.
+</Callout>
+
+## Publishing from the Editor
+
+The top-right toolbar shows context-sensitive actions:
+
+| Content Status | Available Actions |
+|---------------|-------------------|
+| **Draft** | Save, Publish |
+| **Published** | Save (creates new version), Unpublish |
+| **Archived** | (Read-only) |
+
+When you click **Publish**:
+
+1. All required fields are validated
+2. The content status changes to `published`
+3. The Delivery API starts serving the content
+4. If Discovery Nodes are configured, a signed teaser is distributed
+
+## Validation
+
+Fields are validated both inline (as you type) and on save/publish:
+
+- **Required fields** — highlighted with a red border if empty
+- **Min/max length** — character count shown for text fields
+- **Pattern validation** — regex patterns for emails, URLs, etc.
+- **Custom rules** — content-type-specific validation
+
+Validation errors are shown inline below each field and summarized in a notification if publish is blocked.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| **Ctrl+S** / **Cmd+S** | Save |
+| **Ctrl+K** / **Cmd+K** | Open global search |
+| **Escape** | Close dialog or panel |

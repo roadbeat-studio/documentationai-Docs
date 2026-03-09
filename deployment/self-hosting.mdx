@@ -1,0 +1,250 @@
+---
+title: Self-Hosting
+description: Deploy roadbeat Studio on your own infrastructure with Docker Compose.
+---
+
+## Overview
+
+roadbeat Studio is designed to be self-hosted. You deploy it on your own servers, keeping full control over your data and infrastructure. The recommended deployment method is **Docker Compose** with 6 services.
+
+## System Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| **CPU** | 2 cores | 4 cores |
+| **RAM** | 4 GB | 8 GB |
+| **Storage** | 20 GB | 100 GB |
+| **Network** | 10 Mbps | 100 Mbps |
+
+## Docker Compose Deployment
+
+<Steps>
+  <Step title="Create your project directory">
+    ```bash
+    mkdir roadbeat-studio && cd roadbeat-studio
+    ```
+  </Step>
+
+  <Step title="Create docker-compose.yml">
+    ```yaml
+    version: '3.8'
+
+    services:
+      api:
+        image: ghcr.io/roadbeat/studio-api:latest
+        environment:
+          DATABASE_URL: postgresql://studio:${DB_PASSWORD}@postgres:5432/studio
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
+          JWT_SECRET: ${JWT_SECRET}
+          MEILISEARCH_HOST: http://meilisearch:7700
+          MEILISEARCH_API_KEY: ${MEILI_KEY}
+          SCHEMA_REGISTRY_URL: ${SCHEMA_REGISTRY_URL}
+          CORS_ORIGIN: https://${DOMAIN}
+          # Pro only:
+          # ROADBEAT_LICENSE_KEY: ${ROADBEAT_LICENSE_KEY}
+          # PLUGINS_DIR: /app/plugins
+        ports:
+          - "3000:3000"
+        depends_on:
+          - postgres
+          - redis
+          - meilisearch
+        restart: unless-stopped
+
+      web:
+        image: ghcr.io/roadbeat/studio-web:latest
+        ports:
+          - "4200:80"
+        depends_on:
+          - api
+        restart: unless-stopped
+
+      postgres:
+        image: postgres:16-alpine
+        environment:
+          POSTGRES_USER: studio
+          POSTGRES_PASSWORD: ${DB_PASSWORD}
+          POSTGRES_DB: studio
+        volumes:
+          - postgres-data:/var/lib/postgresql/data
+        restart: unless-stopped
+
+      redis:
+        image: redis:7-alpine
+        volumes:
+          - redis-data:/data
+        restart: unless-stopped
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.6
+        environment:
+          MEILI_MASTER_KEY: ${MEILI_KEY}
+        volumes:
+          - meili-data:/meili_data
+        restart: unless-stopped
+
+      caddy:
+        image: caddy:2-alpine
+        ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - ./Caddyfile:/etc/caddy/Caddyfile
+          - caddy-data:/data
+        depends_on:
+          - api
+          - web
+        restart: unless-stopped
+
+    volumes:
+      postgres-data:
+      redis-data:
+      meili-data:
+      caddy-data:
+    ```
+  </Step>
+
+  <Step title="Create Caddyfile">
+    Caddy provides automatic HTTPS via Let's Encrypt:
+
+    ```
+    {$DOMAIN} {
+        handle /api/* {
+            reverse_proxy api:3000
+        }
+        handle {
+            reverse_proxy web:80
+        }
+    }
+    ```
+  </Step>
+
+  <Step title="Create .env file">
+    ```bash
+    DOMAIN=studio.example.com
+    DB_PASSWORD=your-secure-database-password
+    JWT_SECRET=your-jwt-secret-at-least-32-characters-long
+    MEILI_KEY=your-meilisearch-master-key
+    SCHEMA_REGISTRY_URL=https://registry.roadbeat.net
+    ```
+  </Step>
+
+  <Step title="Start the stack">
+    ```bash
+    docker compose up -d
+    ```
+
+    Wait for all services to be healthy, then navigate to `https://studio.example.com` to complete the setup wizard.
+  </Step>
+</Steps>
+
+## Service Architecture
+
+```mermaid
+graph TB
+    Internet -->|HTTPS| Caddy
+    Caddy -->|/api/*| API[NestJS API :3000]
+    Caddy -->|/*| Web[Angular UI :80]
+    API --> PG[(PostgreSQL :5432)]
+    API --> Redis[(Redis :6379)]
+    API --> Meili[(MeiliSearch :7700)]
+    API -.->|Optional| S3[(S3 Storage)]
+```
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| **Caddy** | 80, 443 | Reverse proxy with auto-TLS |
+| **API** | 3000 | NestJS backend |
+| **Web** | 4200 (dev) / 80 (prod) | Angular admin UI |
+| **PostgreSQL** | 5432 | Primary database |
+| **Redis** | 6379 | Cache, sessions, job queues |
+| **MeiliSearch** | 7700 | Full-text search |
+
+## Storage Configuration
+
+By default, assets are stored locally. For production, configure S3-compatible storage:
+
+```bash
+STORAGE_PROVIDER=s3
+S3_ENDPOINT=https://s3.eu-central-1.amazonaws.com
+S3_BUCKET=studio-assets
+S3_ACCESS_KEY=your-access-key
+S3_SECRET_KEY=your-secret-key
+S3_REGION=eu-central-1
+```
+
+Compatible providers: **AWS S3**, **Hetzner Object Storage**, **MinIO**, **Backblaze B2**, **DigitalOcean Spaces**.
+
+## Database Migrations
+
+After deploying a new version, run migrations:
+
+```bash
+docker compose exec api npx prisma migrate deploy
+```
+
+<Callout kind="alert">
+  Always back up your database before running migrations on production. See [Backup & Export](/guides/backup-and-export).
+</Callout>
+
+## Updating
+
+<Steps>
+  <Step title="Pull new images">
+    ```bash
+    docker compose pull
+    ```
+  </Step>
+  <Step title="Run migrations">
+    ```bash
+    docker compose exec api npx prisma migrate deploy
+    ```
+  </Step>
+  <Step title="Restart">
+    ```bash
+    docker compose up -d
+    ```
+  </Step>
+</Steps>
+
+## Health Checks
+
+Monitor your deployment with the health endpoints:
+
+```bash
+# Basic health
+curl https://studio.example.com/api/v1/health
+
+# Detailed health (DB, Redis, MeiliSearch, queues)
+curl https://studio.example.com/api/v1/health/detailed
+```
+
+## Pro Deployment
+
+For Pro, swap the API image and add the license key:
+
+```yaml
+api:
+  image: registry.roadbeat.dev/studio-pro:latest
+  environment:
+    ROADBEAT_LICENSE_KEY: ${ROADBEAT_LICENSE_KEY}
+    PLUGINS_DIR: /app/plugins
+    # ... same as CE
+```
+
+<Callout kind="info">
+  The Pro Docker image includes CE + all Pro plugins. No additional setup needed beyond the license key.
+</Callout>
+
+## Hetzner Cloud
+
+roadbeat recommends **Hetzner Cloud** for European hosting:
+
+| Server | Specs | Monthly Cost | Use Case |
+|--------|-------|-------------|----------|
+| **CX22** | 2 vCPU, 4 GB RAM, 40 GB | ~€4 | Development / small sites |
+| **CX32** | 4 vCPU, 8 GB RAM, 80 GB | ~€7 | Production |
+| **CX42** | 8 vCPU, 16 GB RAM, 160 GB | ~€14 | High-traffic |
+
+All data stays in European data centers (Falkenstein, Nuremberg, Helsinki).

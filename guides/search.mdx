@@ -1,0 +1,169 @@
+---
+title: Search
+description: Full-text search across content, assets, and users powered by MeiliSearch.
+---
+
+## Overview
+
+roadbeat Studio uses **MeiliSearch** for fast, typo-tolerant full-text search across content, assets, and users. The search is accessible through the admin UI's **command palette** (Ctrl+K) and via the API.
+
+## Command Palette
+
+Press **Ctrl+K** (or **Cmd+K** on macOS) anywhere in the admin UI to open the global search command palette. It supports:
+
+- **Content search** — find content by title, body text, or field values
+- **Asset search** — find assets by filename, title, or tags
+- **User search** — find users by name or email
+- **Keyboard navigation** — arrow keys to navigate, Enter to open, Escape to close
+
+<Callout kind="tip">
+  The command palette also supports quick actions like "Create News Article" or "Go to Settings" for fast navigation.
+</Callout>
+
+## Content Search API
+
+Search published and draft content with powerful filtering:
+
+```bash
+GET /api/v1/manage/search/content?q=climate+policy&contentType=news&status=published&limit=20
+```
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `q` | string | Search query (full-text) |
+| `contentType` | string | Filter by content type |
+| `status` | string | Filter by status (`draft`, `published`, `archived`) |
+| `locale` | string | Filter by locale |
+| `createdBy` | string | Filter by author user ID |
+| `from` | string | Created after this ISO date |
+| `to` | string | Created before this ISO date |
+| `sort` | string | Sort field (`relevance`, `createdAt`, `updatedAt`, `title`) |
+| `order` | string | Sort order (`asc`, `desc`) |
+| `limit` | number | Results per page (default 20, max 100) |
+| `offset` | number | Pagination offset |
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "contentType": "news",
+      "title": "Chancellor Announces New Climate Policy",
+      "status": "published",
+      "locale": "en",
+      "createdAt": "2026-01-24T10:00:00Z",
+      "_highlight": {
+        "title": "Chancellor Announces New <mark>Climate Policy</mark>"
+      }
+    }
+  ],
+  "meta": {
+    "total": 42,
+    "limit": 20,
+    "offset": 0,
+    "query": "climate policy"
+  }
+}
+```
+
+## Asset Search
+
+Search assets by filename, title, description, or tags:
+
+```bash
+GET /api/v1/assets/search?q=hero+image&mimeType=image&sort=newest&limit=20
+```
+
+See the [Asset Management](/guides/assets#asset-search) guide for details.
+
+## MeiliSearch Configuration
+
+Configure MeiliSearch in your `.env`:
+
+```bash
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_API_KEY=your-master-key
+```
+
+<Callout kind="info">
+  MeiliSearch is optional. Without it, Studio falls back to PostgreSQL full-text search, which is functional but less feature-rich (no typo tolerance, no highlighting).
+</Callout>
+
+### Indexing
+
+Studio automatically indexes content and assets in MeiliSearch when they are created, updated, or deleted. The following indexes are maintained:
+
+| Index | Contents | Updated On |
+|-------|----------|------------|
+| `content` | All content items (title, body, fields, metadata) | Create, update, delete |
+| `assets` | All assets (filename, title, tags, metadata) | Upload, update, delete |
+| `users` | All users (name, email) | Create, update, delete |
+
+### Re-indexing
+
+If your MeiliSearch index gets out of sync (e.g., after restoring a backup), trigger a full re-index via the API:
+
+```bash
+POST /api/v1/manage/search/reindex
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+This is an admin-only endpoint that rebuilds all three indexes (content, assets, users) from the database. It returns counts of indexed items per index.
+
+### Search Statistics
+
+Get index health and document counts (admin only):
+
+```bash
+GET /api/v1/manage/search/stats
+```
+
+Returns:
+
+```json
+{
+  "data": {
+    "enabled": true,
+    "health": "available",
+    "indexes": {
+      "content": { "numberOfDocuments": 234, "isIndexing": false },
+      "assets": { "numberOfDocuments": 1502, "isIndexing": false },
+      "users": { "numberOfDocuments": 5, "isIndexing": false }
+    }
+  }
+}
+```
+
+### Search Scopes
+
+The search API supports scoping to specific indexes:
+
+```bash
+# Search all (default)
+GET /api/v1/manage/search?q=climate&scope=all
+
+# Search only content
+GET /api/v1/manage/search?q=climate&scope=content&contentTypeId=news&status=published
+
+# Search only assets
+GET /api/v1/manage/search?q=hero&scope=assets&mimeType=image
+
+# Search only users (admin only)
+GET /api/v1/manage/search?q=jane&scope=users&role=editor
+```
+
+<Callout kind="info">
+  User search results are only returned for admin users, even when using `scope=all`.
+</Callout>
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/manage/search` | Full-text search (scope: all/content/assets/users) |
+| `POST` | `/api/v1/manage/search/reindex` | Rebuild all indexes (admin) |
+| `GET` | `/api/v1/manage/search/stats` | Index statistics (admin) |

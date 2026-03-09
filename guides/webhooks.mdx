@@ -1,0 +1,143 @@
+---
+title: Webhooks
+description: Configure outbound webhooks to notify external systems about content events in Studio.
+---
+
+## Overview
+
+Webhooks allow Studio to send real-time HTTP notifications to external systems when events occur — such as content being published, updated, or deleted. Each webhook delivery is signed with HMAC-SHA256 so the receiver can verify authenticity.
+
+<Callout kind="info">
+  CE supports up to **3 webhooks** per organization. Pro has unlimited webhooks.
+</Callout>
+
+## Creating a Webhook
+
+<Tabs>
+  <Tab title="Admin UI" icon="monitor">
+    1. Navigate to **Settings → Webhooks**
+    2. Click **Add Webhook**
+    3. Enter the target URL and select which events to listen for
+    4. Save — Studio generates a **signing secret** for HMAC verification
+  </Tab>
+  <Tab title="API" icon="code">
+    ```bash
+    POST /api/v1/manage/webhooks
+    {
+      "url": "https://example.com/webhook",
+      "events": ["content.afterPublish", "content.afterUpdate"],
+      "enabled": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Supported Events
+
+| Event | Trigger |
+|-------|---------|
+| `content.afterCreate` | New content item created |
+| `content.afterUpdate` | Content item updated |
+| `content.afterDelete` | Content item deleted |
+| `content.afterPublish` | Content published |
+| `content.afterUnpublish` | Content unpublished |
+| `asset.afterUpload` | New asset uploaded |
+| `asset.afterDelete` | Asset deleted |
+| `user.afterCreate` | New user created |
+| `user.afterLogin` | User logged in |
+
+## Payload Format
+
+Every webhook delivery includes a JSON payload:
+
+```json
+{
+  "event": "content.afterPublish",
+  "timestamp": "2026-01-24T14:30:00Z",
+  "data": {
+    "contentId": "uuid",
+    "contentTypeId": "news",
+    "organizationId": "org-uuid",
+    "userId": "user-uuid",
+    "status": "published"
+  }
+}
+```
+
+## Signature Verification
+
+Every webhook request includes an `X-Webhook-Signature` header containing an HMAC-SHA256 signature. Verify it in your receiver:
+
+<CodeGroup tabs="Node.js,Python">
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(body, signature, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(body)
+    .digest('hex');
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+```
+```python
+import hmac
+import hashlib
+
+def verify_webhook(body: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(
+        secret.encode(), body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
+```
+</CodeGroup>
+
+## Testing
+
+Send a test payload to verify your webhook endpoint is reachable:
+
+```bash
+POST /api/v1/manage/webhooks/:id/test
+```
+
+This sends a test event with sample data to your configured URL.
+
+## Delivery & Retries
+
+Webhook deliveries are processed asynchronously via **BullMQ**. If a delivery fails (non-2xx response or timeout), Studio retries automatically:
+
+- **Retry attempts**: 3 (configurable in Pro)
+- **Backoff**: Exponential — 1s, 5s, 30s
+- **Timeout**: 10 seconds per attempt
+
+### Delivery Log
+
+Each webhook keeps a recent delivery log showing:
+- Timestamp
+- HTTP status code
+- Response time
+- Success or failure reason
+
+View the delivery log:
+
+```bash
+GET /api/v1/manage/webhooks/:id
+# Includes recent deliveries in the response
+```
+
+## Managing Webhooks
+
+```bash
+# List all webhooks
+GET /api/v1/manage/webhooks
+
+# Update a webhook
+PUT /api/v1/manage/webhooks/:id
+{ "url": "https://new-endpoint.com/hook", "enabled": false }
+
+# Delete a webhook
+DELETE /api/v1/manage/webhooks/:id
+```

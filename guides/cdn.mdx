@@ -1,0 +1,203 @@
+---
+title: CDN Integration
+description: Accelerate asset delivery with CDN URL generation, signed URLs, responsive images, and edge caching.
+---
+
+## Overview
+
+roadbeat Studio includes a built-in **CDN integration layer** that rewrites asset URLs through a CDN, generates signed URLs for access control, produces responsive image sets, and configures edge caching rules. The CDN module supports multiple providers and works with any S3-compatible storage backend.
+
+<Callout kind="info">
+  CDN integration is a **CE feature**. Enable it by setting `CDN_ENABLED=true` and configuring your CDN provider in the environment.
+</Callout>
+
+## Configuration
+
+Configure CDN in your `.env`:
+
+```bash
+CDN_ENABLED=true
+CDN_URL=https://cdn.example.com
+CDN_PROVIDER=generic          # generic | cloudfront | cloudflare | bunny
+CDN_SIGNING_KEY=your-hmac-key # For signed URLs
+CDN_DEFAULT_TTL=86400          # Cache TTL in seconds (default: 24h)
+CDN_DISTRIBUTION_ID=E1234567  # CloudFront distribution ID (if applicable)
+CDN_API_TOKEN=your-token       # Cloudflare/Bunny API token (for purging)
+```
+
+### Supported Providers
+
+| Provider | Features | Config |
+|----------|----------|--------|
+| **Generic** | URL rewriting, signing | `CDN_URL`, `CDN_SIGNING_KEY` |
+| **CloudFront** | URL rewriting, signing, invalidation | + `CDN_DISTRIBUTION_ID` |
+| **Cloudflare** | URL rewriting, signing, purge | + `CDN_API_TOKEN` |
+| **Bunny CDN** | URL rewriting, signing, purge | + `CDN_API_TOKEN` |
+
+## Asset URL Resolution
+
+When CDN is enabled, asset URLs are automatically rewritten through the CDN:
+
+```bash
+# Resolve a single asset URL
+GET /api/v1/cdn/resolve/:assetId
+
+# Resolve with transforms (resize, quality, format)
+GET /api/v1/cdn/resolve/:assetId?w=800&h=600&q=85&f=webp&fit=cover
+
+# Batch resolve multiple assets
+POST /api/v1/cdn/resolve/batch
+{ "assetIds": ["uuid-1", "uuid-2", "uuid-3"] }
+```
+
+### Transform Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `w` | Width in pixels | `800` |
+| `h` | Height in pixels | `600` |
+| `q` | Quality (1–100) | `85` |
+| `f` | Output format | `webp`, `jpg`, `avif` |
+| `fit` | Fit mode | `cover`, `contain`, `fill` |
+| `dpr` | Device pixel ratio | `2` |
+
+## Signed URLs
+
+When `CDN_SIGNING_KEY` is set, Studio generates **HMAC-SHA256 signed URLs** with configurable expiration. This prevents hotlinking and controls access to assets.
+
+Signed URLs include a `signature` and `expires` query parameter:
+
+```
+https://cdn.example.com/assets/photo.jpg?signature=abc123&expires=1706200000
+```
+
+## Responsive Images
+
+Generate responsive image sets for modern frontends:
+
+```bash
+# Get srcset and picture source sets for an asset
+GET /api/v1/cdn/responsive/:assetId
+```
+
+Returns breakpoint-aware source sets with format variants:
+
+```json
+{
+  "data": {
+    "srcSet": "https://cdn.example.com/photo.jpg?w=320 320w, ...?w=640 640w, ...?w=1024 1024w, ...?w=1600 1600w, ...?w=1920 1920w",
+    "sources": [
+      { "breakpoint": 640, "srcSet": "...?w=640&f=webp 1x, ...?w=1280&f=webp 2x", "type": "image/webp" },
+      { "breakpoint": 1024, "srcSet": "...?w=1024&f=webp 1x, ...?w=2048&f=webp 2x", "type": "image/webp" },
+      { "breakpoint": null, "srcSet": "...?w=1600&f=webp 1x", "type": "image/webp" }
+    ]
+  }
+}
+```
+
+### Image Presets
+
+Use named presets for common sizes:
+
+```bash
+# List available presets
+GET /api/v1/cdn/presets
+
+# Get a preset URL for an asset
+GET /api/v1/cdn/preset/:assetId/:presetName
+```
+
+| Preset | Dimensions | Use Case |
+|--------|-----------|----------|
+| `thumbnail` | 150×150 | Grid thumbnails |
+| `small` | 320w | Mobile images |
+| `medium` | 640w | Tablet images |
+| `large` | 1024w | Desktop images |
+| `xlarge` | 1600w | Full-width images |
+| `full` | 2400w | High-resolution |
+| `og` | 1200×630 | Open Graph social previews |
+| `avatar` | 256×256 | User avatars |
+
+## Cache Invalidation
+
+Invalidate cached assets when they are updated or deleted:
+
+```bash
+# Invalidate a single asset
+POST /api/v1/cdn/invalidate/:assetId
+
+# Invalidate multiple assets
+POST /api/v1/cdn/invalidate
+{ "assetIds": ["uuid-1", "uuid-2"] }
+
+# Purge entire CDN cache
+DELETE /api/v1/cdn/cache
+```
+
+<Callout kind="alert">
+  Full cache purges can be expensive on some providers. Use targeted invalidation when possible.
+</Callout>
+
+## Edge Cache Rules
+
+Studio configures cache headers based on content type:
+
+```bash
+# Get current cache rules
+GET /api/v1/cdn/cache/rules
+
+# Get cache headers for a specific asset
+GET /api/v1/cdn/cache/asset-headers/:assetId
+
+# Get default cache headers by content type
+GET /api/v1/cdn/cache/headers
+```
+
+### Default Cache Rules
+
+| Content Type | Cache Duration | Headers |
+|-------------|---------------|---------|
+| **Images** | 1 year | `max-age=31536000, immutable` |
+| **Video/Audio** | 30 days | `max-age=2592000` |
+| **Documents** | 1 week | `max-age=604800` |
+| **Content API** | 60 seconds | `max-age=60, stale-while-revalidate=30` |
+| **Delivery API** | 5 minutes | `max-age=300, stale-while-revalidate=60` |
+| **Auth/GraphQL** | No cache | `no-store` |
+
+## CDN Status
+
+Check CDN health and configuration:
+
+```bash
+GET /api/v1/cdn/status
+```
+
+Returns:
+
+```json
+{
+  "data": {
+    "enabled": true,
+    "provider": "cloudfront",
+    "cdnUrl": "https://cdn.example.com",
+    "signingEnabled": true
+  }
+}
+```
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/cdn/status` | CDN configuration status |
+| `GET` | `/api/v1/cdn/resolve/:assetId` | Resolve single asset URL |
+| `POST` | `/api/v1/cdn/resolve/batch` | Batch resolve asset URLs |
+| `GET` | `/api/v1/cdn/responsive/:assetId` | Responsive image sets |
+| `GET` | `/api/v1/cdn/presets` | List image presets |
+| `GET` | `/api/v1/cdn/preset/:assetId/:preset` | Get preset URL |
+| `POST` | `/api/v1/cdn/invalidate/:assetId` | Invalidate single asset |
+| `POST` | `/api/v1/cdn/invalidate` | Invalidate multiple assets |
+| `DELETE` | `/api/v1/cdn/cache` | Purge entire cache |
+| `GET` | `/api/v1/cdn/cache/rules` | Get cache rules |
+| `GET` | `/api/v1/cdn/cache/headers` | Get default headers |
+| `GET` | `/api/v1/cdn/cache/asset-headers/:assetId` | Get asset-specific headers |

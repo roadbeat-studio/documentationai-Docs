@@ -1,0 +1,168 @@
+---
+title: Content Management
+description: Create, edit, version, publish, and organize content in roadbeat Studio.
+---
+
+## Overview
+
+Content management is the core workflow in roadbeat Studio. Every piece of content belongs to a **content type**, stores its data as structured JSON, and follows a defined lifecycle from draft to published.
+
+## Creating Content
+
+<Steps>
+  <Step title="Select a content type">
+    Navigate to **Content** in the sidebar. Click **New Content** and select the content type you want to create (e.g., News, Event, Recipe).
+  </Step>
+  <Step title="Fill in the form">
+    The content editor renders a dynamic form based on the content type's **form schema**. Fields are organized into tabs and sections.
+  </Step>
+  <Step title="Save as draft">
+    Click **Save** to create the content as a draft. Auto-save triggers every 5 seconds while editing.
+  </Step>
+</Steps>
+
+## Content Editor
+
+The content editor provides a rich editing experience:
+
+- **Tabbed layout** — fields organized into logical tabs (e.g., Basic Info, Content, Media, SEO)
+- **Basic/Extended mode** — toggle to show or hide advanced fields
+- **Auto-save** — changes are saved automatically with a 5-second debounce
+- **Unsaved changes warning** — a `CanDeactivate` guard prevents accidental navigation
+- **Version indicator** — shows current version number and last save time
+
+<Callout kind="tip">
+  Use the keyboard shortcut **Ctrl+S** (or **Cmd+S** on macOS) to manually save at any time.
+</Callout>
+
+## Content Status
+
+| Status | Description | Editable | Visible in Delivery API |
+|--------|-------------|----------|------------------------|
+| `draft` | Work in progress | Yes | No |
+| `published` | Live content | Creates new version on edit | Yes |
+| `archived` | Historical record | No | No |
+
+## Publishing Content
+
+To publish a content item:
+
+1. Open the content item in the editor
+2. Click **Publish** in the top-right toolbar
+3. Studio validates the content against the schema and required fields
+4. If validation passes, the status changes to `published`
+
+<Callout kind="info">
+  Publishing also triggers the **publishing pipeline** which distributes signed teasers to Discovery Nodes. See [Publishing](/guides/publishing) for details.
+</Callout>
+
+### Unpublishing
+
+Click **Unpublish** to take content offline. The status reverts to `draft` and the content is removed from the Delivery API. If the content was distributed to Discovery Nodes, a withdrawal request is sent.
+
+## Versioning
+
+Every save creates a new **version** of the content. The version history is available in the content editor.
+
+### Viewing Version History
+
+1. Open a content item
+2. Click the version indicator (e.g., "Version 3") in the status bar
+3. Browse the version timeline showing who changed what and when
+
+### Restoring a Previous Version
+
+1. In the version history, select the version you want to restore
+2. Click **Restore this version**
+3. A new version is created with the restored data (the old version is preserved)
+
+<Callout kind="alert">
+  CE retains up to **10 versions** per content item. Older versions are pruned automatically. Pro has unlimited retention.
+</Callout>
+
+## Bulk Operations
+
+Select multiple content items from the content list to perform bulk actions:
+
+- **Bulk Publish** — publish multiple items at once
+- **Bulk Unpublish** — take multiple items offline
+- **Bulk Delete** — delete multiple items (admin only)
+
+```bash
+# Bulk publish via API
+POST /api/v1/manage/content/bulk/publish
+Content-Type: application/json
+
+{
+  "ids": ["uuid-1", "uuid-2", "uuid-3"]
+}
+```
+
+## Content Relationships
+
+Content items can reference other content items, forming relationships:
+
+- **Single reference** — one content item links to another (e.g., article → author profile)
+- **Multi reference** — one content item links to many (e.g., article → related articles)
+- **Hierarchical** — parent-child tree structures (e.g., category → subcategory)
+
+Relationships are managed via the Content Relations module and can be queried via the API.
+
+## Reordering
+
+Content items support manual ordering via `sort_order` values. Use the **Reorder** action in the content list or the API:
+
+```bash
+PUT /api/v1/manage/content/reorder
+Content-Type: application/json
+
+{
+  "items": [
+    { "id": "uuid-1", "sortOrder": 1 },
+    { "id": "uuid-2", "sortOrder": 2 }
+  ]
+}
+```
+
+## Filtering and Listing
+
+The content list supports powerful filtering:
+
+| Filter | Description |
+|--------|-------------|
+| **Content Type** | Filter by content type |
+| **Status** | Filter by draft, published, archived |
+| **Locale** | Filter by content locale |
+| **Search** | Full-text search across title and fields |
+| **Created By** | Filter by author |
+| **Date Range** | Filter by creation or modification date |
+
+## Comments
+
+Team members can leave threaded comments on content items to discuss changes, provide feedback, or coordinate work.
+
+```bash
+# Add a comment
+POST /api/v1/manage/content/:id/comments
+Content-Type: application/json
+
+{
+  "body": "Please review the headline for accuracy."
+}
+```
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/manage/content` | List content with filters |
+| `POST` | `/api/v1/manage/content` | Create content |
+| `GET` | `/api/v1/manage/content/:id` | Get content by ID |
+| `PUT` | `/api/v1/manage/content/:id` | Update content |
+| `DELETE` | `/api/v1/manage/content/:id` | Delete content |
+| `POST` | `/api/v1/manage/content/:id/publish` | Publish content |
+| `POST` | `/api/v1/manage/content/:id/unpublish` | Unpublish content |
+| `GET` | `/api/v1/manage/content/:id/versions` | Get version history |
+| `POST` | `/api/v1/manage/content/:id/versions/:v/restore` | Restore a version |
+
+See the [API Reference](/api-reference/overview) tab for complete endpoint documentation.

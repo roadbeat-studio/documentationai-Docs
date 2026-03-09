@@ -1,0 +1,192 @@
+---
+title: Configuration
+description: Environment variables and configuration options for roadbeat Studio.
+---
+
+## Overview
+
+roadbeat Studio is configured primarily through **environment variables** set in a `.env` file or via your deployment platform. All configuration is validated on startup using Joi schemas — missing required variables cause the application to fail fast with a clear error message.
+
+## Required Variables
+
+These variables must be set for Studio to start:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/studio` |
+| `JWT_SECRET` | Secret key for signing JWT tokens (min 32 chars) | `your-secret-key-at-least-32-characters` |
+
+## Database
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | — | PostgreSQL connection string |
+
+Studio uses **Prisma** as its ORM. The database URL follows the format:
+
+```
+postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public
+```
+
+<Callout kind="tip">
+  For production, enable connection pooling with PgBouncer or Prisma's built-in connection pool. Add `?connection_limit=10` to the DATABASE_URL.
+</Callout>
+
+## Redis
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `REDIS_HOST` | `localhost` | Redis server hostname |
+| `REDIS_PORT` | `6379` | Redis server port |
+| `REDIS_PASSWORD` | — | Redis password (optional) |
+| `REDIS_DB` | `0` | Redis database number |
+
+Redis is used for caching, session storage, and BullMQ job queues.
+
+## Authentication
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_SECRET` | — | Secret for signing JWT access tokens |
+| `JWT_EXPIRATION` | `24h` | Access token lifetime |
+| `JWT_REFRESH_EXPIRATION` | `7d` | Refresh token lifetime |
+
+## Search
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MEILISEARCH_HOST` | `http://localhost:7700` | MeiliSearch server URL |
+| `MEILISEARCH_API_KEY` | — | MeiliSearch master key |
+
+<Callout kind="info">
+  MeiliSearch is optional. Without it, Studio falls back to PostgreSQL full-text search.
+</Callout>
+
+## Storage
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `STORAGE_PROVIDER` | `local` | Storage backend: `local` or `s3` |
+| `STORAGE_LOCAL_PATH` | `./uploads` | Local storage directory (when provider is `local`) |
+| `S3_ENDPOINT` | — | S3-compatible endpoint URL |
+| `S3_BUCKET` | — | S3 bucket name |
+| `S3_ACCESS_KEY` | — | S3 access key |
+| `S3_SECRET_KEY` | — | S3 secret key |
+| `S3_REGION` | `eu-central-1` | S3 region |
+
+## Publishing
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SCHEMA_REGISTRY_URL` | `http://localhost:3200` | Schema Registry endpoint |
+| `DISCOVERY_NODE_URLS` | `http://localhost:3300` | Comma-separated Discovery Node URLs |
+| `PUBLISHING_MAX_RETRIES` | `3` | Max retry attempts for failed publishes |
+
+## Consumer Features
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CONTEXT_DIRECTORY_URL` | `http://localhost:3100` | Context Directory endpoint |
+| `CONTEXT_DIRECTORY_TIMEOUT` | `5000` | CD request timeout in ms |
+| `FEDERATION_TIMEOUT_MS` | `5000` | Federated search timeout |
+
+## CDN (Optional)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CDN_ENABLED` | `false` | Enable CDN URL rewriting |
+| `CDN_URL` | — | CDN base URL |
+| `CDN_PROVIDER` | `generic` | CDN provider: `generic`, `cloudfront`, `cloudflare`, `bunny` |
+| `CDN_SIGNING_KEY` | — | HMAC key for signed URLs |
+| `CDN_DEFAULT_TTL` | `86400` | Default cache TTL in seconds |
+
+## Pro / Plugins
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ROADBEAT_LICENSE_KEY` | — | Ed25519-signed license JWT |
+| `PLUGINS_DIR` | `./plugins` | Directory containing plugin packages |
+
+## Server
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | API server port |
+| `CORS_ORIGIN` | `http://localhost:4200` | Allowed CORS origin |
+| `NODE_ENV` | `development` | Environment: `development`, `production` |
+
+## Logging
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOG_LEVEL` | `debug` | Pino log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` |
+| `LOG_PRETTY` | `true` | Pretty-print logs (disable in production) |
+
+## Rate Limiting
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `THROTTLE_TTL` | `60000` | Rate limit window in ms |
+| `THROTTLE_LIMIT` | `100` | Max requests per window |
+
+## Machine Translation (Optional)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TRANSLATION_PROVIDER` | `noop` | Provider: `noop`, `deepl`, `google`, `azure` |
+| `DEEPL_API_KEY` | — | DeepL API key |
+| `GOOGLE_TRANSLATE_KEY` | — | Google Translate API key |
+| `AZURE_TRANSLATOR_KEY` | — | Azure Translator key |
+
+## Example .env File
+
+```bash
+# Database
+DATABASE_URL=postgresql://studio:secretpassword@localhost:5432/roadbeat_studio
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Auth
+JWT_SECRET=change-this-to-a-long-random-string-at-least-32-chars
+JWT_EXPIRATION=24h
+
+# Search (optional)
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_API_KEY=your-meili-master-key
+
+# Storage
+STORAGE_PROVIDER=local
+
+# Publishing
+SCHEMA_REGISTRY_URL=http://localhost:3200
+DISCOVERY_NODE_URLS=http://localhost:3300
+
+# Consumer
+CONTEXT_DIRECTORY_URL=http://localhost:3100
+
+# Server
+PORT=3000
+CORS_ORIGIN=http://localhost:4200
+NODE_ENV=development
+LOG_LEVEL=debug
+LOG_PRETTY=true
+```
+
+## Production Checklist
+
+<Callout kind="alert">
+  Before deploying to production, ensure these items are addressed:
+</Callout>
+
+- [ ] `JWT_SECRET` is a unique, random string (not the example value)
+- [ ] `DATABASE_URL` uses a strong password
+- [ ] `NODE_ENV=production` is set
+- [ ] `LOG_PRETTY=false` for structured JSON logs
+- [ ] `CORS_ORIGIN` is set to your actual domain
+- [ ] `STORAGE_PROVIDER=s3` with proper credentials
+- [ ] HTTPS is configured (via Caddy, nginx, or load balancer)
+- [ ] Database backups are scheduled
+- [ ] Redis persistence is enabled (`appendonly yes`)
+- [ ] MeiliSearch master key is set

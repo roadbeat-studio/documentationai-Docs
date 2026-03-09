@@ -1,0 +1,296 @@
+---
+title: Developing Plugins
+description: Build Pro plugins for roadbeat Studio using the @roadbeat/plugin-sdk.
+---
+
+## Overview
+
+This guide walks you through building a plugin that extends roadbeat Studio. Plugins are self-contained NestJS modules that integrate with CE through well-defined extension points.
+
+<Callout kind="info">
+  Plugins import **only** from `@roadbeat/plugin-sdk` — never from CE source code directly. This ensures clean separation and forward compatibility.
+</Callout>
+
+## Getting Started
+
+<Steps>
+  <Step title="Create the plugin project">
+    ```bash
+    mkdir my-plugin && cd my-plugin
+    npm init -y
+    npm install @roadbeat/plugin-sdk
+    npm install @nestjs/common @nestjs/core rxjs
+    npm install -D typescript @types/node
+    ```
+  </Step>
+
+  <Step title="Create the manifest">
+    Create `manifest.json` in the plugin root:
+
+    ```json
+    {
+      "id": "my-plugin",
+      "name": "My Plugin",
+      "version": "1.0.0",
+      "requires": ">=0.1.0",
+      "entry": "dist/index.js"
+    }
+    ```
+  </Step>
+
+  <Step title="Implement the plugin interface">
+    Create `src/index.ts`:
+
+    ```typescript
+    import { RoadbeatPlugin } from '@roadbeat/plugin-sdk';
+    import { MyPluginModule } from './my-plugin.module';
+
+    class MyPlugin implements RoadbeatPlugin {
+      readonly id = 'my-plugin';
+      readonly name = 'My Plugin';
+      readonly version = '1.0.0';
+      readonly requires = '>=0.1.0';
+
+      getModule() {
+        return MyPluginModule;
+      }
+    }
+
+    export default new MyPlugin();
+    ```
+  </Step>
+
+  <Step title="Create the NestJS module">
+    Create `src/my-plugin.module.ts`:
+
+    ```typescript
+    import { Module } from '@nestjs/common';
+    import { MyPluginService } from './my-plugin.service';
+    import { MyPluginController } from './my-plugin.controller';
+
+    @Module({
+      controllers: [MyPluginController],
+      providers: [MyPluginService],
+      exports: [MyPluginService],
+    })
+    export class MyPluginModule {}
+    ```
+  </Step>
+
+  <Step title="Build and deploy">
+    ```bash
+    npx tsc
+    cp -r dist/ manifest.json /path/to/studio/plugins/my-plugin/
+    ```
+  </Step>
+</Steps>
+
+## RoadbeatPlugin Interface
+
+The `RoadbeatPlugin` interface is the contract between CE and plugins:
+
+```typescript
+interface RoadbeatPlugin {
+  readonly id: string;
+  readonly name: string;
+  readonly version: string;
+  readonly requires: string;
+
+  getModule(): Type<any> | DynamicModule;
+
+  // Optional
+  getAdminRoutes?(): PluginAdminRoute[];
+  getMenuItems?(): PluginMenuItem[];
+  getEditorExtensions?(): PluginEditorExtension[];
+  getDashboardWidgets?(): PluginDashboardWidget[];
+  getEventHandlers?(): PluginEventHandler[];
+  getPrismaSchemaPath?(): string;
+  onPluginInit?(): Promise<void>;
+  onPluginDestroy?(): Promise<void>;
+}
+```
+
+| Method | Purpose |
+|--------|---------|
+| `getModule()` | NestJS module to register (controllers, services, providers) |
+| `getAdminRoutes()` | Angular routes for admin UI pages |
+| `getMenuItems()` | Sidebar navigation entries |
+| `getEditorExtensions()` | Content editor sidebar panels or toolbar actions |
+| `getDashboardWidgets()` | Dashboard widget components |
+| `getEventHandlers()` | Event listener registrations |
+| `getPrismaSchemaPath()` | Path to SQL migration file for database tables |
+| `onPluginInit()` | Called after module registration, before app starts |
+| `onPluginDestroy()` | Called during graceful shutdown |
+
+## Listening to Events
+
+Use NestJS `@OnEvent()` decorators to listen to CE lifecycle events:
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { ContentEvents, ContentEventPayload } from '@roadbeat/plugin-sdk';
+
+@Injectable()
+export class MyService {
+  @OnEvent(ContentEvents.AFTER_CREATE)
+  async onContentCreated(payload: ContentEventPayload) {
+    console.log(`Content created: ${payload.contentId}`);
+  }
+
+  @OnEvent(ContentEvents.AFTER_PUBLISH)
+  async onContentPublished(payload: ContentEventPayload) {
+    console.log(`Content published: ${payload.contentId}`);
+  }
+}
+```
+
+### Available Events
+
+<Tabs>
+  <Tab title="Content" icon="edit">
+    | Event | Description |
+    |-------|-------------|
+    | `content.beforeCreate` | Before content creation (data is mutable) |
+    | `content.afterCreate` | After content is created |
+    | `content.beforeUpdate` | Before content update |
+    | `content.afterUpdate` | After content is updated |
+    | `content.beforeDelete` | Before content deletion |
+    | `content.afterDelete` | After content is deleted |
+    | `content.beforePublish` | Before publishing |
+    | `content.afterPublish` | After publishing |
+    | `content.beforeUnpublish` | Before unpublishing |
+    | `content.afterUnpublish` | After unpublishing |
+  </Tab>
+  <Tab title="Asset" icon="image">
+    | Event | Description |
+    |-------|-------------|
+    | `asset.afterUpload` | After asset is uploaded |
+    | `asset.beforeDelete` | Before asset deletion |
+    | `asset.afterDelete` | After asset is deleted |
+    | `asset.afterProcess` | After asset processing |
+  </Tab>
+  <Tab title="User" icon="user">
+    | Event | Description |
+    |-------|-------------|
+    | `user.afterLogin` | After user login |
+    | `user.afterLogout` | After user logout |
+    | `user.afterCreate` | After user creation |
+    | `user.afterUpdate` | After user update |
+    | `user.afterDelete` | After user deletion |
+  </Tab>
+  <Tab title="Publishing" icon="send">
+    | Event | Description |
+    |-------|-------------|
+    | `publishing.beforeTeaserGenerate` | Before teaser generation |
+    | `publishing.afterTeaserGenerate` | After teaser generation |
+    | `publishing.beforeDiscoveryPush` | Before Discovery Node push |
+    | `publishing.afterDiscoveryPush` | After Discovery Node push |
+  </Tab>
+</Tabs>
+
+## Preventable Events
+
+"Before" events extend `PreventableEvent`. Call `event.prevent()` to block the action:
+
+```typescript
+import { OnEvent } from '@nestjs/event-emitter';
+import { ContentEvents, ContentBeforePublishEvent } from '@roadbeat/plugin-sdk';
+
+@Injectable()
+export class WorkflowGuard {
+  @OnEvent(ContentEvents.BEFORE_PUBLISH)
+  async checkApproval(event: ContentBeforePublishEvent) {
+    const approved = await this.isApproved(event.contentId);
+    if (!approved) {
+      event.prevent('Content must be approved before publishing');
+    }
+  }
+}
+```
+
+| Preventable Event | Can Modify Data |
+|-------------------|-----------------|
+| `ContentBeforeCreateEvent` | Yes (`event.data` is mutable) |
+| `ContentBeforePublishEvent` | No |
+| `ContentBeforeDeleteEvent` | No |
+| `AssetBeforeDeleteEvent` | No |
+
+## Feature Gating
+
+Use `FeatureGateService` to check plugin and license status:
+
+```typescript
+import { FeatureGateService } from '@roadbeat/plugin-sdk';
+
+@Injectable()
+export class MyService {
+  constructor(private featureGate: FeatureGateService) {}
+
+  async doSomething() {
+    if (this.featureGate.isPluginActive('pro-workflows')) {
+      // Include workflow data
+    }
+
+    const maxUsers = this.featureGate.getLimit('max_users', 5);
+  }
+}
+```
+
+## Database Extensions
+
+Plugins can create their own database tables using SQL migration files:
+
+```typescript
+getPrismaSchemaPath(): string {
+  return path.join(__dirname, '../migrations/001_create_tables.sql');
+}
+```
+
+<Callout kind="alert">
+  All plugin tables **must** use a `pro_` prefix to avoid conflicts with CE tables (e.g., `pro_audit_logs`, `pro_workflow_states`).
+</Callout>
+
+## Admin UI Extensions
+
+Plugin frontends are built as **Angular web components** using `@angular/elements`:
+
+### Naming Conventions
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Admin page | `{pluginId}--{routePath}` | `pro-workflows--workflows` |
+| Editor panel | `{pluginId}--ext-{extensionId}` | `pro-workflows--ext-workflow-status` |
+
+### Building Frontend
+
+```bash
+cd plugins/my-plugin/frontend
+npm install
+npm run build
+# Output: ../dist/frontend/main.js
+```
+
+CE serves the bundle at `/api/v1/plugins/my-plugin/ui/main.js`.
+
+## Best Practices
+
+1. **Only import from `@roadbeat/plugin-sdk`** — never reference CE source
+2. **Use event listeners** for extending behavior, not monkey-patching
+3. **Handle errors gracefully** — a plugin crash should not break CE
+4. **Respect CE limits** — use `FeatureGateService.getLimit()`
+5. **Version your plugin** with semver and declare minimum CE version in `requires`
+6. **Use `pro_` prefix** for all database tables
+7. **Test independently** with unit tests and mock factories
+8. **Document your API** — use Swagger decorators on controllers
+
+## SDK Exports Reference
+
+| Category | Exports |
+|----------|---------|
+| **Interfaces** | `RoadbeatPlugin`, `PluginManifest`, `LicenseToken`, `LicenseTier`, `CE_DEFAULTS` |
+| **Types** | `PluginAdminRoute`, `PluginMenuItem`, `PluginEditorExtension`, `PluginDashboardWidget`, `PluginEventHandler` |
+| **Services** | `FeatureGateService`, `PluginContextService` |
+| **Events** | `ContentEvents`, `AssetEvents`, `UserEvents`, `PublishingEvents` |
+| **Payloads** | `ContentEventPayload`, `AssetEventPayload`, `UserEventPayload`, `PublishingEventPayload` |
+| **Preventable** | `PreventableEvent`, `ContentBeforeCreateEvent`, `ContentBeforePublishEvent`, `ContentBeforeDeleteEvent`, `AssetBeforeDeleteEvent` |

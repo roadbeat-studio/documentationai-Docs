@@ -1,0 +1,194 @@
+---
+title: API Overview
+description: Overview of the roadbeat Studio REST APIs — Management API and Delivery API.
+---
+
+## Overview
+
+roadbeat Studio exposes two distinct REST APIs:
+
+1. **Management API** — full CRUD for content, assets, users, and settings (JWT auth)
+2. **Delivery API** — read-only access to published content for frontends and apps (API key auth)
+
+Both APIs are versioned under `/api/v1/` and return JSON responses.
+
+<Callout kind="info">
+  Interactive Swagger documentation is available at `http://localhost:3000/api/docs` when running the dev server.
+</Callout>
+
+## Base URL
+
+```
+http://localhost:3000/api/v1/
+```
+
+In production, replace `localhost:3000` with your Studio domain.
+
+## Response Format
+
+All API responses follow a consistent envelope format:
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "total": 42,
+    "page": 1,
+    "pageSize": 20
+  }
+}
+```
+
+For list endpoints, the `meta` object includes pagination information. For single-item endpoints, only `data` is returned.
+
+### Error Responses
+
+Errors return an appropriate HTTP status code with a structured error body:
+
+```json
+{
+  "statusCode": 400,
+  "message": "Validation failed",
+  "error": "Bad Request",
+  "details": [
+    { "field": "email", "message": "email must be a valid email" }
+  ]
+}
+```
+
+| Status Code | Meaning |
+|-------------|---------|
+| `400` | Bad Request — validation errors, malformed input |
+| `401` | Unauthorized — missing or invalid authentication |
+| `403` | Forbidden — insufficient permissions for this action |
+| `404` | Not Found — resource does not exist |
+| `409` | Conflict — duplicate resource (e.g., email already taken) |
+| `429` | Too Many Requests — rate limit exceeded |
+| `500` | Internal Server Error — unexpected server error |
+
+## Management API
+
+The Management API requires **JWT authentication** and is used by the admin UI and internal tools.
+
+### Endpoint Categories
+
+| Category | Base Path | Description |
+|----------|-----------|-------------|
+| **Auth** | `/api/v1/auth/` | Login, setup, refresh, password management |
+| **Content** | `/api/v1/manage/content/` | Content CRUD, versioning, publish/unpublish |
+| **Content Types** | `/api/v1/manage/content-types/` | Content type definitions |
+| **Content Relations** | `/api/v1/manage/content-relations/` | References, hierarchy |
+| **Assets** | `/api/v1/assets/` | File upload, metadata, folders, tags, search |
+| **Users** | `/api/v1/manage/users/` | User CRUD (admin) |
+| **Webhooks** | `/api/v1/manage/webhooks/` | Webhook configuration |
+| **API Keys** | `/api/v1/manage/api-keys/` | API key management |
+| **Publishing** | `/api/v1/manage/publishing/` | Discovery Node distribution |
+| **Discovery Nodes** | `/api/v1/manage/discovery-nodes/` | Publishing target configuration |
+| **Locales** | `/api/v1/manage/locales/` | Locale management |
+| **Translations** | `/api/v1/manage/translations/` | Translation tasks |
+| **Search** | `/api/v1/manage/search/` | Full-text search |
+| **Export** | `/api/v1/manage/export/` | Backup/restore, content export |
+| **Dashboard** | `/api/v1/manage/dashboard/` | Statistics |
+| **Schema Registry** | `/api/v1/manage/schema-registry/` | Import content types |
+| **Layouts** | `/api/v1/manage/layouts/` | Content presentation layouts |
+| **Organizations** | `/api/v1/manage/organizations/` | Organization settings |
+
+### Authentication
+
+All Management API endpoints (except auth) require a JWT token:
+
+```bash
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+See [Authentication](/api-reference/authentication) for details on obtaining tokens.
+
+## Delivery API
+
+The Delivery API requires **API key authentication** and provides read-only access to published content.
+
+### Endpoint Categories
+
+| Category | Base Path | Description |
+|----------|-----------|-------------|
+| **Content** | `/api/v1/delivery/content` | List and get published content |
+| **Content Types** | `/api/v1/delivery/content-types` | Available content type schemas |
+| **Assets** | `/api/v1/delivery/assets` | Asset metadata |
+| **Layouts** | `/api/v1/delivery/layouts` | Content presentation layouts |
+
+### Authentication
+
+Pass your API key via header:
+
+```bash
+Authorization: Bearer rbk_your_api_key_here
+# or
+X-Api-Key: rbk_your_api_key_here
+```
+
+See [Delivery API](/api-reference/delivery-api) for details.
+
+## Rate Limiting
+
+All endpoints are rate-limited by default:
+
+| Scope | Limit |
+|-------|-------|
+| **Global** | 100 requests per minute per IP |
+| **Auth login** | 5 requests per minute per IP |
+| **Password forgot** | 3 requests per minute per IP |
+
+Rate limit headers are included in responses:
+
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1706100000
+```
+
+When exceeded, the API returns `429 Too Many Requests`.
+
+## Pagination
+
+List endpoints support pagination via query parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `page` | `1` | Page number (1-indexed) |
+| `pageSize` | `20` | Items per page (max 100) |
+
+Response includes pagination metadata:
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "total": 156,
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 8
+  }
+}
+```
+
+## Versioning
+
+The API uses URI versioning: `/api/v1/...`. Future breaking changes will be introduced under `/api/v2/...` while maintaining backward compatibility for v1.
+
+## CORS
+
+CORS is configured via the `CORS_ORIGIN` environment variable. In development, it defaults to `http://localhost:4200` (the Angular dev server).
+
+## Compression
+
+API responses are automatically compressed with gzip/deflate for responses larger than 1 KB.
+
+## Health Checks
+
+```bash
+# Basic health check
+GET /api/v1/health
+
+# Detailed health (DB, Redis, MeiliSearch, queues)
+GET /api/v1/health/detailed
+```

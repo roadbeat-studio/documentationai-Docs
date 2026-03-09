@@ -1,0 +1,154 @@
+---
+title: Database Issues
+description: Troubleshoot common PostgreSQL and database-related issues in roadbeat Studio.
+---
+
+## Connection Issues
+
+### "Cannot connect to database"
+
+<Expandable title="PostgreSQL not running" default-open="true">
+  Verify PostgreSQL is running and accepting connections:
+
+  ```bash
+  # Check if PostgreSQL is running
+  pg_isready -h localhost -p 5432
+
+  # If using Docker Compose
+  docker compose ps postgres
+  docker compose logs postgres
+  ```
+
+  If the service is down, restart it:
+
+  ```bash
+  docker compose up -d postgres
+  ```
+</Expandable>
+
+<Expandable title="Wrong credentials in DATABASE_URL" default-open="false">
+  Check your `.env` file. The `DATABASE_URL` must match your PostgreSQL setup:
+
+  ```bash
+  DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+  ```
+
+  Common mistakes:
+  - Wrong password (check for special characters that need URL encoding)
+  - Wrong port (default is 5432)
+  - Database doesn't exist yet (create it with `createdb roadbeat_studio`)
+  - Host is `localhost` but PostgreSQL only listens on `127.0.0.1` (or vice versa)
+</Expandable>
+
+<Expandable title="Docker networking issue" default-open="false">
+  When running in Docker Compose, the API connects to PostgreSQL via the Docker network. Use the **service name** as the host, not `localhost`:
+
+  ```bash
+  # Correct for Docker Compose
+  DATABASE_URL=postgresql://studio:password@postgres:5432/studio
+
+  # Wrong — localhost doesn't resolve inside Docker
+  DATABASE_URL=postgresql://studio:password@localhost:5432/studio
+  ```
+</Expandable>
+
+## Migration Issues
+
+### "Migration failed"
+
+<Expandable title="Pending migrations on startup" default-open="true">
+  If you see migration errors after updating Studio, run migrations manually:
+
+  ```bash
+  # Local development
+  pnpm --filter api prisma:migrate
+
+  # Docker Compose
+  docker compose exec api npx prisma migrate deploy
+  ```
+
+  Always back up your database before running migrations on production.
+</Expandable>
+
+<Expandable title="Migration conflict after restore" default-open="false">
+  If you restored a database backup from a different Studio version, the migration history may be out of sync. Steps to resolve:
+
+  1. Check which migrations have been applied: `npx prisma migrate status`
+  2. If there are unapplied migrations, run `npx prisma migrate deploy`
+  3. If there are conflicts, you may need to reset the migration history (development only)
+
+  <Callout kind="danger">
+    Never use `prisma migrate reset` in production — it drops all data.
+  </Callout>
+</Expandable>
+
+### "Column/table does not exist"
+
+<Expandable title="Missing migration" default-open="false">
+  This typically means migrations haven't been run after an update:
+
+  ```bash
+  # Check migration status
+  npx prisma migrate status
+
+  # Apply pending migrations
+  npx prisma migrate deploy
+  ```
+
+  If the issue persists, check that you're running the correct Studio version that matches your database schema.
+</Expandable>
+
+## Performance Issues
+
+### Slow queries
+
+<Expandable title="Missing indexes or large dataset" default-open="false">
+  Studio logs slow queries (>200ms) automatically via Pino. Check your logs for `slowQuery` entries.
+
+  Common causes:
+  - Large content tables without proper filtering (always use `contentType` and `status` filters)
+  - Missing database indexes (these are created by Prisma migrations)
+  - PostgreSQL needs vacuuming: `VACUUM ANALYZE;`
+  - Connection pool exhaustion: increase `connection_limit` in DATABASE_URL
+</Expandable>
+
+### High memory usage
+
+<Expandable title="Connection pool or Redis issues" default-open="false">
+  - **Too many connections:** Add `?connection_limit=10` to your DATABASE_URL
+  - **Redis memory:** Check Redis memory usage with `redis-cli info memory`
+  - **Large assets:** Ensure assets are stored in S3, not in the database
+  - **Node.js memory:** Increase with `--max-old-space-size=4096` if needed
+</Expandable>
+
+## Backup & Recovery
+
+### Creating a backup
+
+```bash
+# PostgreSQL native backup
+pg_dump -U studio roadbeat_studio > backup_$(date +%Y%m%d).sql
+
+# Docker Compose
+docker compose exec postgres pg_dump -U studio studio > backup.sql
+```
+
+### Restoring from backup
+
+```bash
+# Stop the API first
+docker compose stop api
+
+# Restore
+psql -U studio roadbeat_studio < backup.sql
+
+# Run any pending migrations
+docker compose exec api npx prisma migrate deploy
+
+# Restart
+docker compose up -d api
+```
+
+<Callout kind="alert">
+  Restoring a backup replaces all existing data. Always verify the backup file before restoring on production.
+</Callout>

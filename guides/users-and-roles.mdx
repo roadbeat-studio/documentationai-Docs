@@ -1,0 +1,195 @@
+---
+title: Users & Roles
+description: Manage users, roles, and permissions in roadbeat Studio.
+---
+
+## Overview
+
+roadbeat Studio provides role-based access control (RBAC) to manage who can do what within your organization. CE includes three fixed roles; Pro plugins extend this with granular per-content-type permissions and custom roles.
+
+## User Management
+
+### Creating Users
+
+<Tabs>
+  <Tab title="Admin UI" icon="monitor">
+    1. Navigate to **Users** in the sidebar (admin only)
+    2. Click **Add User**
+    3. Enter email, name, and select a role
+    4. The user receives an invitation and sets their password
+  </Tab>
+  <Tab title="API" icon="code">
+    ```bash
+    POST /api/v1/manage/users
+    Content-Type: application/json
+    Authorization: Bearer YOUR_JWT_TOKEN
+
+    {
+      "email": "editor@example.com",
+      "name": "Jane Editor",
+      "role": "editor",
+      "password": "securePassword123!"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout kind="alert">
+  CE is limited to **3 users** per organization. Pro has unlimited users.
+</Callout>
+
+### User Properties
+
+| Field | Description |
+|-------|-------------|
+| **Email** | Unique login identifier |
+| **Name** | Display name |
+| **Role** | One of: `admin`, `editor`, `viewer` |
+| **Status** | `active` or `inactive` |
+| **Avatar URL** | Optional profile image |
+| **Last Login** | Timestamp of most recent login |
+
+### Updating Users
+
+Admins can update any user's profile, role, or status:
+
+```bash
+PUT /api/v1/manage/users/:id
+{
+  "name": "Jane Senior Editor",
+  "role": "admin"
+}
+```
+
+### Deleting Users
+
+```bash
+DELETE /api/v1/manage/users/:id
+```
+
+<Callout kind="alert">
+  You cannot delete the last admin user in an organization.
+</Callout>
+
+## Roles
+
+### CE Roles
+
+| Role | Content | Assets | Users | Settings | Publishing |
+|------|---------|--------|-------|----------|------------|
+| **Admin** | Full CRUD | Full CRUD | Manage | Full access | Publish/Unpublish |
+| **Editor** | Create, Edit, Publish | Upload, Edit | View own | Read only | Publish/Unpublish |
+| **Viewer** | Read only | Read only | — | — | — |
+
+### Role Assignment
+
+Each user is assigned exactly one role. The role determines which API endpoints and UI features are accessible.
+
+Roles are enforced at two levels:
+
+1. **API level** — the `RolesGuard` checks the `@Roles()` decorator on each controller method
+2. **UI level** — the Angular frontend conditionally shows/hides elements based on the user's role
+
+## Authentication
+
+### Login Flow
+
+<Steps>
+  <Step title="POST /api/v1/auth/login">
+    Send email and password. Receive an access token (JWT) and refresh token.
+
+    ```bash
+    POST /api/v1/auth/login
+    { "email": "admin@example.com", "password": "yourPassword" }
+    ```
+  </Step>
+  <Step title="Use access token">
+    Include the JWT in the `Authorization` header for all subsequent requests.
+
+    ```bash
+    Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+    ```
+  </Step>
+  <Step title="Refresh when expired">
+    When the access token expires (default: 24h), use the refresh token to get new tokens.
+
+    ```bash
+    POST /api/v1/auth/refresh
+    { "refreshToken": "your-refresh-token" }
+    ```
+  </Step>
+</Steps>
+
+### Initial Setup
+
+On first run, Studio requires an initial admin setup:
+
+```bash
+# Check if setup is needed
+GET /api/v1/auth/setup/status
+# Returns: { "data": { "needsSetup": true } }
+
+# Perform setup
+POST /api/v1/auth/setup
+{
+  "email": "admin@example.com",
+  "password": "securePassword123!",
+  "name": "Admin User",
+  "organizationName": "My Organization"
+}
+```
+
+### Password Management
+
+- **Change password** (requires current password): `POST /api/v1/auth/change-password`
+- **Forgot password**: `POST /api/v1/auth/password/forgot` — sends a reset token (logged in dev mode)
+- **Reset password**: `POST /api/v1/auth/password/reset` — validates token and sets new password
+
+<Callout kind="info">
+  Password reset tokens are single-use and expire after 1 hour. The forgot-password endpoint always returns success to prevent email enumeration attacks.
+</Callout>
+
+## Profile Management
+
+Users can manage their own profile:
+
+```bash
+# Get own profile
+GET /api/v1/auth/me
+
+# Update own profile
+PATCH /api/v1/auth/me
+{ "name": "New Name", "avatarUrl": "https://..." }
+```
+
+## Pro: Advanced Roles
+
+With the `pro-advanced-roles` plugin, you get:
+
+- **Per-content-type permissions** — different access levels for different content types
+- **Priority-based resolution** — user-specific rules override role-based rules
+- **Allow/Deny rules** — explicitly grant or deny specific actions
+- **Permission matrix** — visual overview of who can do what
+
+## Pro: SSO Integration
+
+With the `pro-sso` plugin, you get:
+
+- **SAML 2.0** — integrate with enterprise identity providers
+- **OIDC** — OpenID Connect for modern SSO
+- **SCIM** — automatic user provisioning and deprovisioning
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/manage/users` | List users (admin) |
+| `GET` | `/api/v1/manage/users/:id` | Get user by ID (admin) |
+| `POST` | `/api/v1/manage/users` | Create user (admin) |
+| `PUT` | `/api/v1/manage/users/:id` | Update user (admin) |
+| `DELETE` | `/api/v1/manage/users/:id` | Delete user (admin) |
+| `POST` | `/api/v1/auth/login` | Login |
+| `POST` | `/api/v1/auth/refresh` | Refresh tokens |
+| `GET` | `/api/v1/auth/me` | Get own profile |
+| `PATCH` | `/api/v1/auth/me` | Update own profile |
+| `POST` | `/api/v1/auth/change-password` | Change password |

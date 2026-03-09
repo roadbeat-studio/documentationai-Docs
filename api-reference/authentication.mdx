@@ -1,0 +1,276 @@
+---
+title: Authentication
+description: Authenticate with the roadbeat Studio API using JWT tokens or API keys.
+---
+
+## Overview
+
+roadbeat Studio uses two authentication mechanisms:
+
+- **JWT tokens** — for the Management API (admin UI, internal tools)
+- **API keys** — for the Delivery API (websites, mobile apps, third-party consumers)
+
+## JWT Authentication (Management API)
+
+### Login
+
+Obtain an access token and refresh token by sending your credentials:
+
+```bash
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "yourPassword"
+}
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+    "expiresIn": 86400,
+    "user": {
+      "id": "user-uuid",
+      "email": "admin@example.com",
+      "name": "Admin User",
+      "role": "admin",
+      "organizationId": "org-uuid"
+    }
+  }
+}
+```
+
+<Callout kind="info">
+  The login endpoint is rate-limited to **5 requests per minute** per IP to prevent brute-force attacks.
+</Callout>
+
+### Using the Access Token
+
+Include the JWT in the `Authorization` header for all Management API requests:
+
+```bash
+curl -X GET http://localhost:3000/api/v1/manage/content \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+```
+
+### Token Expiration
+
+| Token | Default Lifetime | Configurable |
+|-------|-----------------|--------------|
+| **Access token** | 24 hours | `JWT_EXPIRATION` env var |
+| **Refresh token** | 7 days | `JWT_REFRESH_EXPIRATION` env var |
+
+### Refreshing Tokens
+
+When the access token expires, use the refresh token to obtain new tokens:
+
+```bash
+POST /api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+**Response:** Same format as the login response with fresh tokens.
+
+<Callout kind="alert">
+  Refresh tokens are single-use. Each refresh request returns a new refresh token, and the previous one is invalidated.
+</Callout>
+
+### JWT Payload
+
+The access token contains:
+
+```json
+{
+  "sub": "user-uuid",
+  "email": "admin@example.com",
+  "name": "Admin User",
+  "role": "admin",
+  "organizationId": "org-uuid",
+  "iat": 1706100000,
+  "exp": 1706186400
+}
+```
+
+### Initial Setup
+
+On a fresh installation, the first request should check if setup is needed:
+
+```bash
+GET /api/v1/auth/setup/status
+```
+
+If `needsSetup` is `true`, create the first admin account:
+
+```bash
+POST /api/v1/auth/setup
+{
+  "email": "admin@example.com",
+  "password": "securePassword123!",
+  "name": "Admin User",
+  "organizationName": "My Organization"
+}
+```
+
+<Callout kind="alert">
+  The setup endpoint only works when no organizations exist in the database. After the first admin is created, it returns `409 Conflict`.
+</Callout>
+
+### Password Management
+
+```bash
+# Change password (requires current password)
+POST /api/v1/auth/change-password
+Authorization: Bearer YOUR_TOKEN
+{
+  "currentPassword": "oldPassword",
+  "newPassword": "newSecurePassword123!"
+}
+
+# Request password reset (always returns success)
+POST /api/v1/auth/password/forgot
+{ "email": "user@example.com" }
+
+# Reset password with token
+POST /api/v1/auth/password/reset
+{
+  "token": "reset-token-from-email",
+  "password": "newSecurePassword123!"
+}
+```
+
+### Get Current User
+
+```bash
+GET /api/v1/auth/me
+Authorization: Bearer YOUR_TOKEN
+```
+
+Returns the authenticated user's profile:
+
+```json
+{
+  "data": {
+    "id": "user-uuid",
+    "email": "admin@example.com",
+    "name": "Admin User",
+    "role": "admin",
+    "organizationId": "org-uuid",
+    "avatarUrl": null,
+    "createdAt": "2026-01-01T00:00:00Z"
+  }
+}
+```
+
+## API Key Authentication (Delivery API)
+
+### Creating API Keys
+
+API keys are created by admins via the Management API or the Settings UI:
+
+```bash
+POST /api/v1/manage/api-keys
+Authorization: Bearer YOUR_JWT_TOKEN
+{
+  "name": "Production Website",
+  "permissions": ["content.read", "content-types.read", "assets.read"]
+}
+```
+
+**Response:**
+
+```json
+{
+  "data": {
+    "id": "key-uuid",
+    "name": "Production Website",
+    "key": "rbk_a1b2c3d4e5f6...",
+    "permissions": ["content.read", "content-types.read", "assets.read"],
+    "createdAt": "2026-01-24T10:00:00Z"
+  }
+}
+```
+
+<Callout kind="danger">
+  The full API key (`rbk_...`) is only shown once when created. Store it securely — it cannot be retrieved later.
+</Callout>
+
+<Callout kind="info">
+  CE supports up to **2 API keys** per organization. Pro has unlimited API keys.
+</Callout>
+
+### Using API Keys
+
+Pass the API key in the `Authorization` header or `X-Api-Key` header:
+
+<Tabs>
+  <Tab title="Authorization Header" icon="lock">
+    ```bash
+    curl -X GET http://localhost:3000/api/v1/delivery/content \
+      -H "Authorization: Bearer rbk_a1b2c3d4e5f6..."
+    ```
+  </Tab>
+  <Tab title="X-Api-Key Header" icon="key">
+    ```bash
+    curl -X GET http://localhost:3000/api/v1/delivery/content \
+      -H "X-Api-Key: rbk_a1b2c3d4e5f6..."
+    ```
+  </Tab>
+</Tabs>
+
+### API Key Permissions
+
+Each API key has scoped permissions:
+
+| Permission | Grants Access To |
+|------------|-----------------|
+| `content.read` | List and get published content |
+| `content-types.read` | List and get content type schemas |
+| `assets.read` | List and get asset metadata |
+
+### Managing API Keys
+
+```bash
+# List API keys
+GET /api/v1/manage/api-keys
+
+# Delete an API key
+DELETE /api/v1/manage/api-keys/:id
+```
+
+## Security Best Practices
+
+- **Never expose JWT tokens** in client-side code or URLs
+- **Store API keys** in environment variables, not in source code
+- **Use HTTPS** in production to encrypt tokens in transit
+- **Rotate API keys** periodically and when team members leave
+- **Use scoped permissions** — only grant the minimum permissions needed
+- **Monitor for 401 errors** — may indicate compromised credentials
+
+## Common Authentication Errors
+
+<Expandable title="401 Unauthorized — Missing or invalid token" default-open="false">
+  - Verify the `Authorization` header is present
+  - Check that the token hasn't expired
+  - Ensure the token is prefixed with `Bearer ` (with a space)
+</Expandable>
+
+<Expandable title="403 Forbidden — Insufficient permissions" default-open="false">
+  - Check the user's role (admin, editor, viewer)
+  - For API keys, verify the key has the required permission scope
+  - Admin-only endpoints return 403 for editor/viewer roles
+</Expandable>
+
+<Expandable title="429 Too Many Requests — Rate limit exceeded" default-open="false">
+  - Wait for the rate limit window to reset (check `X-RateLimit-Reset` header)
+  - The login endpoint has a stricter limit of 5 requests/minute
+  - Consider implementing exponential backoff in your client
+</Expandable>

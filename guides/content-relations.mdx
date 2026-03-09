@@ -1,0 +1,180 @@
+---
+title: Content Relations
+description: Link content items together with references, hierarchies, and tree navigation.
+---
+
+## Overview
+
+Content in roadbeat Studio can be linked together through **references** and **parent-child hierarchies**. This enables rich content structures like articles referencing author profiles, categories containing subcategories, or events linking to related venues.
+
+## References
+
+References are explicit links from one content item to another, scoped to a specific field.
+
+### Types of References
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Single reference** | One item links to one other | Article → Author Profile |
+| **Multi reference** | One item links to many others | Article → Related Articles |
+
+### Setting References
+
+Replace all references for a field on a content item:
+
+```bash
+PUT /api/v1/manage/content/:id/references
+{
+  "fieldId": "related_articles",
+  "targetIds": ["uuid-1", "uuid-2", "uuid-3"]
+}
+```
+
+### Getting References
+
+```bash
+# Get all outgoing references
+GET /api/v1/manage/content/:id/references
+
+# Filter by field
+GET /api/v1/manage/content/:id/references?fieldId=author
+```
+
+### Back-References (Where-Used)
+
+Find which content items reference a given item (incoming references):
+
+```bash
+GET /api/v1/manage/content/:id/back-references
+```
+
+This is useful for impact analysis — for example, before deleting a content item, you can check what would break.
+
+## Usage Tracking
+
+Get detailed information about how a content item is referenced:
+
+```bash
+# Detailed usage information
+GET /api/v1/manage/content/:id/usage
+
+# Check if safe to delete (no incoming references)
+GET /api/v1/manage/content/:id/can-delete
+```
+
+The `can-delete` check returns:
+
+```json
+{
+  "data": {
+    "canDelete": false,
+    "referencedBy": [
+      { "contentId": "uuid", "contentType": "news", "title": "Article Title", "fieldId": "author" }
+    ]
+  }
+}
+```
+
+<Callout kind="tip">
+  The content editor shows a warning when you try to delete content that is referenced by other items. Use `?force=true` on the delete endpoint to bypass this check.
+</Callout>
+
+## Parent-Child Hierarchy
+
+Content items can be organized into a **tree structure** using parent-child relationships. This is useful for categories, documentation sections, product catalogs, or any hierarchical content.
+
+### Setting a Parent
+
+```bash
+# Set parent
+PUT /api/v1/manage/content/:id/parent
+{ "parentId": "parent-uuid" }
+
+# Remove parent (make root-level)
+PUT /api/v1/manage/content/:id/parent
+{ "parentId": null }
+```
+
+### Navigating the Tree
+
+```bash
+# Get direct children of a content item
+GET /api/v1/manage/content/:id/children
+
+# Get ancestor chain (breadcrumb trail from root to parent)
+GET /api/v1/manage/content/:id/ancestors
+```
+
+The ancestors endpoint returns an ordered array from root to immediate parent — useful for rendering breadcrumb navigation.
+
+### Tree Views
+
+Get a hierarchical tree of content items:
+
+```bash
+# Get root-level tree
+GET /api/v1/manage/content/tree
+
+# Get subtree starting from a specific parent
+GET /api/v1/manage/content/tree/:parentId
+
+# Filter by content types and control depth
+GET /api/v1/manage/content/tree?contentTypes=category,subcategory&depth=3
+```
+
+#### Query Parameters
+
+<ParamField query="contentTypes" param-type="string" required="false">
+  Comma-separated content type IDs to include in the tree.
+</ParamField>
+
+<ParamField query="depth" param-type="integer" required="false">
+  Maximum tree depth to return (default: unlimited).
+</ParamField>
+
+### Moving Items in the Tree
+
+Move a content item to a new parent and/or change its position among siblings:
+
+```bash
+POST /api/v1/manage/content/:id/move
+{
+  "parentId": "new-parent-uuid",
+  "position": 2
+}
+```
+
+Set `parentId` to `null` to move an item to the root level. The `position` field determines the sort order among siblings (0-indexed).
+
+## Use Cases
+
+<Columns cols={2}>
+  <Card title="Article → Author" icon="user">
+    A news article references an author profile via a single reference field. The author profile's back-references show all articles they've written.
+  </Card>
+  <Card title="Category Tree" icon="folder-tree">
+    Categories and subcategories form a parent-child hierarchy. The tree endpoint renders the full category navigation.
+  </Card>
+  <Card title="Related Content" icon="link">
+    An event links to related events, venues, and speakers via multi-reference fields. The editor shows these as selectable lists.
+  </Card>
+  <Card title="Documentation Sections" icon="book-open">
+    Documentation pages are organized into chapters and sections using parent-child relationships, with drag-and-drop reordering.
+  </Card>
+</Columns>
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/manage/content/:id/references` | Get outgoing references |
+| `PUT` | `/api/v1/manage/content/:id/references` | Set references for a field |
+| `GET` | `/api/v1/manage/content/:id/back-references` | Get incoming references |
+| `GET` | `/api/v1/manage/content/:id/usage` | Get detailed usage info |
+| `GET` | `/api/v1/manage/content/:id/can-delete` | Check if safe to delete |
+| `PUT` | `/api/v1/manage/content/:id/parent` | Set or remove parent |
+| `GET` | `/api/v1/manage/content/:id/children` | Get direct children |
+| `GET` | `/api/v1/manage/content/:id/ancestors` | Get ancestor chain |
+| `GET` | `/api/v1/manage/content/tree` | Get root-level tree |
+| `GET` | `/api/v1/manage/content/tree/:parentId` | Get subtree from parent |
+| `POST` | `/api/v1/manage/content/:id/move` | Move in tree |
