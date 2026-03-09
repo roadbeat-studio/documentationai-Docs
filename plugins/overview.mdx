@@ -8,18 +8,34 @@ description: Understand how roadbeat Studio's plugin architecture enables Pro fe
 roadbeat Studio uses a **plugin architecture** to separate Community Edition (CE) features from Pro features. CE defines well-documented extension points; Pro features are developed as separate plugin packages that are loaded at runtime.
 
 ```mermaid
-graph LR
-    CE[Studio CE<br/>AGPL 3.0] -->|exports| SDK[@roadbeat/plugin-sdk]
-    SDK -->|imports| WF[pro-workflows]
-    SDK -->|imports| AU[pro-audit]
-    SDK -->|imports| SC[pro-scheduling]
-    SDK -->|imports| GQ[pro-graphql]
-    SDK -->|imports| RT[pro-realtime]
-    CE -->|loads at runtime| WF
-    CE -->|loads at runtime| AU
-    CE -->|loads at runtime| SC
-    CE -->|loads at runtime| GQ
-    CE -->|loads at runtime| RT
+graph TD
+    CE["Studio CE (AGPL 3.0)"]
+    SDK["plugin-sdk"]
+    CE -->|exports| SDK
+    SDK -->|imports| WF["pro-workflows"]
+    SDK -->|imports| AU["pro-audit"]
+    SDK -->|imports| SC["pro-scheduling"]
+    SDK -->|imports| GQ["pro-graphql"]
+    SDK -->|imports| RT["pro-realtime"]
+    SDK -->|imports| EX["pro-export"]
+    SDK -->|imports| IM["pro-import"]
+    SDK -->|imports| VR["pro-versioning"]
+    SDK -->|imports| EN["pro-environments"]
+    SDK -->|imports| MD["pro-media"]
+    SDK -->|imports| LK["pro-locking"]
+    SDK -->|imports| AR["pro-advanced-roles"]
+    CE -.->|loads at runtime| WF
+    CE -.->|loads at runtime| AU
+    CE -.->|loads at runtime| SC
+    CE -.->|loads at runtime| GQ
+    CE -.->|loads at runtime| RT
+    CE -.->|loads at runtime| EX
+    CE -.->|loads at runtime| IM
+    CE -.->|loads at runtime| VR
+    CE -.->|loads at runtime| EN
+    CE -.->|loads at runtime| MD
+    CE -.->|loads at runtime| LK
+    CE -.->|loads at runtime| AR
 ```
 
 **Key principles:**
