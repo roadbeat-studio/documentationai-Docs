@@ -69,25 +69,59 @@ The **Compass** is the goal management center. Users define personal goals acros
 # Get user's goal portfolio
 GET /api/v1/consumer/goals
 
-# Save updated goal portfolio
-PUT /api/v1/consumer/goals
-{ "goals": [...] }
+# Create a single goal
+POST /api/v1/consumer/goals
+{ "templateId": "...", "categoryId": "...", "subcategoryId": "...",
+  "name": "...", "parameters": {}, "timeHorizon": "year" }
 
-# Get goal categories
+# Create multiple goals at once
+POST /api/v1/consumer/goals/bulk
+{ "goals": [{ "templateId": "...", "name": "...", "timeHorizon": "month", ... }] }
+
+# Update a goal
+PATCH /api/v1/consumer/goals/:goalId
+{ "name": "...", "timeHorizon": "year" }
+
+# Delete a goal
+DELETE /api/v1/consumer/goals/:goalId
+```
+
+### Goal Browsing & Search
+
+```bash
+# Get goal tree categories (e.g., personal, business)
 GET /api/v1/consumer/goals/categories
 
-# Get goal templates for a category
-GET /api/v1/consumer/goals/templates/:categoryId
+# Get categories with subcategories for a goal tree
+GET /api/v1/consumer/goals/trees/:treeId/categories
+
+# Get individual goals for a subcategory
+GET /api/v1/consumer/goals/subcategories/:subcategoryId
+
+# Search goals (MeiliSearch-powered)
+GET /api/v1/consumer/goals/search?q=mentor&treeId=personal
 ```
 
 ### Goal Structure
 
 Goals are organized hierarchically:
 
-- **Category** — e.g., Learning & Knowledge, Career & Professional
-- **Subcategory** — e.g., Books & Reading, Language Learning
-- **Goal** — e.g., "Read {{number}} books about {{topic}}"
+- **Goal Tree** — e.g., Personal, Business, Publisher, Private Group
+- **Category** — e.g., Career & Professional, Learning & Knowledge
+- **Subcategory** — e.g., Career Networking, Language Learning
+- **Goal** — e.g., "Find mentors in {{field}}" with typed parameters
 - **Time Horizon** — Life, Year, Month, Week, Day
+
+### Goal Editor Wizard
+
+The goal editor is a 4-step wizard:
+
+1. **Select goal tree** — choose a category (Personal, Business, etc.)
+2. **Browse & multi-select** — expandable tree or search with checkbox multi-selection
+3. **Customize goals** — scrollable list of selected goals with inline parameter inputs (text fields, searchable dropdowns) and per-goal time horizon selection
+4. **Confirm** — review goals with the ability to remove individual goals before saving
+
+Goals with parameterized text templates (e.g., `"Visit national parks in {{country}}"`) render inline input fields within the sentence. Parameters may include suggestions or options for searchable dropdowns. Time horizon is intelligently preselected from the goal's `time_context` metadata when a single value exists.
 
 ## Discover
 

@@ -3,6 +3,20 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-10" description="v0.9.1" tags={["feature"]}>
+## Goal editor redesign
+
+- **Multi-select goals** — Step 2 now supports selecting multiple goals at once with checkbox toggles and a selection count badge
+- **Per-goal customization** — Step 3 displays a scrollable list of selected goal cards, each with inline parameter inputs and integrated time horizon selection
+- **Goal removal** — Step 4 (Confirm) shows goal cards with an X button to remove individual goals before saving
+- **Bulk save API** — New `POST /api/v1/consumer/goals/bulk` endpoint for creating multiple goals in a single request
+- **Inline parameter inputs** — Goal text templates render with embedded text fields and searchable dropdowns for parameters with suggestions
+- **Time horizon preselection** — Automatically selects horizon when a goal has exactly one `time_context` value; shows suggested horizons with grey background when multiple options exist
+- **Horizon normalization** — Short forms (`y`, `m`, `w`, `d`, `l`) are normalized to full words (`year`, `month`, `week`, `day`, `life`) throughout the UI
+- **Compact goal cards** — Goal list cards now show parameters and time horizon on a single line with the horizon badge right-aligned
+- **Search results mapping** — Fixed MeiliSearch camelCase-to-snake_case field mapping for goal search results
+</Update>
+
 <Update label="2026-03-09" description="v0.9.0" tags={["feature"]}>
 ## What changed
 - **Consumer Features** — full consumer library with Compass, Discover, Publishers, Bookmarks, Notifications, Content Detail, Sync, Profile & Settings, Help, About
