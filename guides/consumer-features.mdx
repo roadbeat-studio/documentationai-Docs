@@ -112,6 +112,19 @@ Goals are organized hierarchically:
 - **Goal** — e.g., "Find mentors in {{field}}" with typed parameters
 - **Time Horizon** — Life, Year, Month, Week, Day
 
+### Compass Views
+
+The Compass page adapts its layout based on the selected time horizon filter:
+
+- **"All" selected** — displays category cards in a grid (e.g., "Business & Organisation Goals", "Personal Goals"), each showing goal count and description. Click a card to drill into that category.
+- **Specific horizon selected** (Life, Year, Month, Week, Day) — switches to a flat goal list grouped by category name. Each group shows a category heading followed by goal cards with parameters and horizon badges. Only categories with matching goals are shown.
+
+The time horizon filter is also available inside the **category detail view** — when viewing a single category's goals, the same horizon tabs appear above the goal list, and the goal count in the header updates to reflect the filtered results.
+
+<Callout kind="info">
+  Time horizons are stored in both abbreviated (`l`, `y`, `m`, `w`, `d`) and full (`life`, `year`, `month`, `week`, `day`) forms. The UI normalizes both formats automatically, so filtering works regardless of how the horizon was originally saved.
+</Callout>
+
 ### Goal Editor Wizard
 
 The goal editor is a 4-step wizard:
