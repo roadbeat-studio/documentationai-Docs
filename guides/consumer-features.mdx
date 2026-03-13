@@ -173,8 +173,48 @@ GET /api/v1/consumer/discover/facets/:contentType
 - **Goal tabs** — filter results by active goals with count badges
 - **View modes** — List, Cards, Calendar
 - **Sort controls** — by relevance, date, or other fields
-- **"Why am I seeing this?"** — transparency drawer explaining content matching
+- **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
 - **Active filter pills** — dismissible badges showing current filters
+
+### Transparency Drawer
+
+The **"Why am I seeing this?"** drawer is a slide-over panel that explains why a specific piece of content was recommended. It opens when the user taps the info icon on any content card.
+
+The drawer displays:
+
+- **Teaser summary** — title, content type, publisher, and thumbnail
+- **Goal match indicator** — a dynamic status box:
+  - 🟢 **Goal match** (green) — when one or more user goals matched the content
+  - 🔵 **Content match** (blue) — when content was found via search criteria without a specific goal match, or when the user has no goals set up
+- **Relevance score** — visual progress bar showing the search relevance percentage
+- **Matched goals** — list of user goals that relate to this content, displayed as green badges with checkmark icons, showing goal name and category. If no goals matched, an informative message is shown instead:
+  - *"No specific goal matched this content"* — when the user has goals but none overlap
+  - *"No goals set up yet"* — when the user hasn't created any goals on the Compass page
+- **Matching criteria** — badges showing content classification tags (e.g., "technology", "environment")
+- **Adjust your results** — action links:
+  - **Edit your goals** — navigates to the Compass page (`/consumer/compass`)
+  - **Adjust location settings** — navigates to Profile Settings (`/consumer/profile/settings`)
+  - **Hide content from this publisher** — publisher-level content filtering
+
+#### Goal Matching Logic
+
+The drawer determines matched goals using a three-tier strategy:
+
+<Steps>
+  <Step title="Direct match">
+    If the content was found via a **goal-based search** (`POST /discover/by-goal`), the teaser carries the originating `goalId`. This provides a guaranteed match.
+  </Step>
+  <Step title="Active goal tab">
+    If the user has a **goal tab selected** in the Discover view, that goal is used as the match context.
+  </Step>
+  <Step title="Fuzzy matching">
+    As a fallback, the system compares the content's **badges and content type** against the user's goal names and categories using partial substring matching. For example, a teaser with the badge "technology" would match a goal named "Follow developments in technology".
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  Setting up goals on the Compass page significantly improves the transparency drawer experience — it enables the system to show exactly which goals led to each content recommendation.
+</Callout>
 
 ## Publishers
 
@@ -325,20 +365,57 @@ GET /api/v1/consumer/sync/token/:token
 GET /api/v1/consumer/sync/qr
 ```
 
-## User Profile & Settings
+## Discover Settings
+
+The **Discover Settings** page (`/consumer/settings`) is a unified settings experience that combines profile management and consumer preferences into a single page with 7 card sections.
+
+<Callout kind="info">
+  Studio users have two identities: a **Studio account** (CMS admin login) and a **Discover profile** (identity on the roadbeat network). The Discover profile is automatically linked to the Studio account via the Context Directory. Users manage their Discover profile and preferences on this page, while Studio-level settings (organization, API keys, etc.) remain under System → Settings.
+</Callout>
+
+### Settings Sections
+
+| Section | Description |
+|---------|-------------|
+| **Discover Profile** | Display name (editable), email (read-only, managed by Studio account), CD link status |
+| **Language & Region** | Preferred locale (24 EU languages), country (ISO 3166-1), region |
+| **Privacy** | Toggles for goal sync, follows sync, bookmarks sync, location sharing, analytics consent |
+| **Notifications** | Goal digest frequency (daily/weekly/off), publisher updates, bookmark reminders, system announcements, browser push |
+| **Content Preferences** | Enable/disable content types in Discover feed (news, events, jobs, courses, recipes, real estate, press releases) |
+| **Discovery Nodes** | Select which Discovery Nodes to query, with online/offline status badges |
+| **Security** | Change password (current + new + confirm) |
+
+### Profile API
+
+The profile endpoint returns Studio user data as the primary source, enriched with Context Directory data when available:
 
 ```bash
-# Get/update profile
-GET /api/v1/consumer/user/profile
-PUT /api/v1/consumer/user/profile
+# Get user profile (composite: Studio + CD)
+GET /api/v1/consumer/user
+
+# Update profile
+PUT /api/v1/consumer/user
 
 # Change password
 PUT /api/v1/consumer/user/password
+```
 
-# Get/update preferences
-GET /api/v1/consumer/user/preferences
-PUT /api/v1/consumer/user/preferences
+### Notification Preferences API
 
+```bash
+# Get notification preferences (auto-creates defaults on first access)
+GET /api/v1/consumer/notifications/preferences
+
+# Update notification preferences
+PUT /api/v1/consumer/notifications/preferences
+
+# Get unread notification count
+GET /api/v1/consumer/notifications/unread-count
+```
+
+### GDPR & Data
+
+```bash
 # GDPR data export
 POST /api/v1/consumer/user/export
 GET /api/v1/consumer/user/export/:token
@@ -347,6 +424,13 @@ GET /api/v1/consumer/user/export/:token
 POST /api/v1/consumer/user/delete
 POST /api/v1/consumer/user/delete/cancel
 ```
+
+### Database Schema
+
+Consumer notifications are stored in the Studio database (not the Context Directory):
+
+- **`notifications`** — `id`, `user_id` (FK → users), `type`, `title`, `body`, `data` (JSONB), `action_url`, `is_read`, `created_at`
+- **`notification_preferences`** — `id`, `user_id` (unique, FK → users), `goal_digest_frequency` (default: weekly), `publisher_updates`, `bookmark_reminders`, `system_announcements`, `browser_push`
 
 ## Shared Services
 
