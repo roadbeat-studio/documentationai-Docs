@@ -119,6 +119,10 @@ The Compass page adapts its layout based on the selected time horizon filter:
 - **"All" selected** — displays category cards in a grid (e.g., "Business & Organisation Goals", "Personal Goals"), each showing goal count and description. Click a card to drill into that category.
 - **Specific horizon selected** (Life, Year, Month, Week, Day) — switches to a flat goal list grouped by category name. Each group shows a category heading followed by goal cards with parameters and horizon badges. Only categories with matching goals are shown.
 
+### Goal Reordering
+
+Goals can be reordered via **drag-and-drop** (Angular CDK). Users grab a goal card and drag it to a new position within the list. The new sort order is persisted automatically via the API.
+
 The time horizon filter is also available inside the **category detail view** — when viewing a single category's goals, the same horizon tabs appear above the goal list, and the goal count in the header updates to reflect the filtered results.
 
 <Callout kind="info">
@@ -135,6 +139,10 @@ The goal editor is a 4-step wizard:
 4. **Confirm** — review goals with the ability to remove individual goals before saving
 
 Goals with parameterized text templates (e.g., `"Visit national parks in {{country}}"`) render inline input fields within the sentence. Parameters may include suggestions or options for searchable dropdowns. Time horizon is intelligently preselected from the goal's `time_context` metadata when a single value exists.
+
+#### Editing Existing Goals
+
+When editing an existing goal, the editor opens directly at step 3. For goals with parameters, the **standardized goal text** is reconstructed with inline variable inputs pre-filled with the current parameter values — the same UI as the add flow. The full resolved title is shown as an editable text field below the template line. Changing a variable automatically updates the full title. Custom goals (without parameters) show only the title input.
 
 ## Discover
 
@@ -170,7 +178,7 @@ GET /api/v1/consumer/discover/facets/:contentType
 ### Frontend Features
 
 - **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles)
-- **Goal tabs** — filter results by active goals with count badges
+- **Goal group tabs** — two-level tab navigation: the first row shows goal categories (e.g., "Business & Organisation Goals", "Personal Goals") plus an "All Goals" tab; selecting a category reveals a second row of individual goal tabs within that category. Tab order follows the user's Compass sort order. Selecting a goal tab triggers a goal-based search.
 - **View modes** — List, Cards, Calendar
 - **Sort controls** — by relevance, date, or other fields
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance

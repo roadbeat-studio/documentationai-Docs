@@ -3,6 +3,15 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-14" description="v0.9.5" tags={["feature", "bugfix"]}>
+## Compass & Discover UX improvements
+
+- **Drag-and-drop goal reordering** — replaced up/down arrow buttons on goal cards with Angular CDK drag-and-drop, allowing users to reorder goals by dragging within their Compass portfolio
+- **Segment-based editing in goal editor** — when editing an existing goal, the standardized goal text with inline variable inputs is now shown (same as the add flow), with the full title editable below; parameter changes automatically update the resolved goal name
+- **Two-level goal group tabs in Discover** — the Discover page now shows goal category tabs (e.g., "Business & Organisation Goals", "Personal Goals") as a first level, with individual goals as a second-level tab row beneath; tab order follows the user's Compass sort order
+- **Improved Discovery Node error messages** — the BFF now includes the Axios error code (e.g., `ECONNREFUSED`) when a Discovery Node is unreachable, instead of showing an empty error message
+</Update>
+
 <Update label="2026-03-13" description="v0.9.4" tags={["feature", "bugfix"]}>
 ## Unified Discover Settings & API fixes
 
