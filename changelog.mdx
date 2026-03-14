@@ -3,6 +3,32 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-14" description="v0.9.6" tags={["feature", "bugfix"]}>
+## Goal-driven search & bookmarking
+
+**Goal-based content filtering**
+- **All Goals active by default** — the Discover page now uses the user's entire goal portfolio to filter content on initial load, combining all content_queries into a single batched Elasticsearch `bool.should` query for sub-100ms performance
+- **Six search modes** — All Goals (default), Goal Group (category tab), Single Goal, Browse All (unfiltered), Random/Surprise, and Followed Publishers Only (toggle filter)
+- **Batched ES query architecture** — instead of one HTTP request per content_query (which would mean 150+ requests for 50 goals), all queries are sent in a single request to the Discovery Node's new `POST /search/by-goals` endpoint
+- **Random/Surprise mode** — "✨ Random" button uses Elasticsearch `function_score` with `random_score` for serendipitous content discovery, with optional light bias from user's goal categories
+- **"All" button** — browse all content without goal filtering, using manual facet filters and full-text search
+- **Content_queries resolved at portfolio load** — goal definitions are fetched from the Context Directory once (cached in Redis for 30 minutes), `{{param}}` placeholders substituted with user values, and attached to each goal for instant use in searches
+
+**Bookmark popover**
+- **Collection selector** — clicking the bookmark icon on any card opens a centered modal dialog showing all bookmark collections with checkboxes
+- **Last-used collection pre-selected** — the most recently used collection is automatically checked for new bookmarks (persisted in localStorage)
+- **Inline collection creation** — "New collection" button reveals an inline text input; created collections immediately appear in the list and get selected
+- **Update & remove** — already-bookmarked teasers show "Update" and "Remove bookmark" options
+- **Teaser preview** — the dialog shows the content title, type, and publisher for confirmation
+
+**Discover UX improvements**
+- **Scrollable facet lists** — filter groups with more than 8 options are now height-limited (240px) with overflow scrolling and a search-as-you-type input that filters by label or key
+- **Publication date filter** — new dropdown with preset timespans (Today, Last 7 days, Last 30 days, This month, This quarter, This year) and custom from/to date pickers with locale-aware formatting
+- **DN request debug panel** — collapsible `<details>` block below search results showing the exact JSON payloads sent to each Discovery Node, for Elasticsearch query debugging during development
+- **Goal tab filter fix** — resolved "property filters should not exist" validation error when clicking goal tabs by adding `filters` and `contentQueries` to `GoalSearchDto`
+- **Filter path mapping** — goal catalog paths (`category.tags`, `category.categories`) correctly mapped to DN classification paths (`classification.tags`, `classification.categories`); content-type-specific fields like `event_type` are ignored since the teaser generator doesn't populate them
+</Update>
+
 <Update label="2026-03-14" description="v0.9.5" tags={["feature", "bugfix"]}>
 ## Compass & Discover UX improvements
 
