@@ -179,10 +179,26 @@ GET /api/v1/consumer/discover/facets/:contentType
 
 - **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles)
 - **Goal group tabs** — two-level tab navigation: the first row shows goal categories (e.g., "Business & Organisation Goals", "Personal Goals") plus an "All Goals" tab; selecting a category reveals a second row of individual goal tabs within that category. Tab order follows the user's Compass sort order. Selecting a goal tab triggers a goal-based search.
-- **View modes** — 8 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (coming soon), 3D Globe (coming soon)
+- **View modes** — 8 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (coming soon)
 - **Sort controls** — by relevance, date, or other fields
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
 - **Active filter pills** — dismissible badges showing current filters
+
+### Map View
+
+The **Map** view mode renders content with geographic coordinates on an interactive map using [Leaflet](https://leafletjs.com/) with OpenStreetMap tiles.
+
+- **Marker clustering** — nearby markers are grouped into cluster badges that show the count and expand on zoom or click. Cluster sizes: small (blue, &lt;10), medium (amber, 10–99), large (red, 100+).
+- **Popup cards** — clicking a marker opens a vertical popup card matching the teaser grid card design: full-width hero image, content type badge, publisher name, title (2-line clamp), description (2-line clamp), and a footer with publication date and info/bookmark action buttons.
+- **Facet sidebar** — the map renders inside the content area alongside the facet sidebar, so all filters (content type, language, topic, publisher, date) remain accessible.
+- **Auto-fit bounds** — the map zooms to fit all visible markers with padding.
+- **Reactive** — markers update dynamically when filters, goal tabs, or search queries change.
+
+<Callout kind="info">
+  Only teasers with `location.lat` and `location.lon` appear on the map. The badge in the top-right corner shows the count of geo-tagged items out of the total result set.
+</Callout>
+
+The backend extracts geographic coordinates from the Discovery Node response at `geographic.locations[0].coordinates` and maps them to the `TeaserDto.location` field with `lat`, `lon`, and `name`.
 
 ### Transparency Drawer
 

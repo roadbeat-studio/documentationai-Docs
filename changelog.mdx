@@ -3,6 +3,25 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-15" description="v0.9.7" tags={["feature"]}>
+## Interactive map view in Discover
+
+**Map view**
+- **Leaflet + OpenStreetMap** — the Discover page now includes a fully interactive map view using Leaflet with OpenStreetMap tiles, accessible via the map icon in the view mode toggle bar
+- **Marker clustering** — nearby markers are grouped into cluster badges (blue &lt;10, amber 10–99, red 100+) that expand on zoom or click, powered by Leaflet.markercluster
+- **Vertical popup cards** — clicking a marker opens a rich popup card matching the teaser grid card design: full-width hero image, content type badge, publisher name, title (2-line clamp), description (2-line clamp), publication date, and info/bookmark action buttons
+- **Facet sidebar visible** — unlike the calendar view, the map renders inside the content area alongside the facet sidebar, so users can filter by content type, language, topic, publisher, and date while viewing the map
+- **Auto-fit bounds** — the map automatically zooms to fit all visible markers with padding, up to zoom level 14
+- **Reactive to filters** — changing any filter, goal tab, or search query dynamically updates the markers on the map
+- **Dark mode support** — popup cards, cluster badges, and action buttons adapt to dark mode
+
+**Backend geo data pipeline**
+- **TeaserDto extended** — `location` field now includes `lat`, `lon`, and `name` for geographic coordinates
+- **mapHitToTeaser extraction** — the BFF extracts `geographic.locations[0].coordinates` from Discovery Node responses and maps them to the teaser DTO
+- **extractGeographic fix** — the teaser generator now correctly handles both structured `geographic` objects and single `location` objects with `latitude`/`longitude` coordinate keys
+- **Coordinate format fix** — standardized on `lon` (matching Elasticsearch `geo_point`) instead of `lng` throughout the backend
+</Update>
+
 <Update label="2026-03-14" description="v0.9.6" tags={["feature", "bugfix"]}>
 ## Goal-driven search & bookmarking
 
