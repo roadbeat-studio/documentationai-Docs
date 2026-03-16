@@ -3,6 +3,34 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-16" description="v0.9.10" tags={["feature"]}>
+## Lucide content type icons across all views
+
+**Shared icon utility**
+- **51 content type icons** — created a shared `content-type-icons` utility in the `@roadbeat/consumer` library providing Lucide-style SVG icon paths, complete inline SVG rendering, and per-category color mappings for all 51 content types
+- **Three helper functions** — `getContentTypeIconPaths()` for raw SVG paths, `getContentTypeIconSvg()` for complete inline SVG elements, and `getContentTypeColor()` for category-based colors
+
+**Content type list (Studio admin)**
+- **Lucide icons in admin list** — the Content Types management page now shows content-type-specific Lucide icons instead of emojis, rendered via the `rb-lucide-icon` component
+
+**Discover view cards**
+- **List view** — content type badges now include a 14px Lucide icon before the type name
+- **Tile view** — overlay badges on tile cards include content type icons
+- **Compact view** — inline badges display a 12px icon alongside the type name
+- **Feed view** — full icon treatment: avatar fallback icon (20px), content type indicator (16px), and badge icon (12px) all use content-type-specific Lucide SVGs
+
+**Facet sidebar**
+- **Filter list icons** — the Content Types filter group in the facet sidebar now displays a 16px Lucide icon next to each content type checkbox label
+
+**OpenStreetMap 2D map**
+- **Custom circle markers** — replaced default blue Leaflet pin markers with custom `divIcon` markers: 36px white circles with a color-coded border and content-type-specific SVG icon inside (e.g., calendar for events, briefcase for jobs, pen for blog posts)
+- **Popup badge spacing** — fixed missing gap between the SVG icon and content type text in map popup cards
+
+**3D Globe**
+- **SVG icon markers** — replaced emoji markers with Lucide SVG icons inside the colored circle markers, matching the new 2D map marker style
+- **SVG icons in popup badges** — globe popup cards now show the Lucide icon inline with the content type name
+</Update>
+
 <Update label="2026-03-16" description="v0.9.9" tags={["feature"]}>
 ## Calendar week view & dynamic teaser count
 
