@@ -3,6 +3,29 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-16" description="v0.9.11" tags={["feature"]}>
+## Schema-driven content-type-specific filters in Discover
+
+**Teaser enrichment**
+- **`enrichTypeFilters()`** — generic schema-driven method in `TeaserGeneratorService` that reads `x-filter` annotations from the content type's metadata schema (via Schema Registry) and extracts filterable values into `teaser.type_filters` at publish time
+- **Pattern support** — handles all x-filter extraction patterns: simple values (A), object with value_path (B), arrays (C), arrays of objects with value_path (D)
+- **Non-fatal** — if the Schema Registry is unreachable, the teaser is still valid without `type_filters`
+
+**Consumer BFF**
+- **`translateBffFilters()` rewrite** — cleanly passes through `type_filters.*` keys to the Discovery Node alongside existing DN-native paths
+- **`FacetGroupDto` expanded** — added `content_type_specific`, `ui_hint`, `unit`, `labels`, `priority` fields to the BFF facet DTO
+- **Facet metadata pass-through** — both BFF facet mapping locations now forward type-specific metadata from DN aggregation responses
+
+**Discover UI**
+- **Computed signals** — `selectedSingleContentType`, `globalFacets`, `typeSpecificFacets` in `DiscoverStateService` for reactive type-specific filter rendering
+- **`ContentTypeFilterHeaderComponent`** — colored divider between global and type-specific filters with content type icon, accent color, and active filter count
+- **Type-specific filter section** — appears in the facet sidebar when a single content type is selected, showing schema-driven filters below the global ones
+- **Chips widget** — new pill/chip toggle rendering for small enum facets (≤6 values or `ui_hint: "chips"`)
+- **Range units** — range filter inputs now display unit labels (m², min, €) from the schema
+- **Auto-clear** — type-specific filters (`type_filters.*`) are automatically cleared when the content type selection changes to multi or none
+- **Violet filter pills** — active type-specific filters show as violet-tinted dismissible pills in the `ActiveFiltersComponent`, visually distinct from global brand-colored pills
+</Update>
+
 <Update label="2026-03-16" description="v0.9.10" tags={["feature"]}>
 ## Lucide content type icons across all views
 
