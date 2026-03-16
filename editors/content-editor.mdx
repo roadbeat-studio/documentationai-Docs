@@ -144,6 +144,20 @@ Fields are validated both inline (as you type) and on save/publish:
 
 Validation errors are shown inline below each field and summarized in a notification if publish is blocked.
 
+## Nested Field Paths
+
+Form schemas use **dot-notation field IDs** to reference nested properties in the content data structure. For example, a field with `field_id: "editorial.is_breaking"` maps to the nested path `data.editorial.is_breaking`.
+
+The content editor handles this transparently:
+
+- **Reading** — `getFieldValue("editorial.is_breaking")` traverses the nested object path `data → editorial → is_breaking`
+- **Writing** — `updateField("editorial.is_breaking", true)` creates intermediate objects as needed and sets the value at the correct nested path
+- **All field types** — dot-notation is supported for all accessor methods: `getStringValue()`, `getBooleanValue()`, `getNumberValue()`, `getArrayValue()`, `getLocalizedStringValue()`, and `getBlocksValue()`
+
+<Callout kind="info">
+  Top-level field IDs (without dots) continue to work as before — they read and write directly on the root data object.
+</Callout>
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
