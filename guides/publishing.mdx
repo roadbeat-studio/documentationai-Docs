@@ -21,7 +21,7 @@ When you publish content, Studio executes this pipeline:
     The content is validated against its JSON Schema. Required fields are checked, and reference integrity is verified. If validation fails, the publish is blocked with a detailed error.
   </Step>
   <Step title="Generate Teaser" icon="file-text">
-    A teaser is generated from the full content using the content type's **teaser schema**. The teaser contains only the fields needed for search and preview — title, description, classification, temporal and geographic data.
+    A teaser is generated from the full content using the content type's **teaser schema**. The teaser contains only the fields needed for search and preview — title, description, classification, temporal and geographic data. Additionally, **content-type-specific filter values** are extracted from `x-filter` schema annotations into `teaser.type_filters` (see [Type Filters](#type-filters) below).
   </Step>
   <Step title="Sign with Ed25519" icon="key">
     The teaser is signed with the publisher's **Ed25519 private key**. Discovery Nodes verify this signature to ensure content authenticity and prevent tampering.
@@ -161,3 +161,44 @@ This is handled by the `PublishingEventListener` which listens to `content.after
 | `GET` | `/api/v1/manage/publishing/keys` | List publisher keys |
 | `GET` | `/api/v1/manage/publishing/keys/:id/public` | Get public key |
 | `POST` | `/api/v1/manage/publishing/keys/rotate` | Rotate publisher keys |
+
+## Type Filters
+
+When generating a teaser, Studio automatically extracts **content-type-specific filter values** from the content data using `x-filter` annotations in the metadata schema. These values are stored in `teaser.type_filters` and indexed by Discovery Nodes for faceted filtering.
+
+### How it works
+
+The `TeaserGeneratorService` fetches the content type's metadata schema from the Schema Registry and walks its properties recursively:
+
+<Steps>
+  <Step title="Fetch schema" icon="download">
+    The metadata schema is fetched from the Schema Registry (e.g., `news-metadata.schema.json`) which contains `x-filter` annotations on filterable properties.
+  </Step>
+  <Step title="Walk properties" icon="search">
+    The `walkSchemaForFilters()` method recursively traverses schema properties, looking for `x-filter.enabled: true` annotations. It resolves values from both **nested object paths** (e.g., `data.editorial.is_breaking`) and **flat dot-notation keys** (e.g., `data["editorial.is_breaking"]`) for backwards compatibility.
+  </Step>
+  <Step title="Extract values" icon="filter">
+    Values are extracted based on their type: simple strings/numbers/booleans are passed through directly, objects use `value_path` for nested extraction, and arrays handle mixed content (plain strings + objects with value_path).
+  </Step>
+  <Step title="Attach to teaser" icon="package">
+    Extracted values are stored in `teaser.type_filters` as a flat key-value map (e.g., `{ is_breaking: true, article_type: "analysis", editorial_priority: "normal" }`).
+  </Step>
+</Steps>
+
+### Boolean values
+
+Boolean fields (e.g., `is_breaking`, `is_exclusive`, `is_free`) are stored as native ES booleans (`true`/`false`). The Discovery Node's query builder automatically coerces frontend string values (`"1"`, `"0"`) to proper booleans when building Elasticsearch queries.
+
+<Callout kind="tip">
+  To add new filters to any content type, add an `x-filter` annotation to the property in its metadata schema. No code changes are needed — the enrichment pipeline picks up new annotations automatically.
+</Callout>
+
+### Republishing
+
+After schema changes or code updates affecting filter extraction, use the bulk republish endpoint to re-index all content:
+
+```bash
+POST /api/v1/manage/publishing/republish-all
+```
+
+This regenerates teasers for all published content and redistributes them to Discovery Nodes.

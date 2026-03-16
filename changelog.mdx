@@ -3,6 +3,25 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-16" description="v0.9.12" tags={["feature", "bugfix"]}>
+## Discover UI refinements, boolean filter fix & content editor nested paths
+
+**Discover UI**
+- **Humanized content type names** — a new `HumanizeContentTypePipe` transforms content type slugs (e.g., `blog-post`) into display names (`Blog Post`) across all view modes: grid cards, compact cards, feed cards, large list, large tile, content type badges, bookmark popovers, and the transparency drawer
+- **Filter header styling** — content-type-specific filter headers now use a violet background matching the active filter badge color, with no borders and equal top/bottom padding
+- **i18n active filter labels** — active filter badges now resolve i18n-translated labels from facet bucket data instead of displaying raw enum codes (e.g., "Analysis" instead of `analysis`)
+- **Boolean toggle switches** — boolean facets (e.g., "Exclusive", "Breaking News", "Free content") now render as compact one-liner toggle switches instead of checkboxes, with aggregation doc counts displayed next to the label
+
+**Boolean filter fix**
+- **Root cause** — boolean filters returned no results because the form editor saved dot-notation field IDs (e.g., `editorial.is_breaking`) as flat object keys instead of nested object paths, causing the `enrichTypeFilters` schema walker to read stale seed data instead of user-edited values
+- **Form editor fix** — `updateField()` and all field accessors (`getFieldValue`, `getBooleanValue`, `getStringValue`, etc.) now handle dot-notation field IDs as nested object paths via new `setNestedValue()`/`getNestedValue()` helpers
+- **`walkSchemaForFilters` fallback** — the teaser generator's schema walker now accepts a `rootData` parameter and falls back to flat dot-notation keys in the root data when the nested value is missing, ensuring compatibility with legacy content data
+- **Boolean pass-through** — reverted boolean-to-string normalization (`true` → `"1"`) since Elasticsearch already has boolean-typed `type_filters` fields; booleans are now passed through as-is, with the Discovery Node query builder coercing `"1"`/`"0"` to `true`/`false` on the query side
+
+**Active filter badge labels**
+- **Content type humanization** — active filter badges humanize content type values (e.g., "News" instead of `news`)
+</Update>
+
 <Update label="2026-03-16" description="v0.9.11" tags={["feature"]}>
 ## Schema-driven content-type-specific filters in Discover
 
