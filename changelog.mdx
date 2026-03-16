@@ -3,6 +3,22 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-16" description="v0.9.9" tags={["feature"]}>
+## Calendar week view & dynamic teaser count
+
+**Week view drill-down**
+- **"+N more" switches to week view** — clicking the "+N more" link on any day in the monthly calendar now opens a dedicated week view (Monday–Sunday) for that day's week, showing all teasers without truncation
+- **Full teaser list per day** — week view displays every teaser with title, color-coded content type badge, and publisher name; each day column has a scrollable area filling the available viewport height
+- **Week navigation** — previous/next week arrows in the header; date range label (e.g., "10 Mar – 16 Mar 2026") updates dynamically
+- **Today highlight** — the current day column receives a ring highlight for quick orientation
+- **"Month" button** — returns to the monthly grid from any week view
+
+**Dynamic teaser count in month view**
+- **ResizeObserver-based calculation** — a `ResizeObserver` on the month grid measures actual cell height and calculates how many teasers fit per day: `floor((cellHeight - 56px overhead) / 18px per item)`
+- **Responsive to screen size** — on 4K monitors with tall cells, 5+ teasers are shown per day; on smaller screens, 1–2; the "+N more" count adjusts automatically
+- **Viewport-filling grid** — both month and week grids use `flex-1` with `min-height: calc(100vh - 280px)` to fill the available viewport, eliminating wasted whitespace below the calendar
+</Update>
+
 <Update label="2026-03-16" description="v0.9.8" tags={["feature"]}>
 ## 3D Globe view in Discover
 

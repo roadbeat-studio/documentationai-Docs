@@ -238,6 +238,33 @@ The **3D Globe** view mode renders geo-tagged content on an interactive 3D globe
 | **Product** | Yellow (`#eab308`) | 🛍️ |
 | **Default** | Indigo (`#6366f1`) | 📍 |
 
+### Calendar View
+
+The **Calendar** view mode displays content on a month grid, organized by publication date. Each day cell shows a preview of scheduled events, news, jobs, and other date-based content.
+
+#### Month View
+
+- **6-row grid** — Monday-start weeks filling the full viewport height via `calc(100vh - offset)` with `grid-rows-6` for evenly distributed rows.
+- **Dynamic teaser count** — a `ResizeObserver` measures actual cell height and calculates how many teasers fit per day. On 4K monitors, 5+ items may be visible; on smaller screens, 1–2.
+- **Color-coded entries** — each content type has a distinct color: purple for events, blue for news, green for jobs, amber for courses.
+- **"+N more" drill-down** — when a day has more teasers than the cell can display, a clickable "+N more" link switches to the **week view** for that day's week.
+- **Month navigation** — previous/next month arrows with a header showing the current month and year.
+
+#### Week View
+
+Clicking "+N more" on any day opens a week view for that Monday–Sunday range:
+
+- **Full event list** — all teasers for each day are shown (no truncation), with publisher names displayed below each title.
+- **Taller cells** — each day column fills the remaining viewport height with a scrollable teaser list.
+- **Event count** — a small badge in each day header shows the number of events.
+- **Today highlight** — the current day gets a ring highlight for quick orientation.
+- **Week navigation** — previous/next week arrows; the header shows the date range (e.g., "10 Mar – 16 Mar 2026").
+- **Back to month** — a "Month" button in the header returns to the monthly grid.
+
+<Callout kind="tip">
+  The week view is especially useful for days with many events — like conference weeks or festival periods — where the month view's limited cell height would hide most content behind "+N more".
+</Callout>
+
 ### Transparency Drawer
 
 The **"Why am I seeing this?"** drawer is a slide-over panel that explains why a specific piece of content was recommended. It opens when the user taps the info icon on any content card.
