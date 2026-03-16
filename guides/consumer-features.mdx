@@ -179,7 +179,7 @@ GET /api/v1/consumer/discover/facets/:contentType
 
 - **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles)
 - **Goal group tabs** — two-level tab navigation: the first row shows goal categories (e.g., "Business & Organisation Goals", "Personal Goals") plus an "All Goals" tab; selecting a category reveals a second row of individual goal tabs within that category. Tab order follows the user's Compass sort order. Selecting a goal tab triggers a goal-based search.
-- **View modes** — 8 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (coming soon)
+- **View modes** — 8 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (interactive Mapbox globe with custom markers)
 - **Sort controls** — by relevance, date, or other fields
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
 - **Active filter pills** — dismissible badges showing current filters
@@ -199,6 +199,44 @@ The **Map** view mode renders content with geographic coordinates on an interact
 </Callout>
 
 The backend extracts geographic coordinates from the Discovery Node response at `geographic.locations[0].coordinates` and maps them to the `TeaserDto.location` field with `lat`, `lon`, and `name`.
+
+### 3D Globe
+
+The **3D Globe** view mode renders geo-tagged content on an interactive 3D globe using [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) with the `globe` projection.
+
+- **Mapbox-powered globe** — full 3D globe with atmosphere, stars, fog, and smooth rotation using `mapbox://styles/mapbox/streets-v12` for a colorful base map.
+- **Custom emoji markers** — each content type has a distinct marker: colored circular pin with a white background, content-type-specific border color, and an emoji icon (e.g., 🎉 Event, 📰 News, 🎪 Festival, 💼 Job, 🍳 Recipe, 🏠 Property, 🎓 Course, 🛍️ Product). Markers scale up on hover with a smooth transition.
+- **Popup cards** — clicking a marker opens a compact card popup with:
+  - Hero image (120px) with rounded top corners and a close button overlay
+  - Content type badge (outlined style) and publisher name
+  - Bold title and truncated description
+  - Footer with publication date and info/bookmark action buttons
+- **Smart camera** — the globe automatically flies to the geographic center of all markers with an appropriate zoom level calculated from the coordinate span.
+- **Optional spin** — globe auto-rotation is disabled by default but can be toggled on via the spin button. Rotation speed decreases at higher zoom levels and pauses during user interaction.
+- **Navigation controls** — zoom and compass controls in the bottom-right corner.
+
+<Callout kind="info">
+  The 3D Globe requires a Mapbox access token. Configure it in your `.env` file:
+  ```bash
+  MAPBOX_TOKEN=pk.your_mapbox_token_here
+  ```
+  The token is served via a public endpoint (`GET /consumer/discover/mapbox-config`) so the frontend can initialize the map without authentication. If no token is configured, the globe view is automatically hidden from the view mode toggle.
+</Callout>
+
+#### Content Type Marker Colors
+
+| Content Type | Color | Icon |
+|---|---|---|
+| **News** | Blue (`#3b82f6`) | 📰 |
+| **Blog Post** | Blue (`#3b82f6`) | ✍️ |
+| **Event** | Purple (`#8b5cf6`) | 🎉 |
+| **Festival & Fair** | Purple (`#a855f7`) | 🎪 |
+| **Job** | Green (`#22c55e`) | 💼 |
+| **Recipe** | Orange (`#f97316`) | 🍳 |
+| **Real Estate** | Rose (`#e11d48`) | 🏠 |
+| **Course** | Cyan (`#06b6d4`) | 🎓 |
+| **Product** | Yellow (`#eab308`) | 🛍️ |
+| **Default** | Indigo (`#6366f1`) | 📍 |
 
 ### Transparency Drawer
 

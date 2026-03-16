@@ -3,6 +3,21 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-16" description="v0.9.8" tags={["feature"]}>
+## 3D Globe view in Discover
+
+**Mapbox 3D Globe**
+- **Interactive globe** — the Discover page now includes a 3D globe view mode powered by Mapbox GL JS with the `globe` projection, using the colorful `streets-v12` style with atmosphere, stars, and fog effects
+- **Custom emoji markers** — each content type is represented by a unique circular marker with a white background, colored border, and emoji icon (🎉 Event, 📰 News, 🎪 Festival, 💼 Job, 🍳 Recipe, 🏠 Property, 🎓 Course, 🛍️ Product, 📍 default). Markers scale up smoothly on hover
+- **Compact popup cards** — clicking a marker opens a 260px-wide popup card with: hero image (120px, rounded corners) with close button overlay, outlined content type badge, publisher name, bold title, truncated description, and a footer with publication date and info/bookmark action buttons
+- **Smart camera positioning** — the globe automatically flies to the geographic center of all markers, with zoom level calculated from the coordinate span (single marker → zoom 6, continent-wide → zoom 1.5)
+- **Optional spin** — globe auto-rotation is disabled by default but can be toggled via the spin button; rotation pauses during user interaction and slows at higher zoom levels
+
+**Backend: Mapbox configuration**
+- **Public mapbox-config endpoint** — new `GET /consumer/discover/mapbox-config` controller serves the Mapbox token without authentication, gated by the `MAPBOX_TOKEN` environment variable
+- **Globe availability** — when no Mapbox token is configured, the globe view mode is automatically hidden from the view toggle bar
+</Update>
+
 <Update label="2026-03-15" description="v0.9.7" tags={["feature"]}>
 ## Interactive map view in Discover
 
