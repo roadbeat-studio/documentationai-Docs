@@ -27,10 +27,24 @@ description: Release notes and updates for roadbeat Studio.
 - **Auto-tip** — configurable countdown timer (default 30s) that starts when content loads, displays a live countdown in the footer, and automatically fires a 1x tip when it reaches zero; respects budget limits and fires only once per content item
 - **Tip budget settings** — new "Tip Budget" section in Discover Settings with monthly budget slider (10–500), auto-tip toggle, delay slider (10–120s), auto-tip multiplier pills (1x–5x), spending stats summary, and clear old history action
 
+**Studio as Content Source**
+- **Local content serving** — Content Reader fetches published content directly from the Studio database when available, eliminating the need for a deployed Content Pod in development, demos, and early-stage publisher setups
+- **`CANONICAL_URL_BASE` configuration** — new environment variable controls the base URL for published teasers; set to `http://localhost:3000` in dev so `classifyContentSource()` routes content to the local database instead of treating it as external
+- **Automatic source detection** — `getContentForReader()` checks the local database first; if published content exists for the requested content type and slug, it serves it directly without querying Discovery Node teaser endpoints
+- **Content transformation** — `transformStudioContentToPod()` maps Prisma database records to the `PodContentItemDto` format expected by the Content Reader, including headline, description, article body, media, classification, dates, publisher info, and metadata
+
+**Map & Globe Interactions**
+- **OpenStreetMap popup click handlers** — clicking the hero image, title, or teaser description in a map popup opens the Content Reader (modal or 4K split pane); "Why am I seeing this?" and Bookmark buttons are fully wired with `stopPropagation`
+- **3D Globe popup click handlers** — hero image and title clicks open the Content Reader via `ngZone.run()` to ensure Angular change detection fires from outside the zone; Why This and Bookmark buttons work with `stopPropagation`
+
 **Polish**
 - **Dark mode audit** — verified all new components have comprehensive `dark:` Tailwind variants; fixed external link badge bindings on feed card variant
 - **Enhanced loading skeleton** — realistic full-layout skeleton matching content reader structure: hero image, type badges, title, metadata row, article paragraphs, reaction pills, comment placeholders, and footer skeleton
 - **Context-specific error states** — 4 distinct error screens: pod unreachable (orange shield), content not found (gray document), signature verification failed (red warning triangle), and generic error — each with descriptive copy, error detail, Retry button, and Close link
+- **4K split-pane reactivity fix** — converted `@Input() data` to a signal-backed setter so all `computed()` properties (title, body, hero, etc.) re-evaluate when switching between cards in the side-by-side layout
+- **Content body readability** — article text constrained to `max-w-2xl` (672px) and centered for comfortable reading on wide screens
+- **Responsive hero image** — `h-[55vh]` with `max-h-[600px]` and `min-h-[280px]`, vertically centered via `object-center`; ensures headline and article start are always visible below the image
+- **Compact footer** — Bookmark, Share, and Original links placed on the left; Tip slider on the right in a single row on wide screens, with reduced padding for a slimmer bar
 </Update>
 
 <Update label="2026-03-17" description="v0.9.13" tags={["feature", "bugfix"]}>

@@ -191,6 +191,7 @@ The **Map** view mode renders content with geographic coordinates on an interact
 - **Marker clustering** — nearby markers are grouped into cluster badges that show the count and expand on zoom or click. Cluster sizes: small (blue, &lt;10), medium (amber, 10–99), large (red, 100+).
 - **Custom icon markers** — each content type is represented by a 36px white circle marker with a color-coded border and a Lucide SVG icon inside (e.g., calendar for events, briefcase for jobs, pen for blog posts). Colors are grouped by content type category (blue for news/publications, purple for events, green for jobs, orange for food, etc.).
 - **Popup cards** — clicking a marker opens a vertical popup card matching the teaser grid card design: full-width hero image, content type badge with inline Lucide icon, publisher name, title (2-line clamp), description (2-line clamp), and a footer with publication date and info/bookmark action buttons.
+- **Popup interactions** — clicking the hero image, title, or description opens the content in the Content Reader (modal or 4K split pane). The "Why am I seeing this?" button opens the transparency drawer, and the Bookmark button opens the collection selector. All handlers use `stopPropagation` to prevent the map from intercepting clicks.
 - **Facet sidebar** — the map renders inside the content area alongside the facet sidebar, so all filters (content type, language, topic, publisher, date) remain accessible.
 - **Auto-fit bounds** — the map zooms to fit all visible markers with padding.
 - **Reactive** — markers update dynamically when filters, goal tabs, or search queries change.
@@ -212,6 +213,7 @@ The **3D Globe** view mode renders geo-tagged content on an interactive 3D globe
   - Content type badge with inline Lucide icon and publisher name
   - Bold title and truncated description
   - Footer with publication date and info/bookmark action buttons
+- **Popup interactions** — clicking the hero image or title opens the content in the Content Reader. The "Why am I seeing this?" and Bookmark buttons are fully wired. All click handlers run inside `ngZone.run()` to trigger Angular change detection from outside the zone (Mapbox runs outside Angular for performance), and use `stopPropagation` to prevent globe interaction.
 - **Smart camera** — the globe automatically flies to the geographic center of all markers with an appropriate zoom level calculated from the coordinate span.
 - **Optional spin** — globe auto-rotation is disabled by default but can be toggled on via the spin button. Rotation speed decreases at higher zoom levels and pauses during user interaction.
 - **Navigation controls** — zoom and compass controls in the bottom-right corner.
@@ -437,6 +439,22 @@ The **Content Reader** provides an integrated inline reading experience for cont
 - **Image gallery** with resolved thumbnails and captions
 - **Loading skeleton** — realistic full-layout skeleton matching the content structure
 - **Error states** — 4 context-specific screens: pod unreachable, content not found, signature invalid, and generic error — each with Retry and Close actions
+
+### Content Sources
+
+The Content Reader supports three content source types, determined by the canonical URL of each teaser:
+
+| Source | Detection | Behavior |
+|--------|-----------|----------|
+| **Studio** | Canonical URL matches `CANONICAL_URL_BASE` or `localhost` | Fetches published content directly from the Studio database via Prisma |
+| **Pod** | Canonical URL matches configured pod domain patterns | Fetches content from the Content Pod's `index.json` endpoint |
+| **External** | No pattern match | Opens in a new browser tab (not in the reader) |
+
+<Callout kind="tip">
+  Set the `CANONICAL_URL_BASE` environment variable to your Studio's public URL (e.g., `http://localhost:3000` in development) so that published content is recognized as a Studio source and displayed directly in the Content Reader without needing a deployed Content Pod.
+</Callout>
+
+When the source is **Studio**, the backend transforms database records into the `PodContentItemDto` format, mapping headline, description, article body, media (hero image, gallery), classification (categories, tags), dates, publisher info, and metadata (reading time, word count).
 
 ### Content Reader API
 
