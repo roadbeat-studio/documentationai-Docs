@@ -3,6 +3,36 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-17" description="v0.9.14" tags={["feature"]}>
+## Content Reader, Dynamic Pod Features & Tip System
+
+**Inline Content Reader**
+- **Three display modes** — 4K ultrawide (≥2560px) side-by-side split layout, regular desktop/tablet/mobile full-screen modal overlay, and external content new-tab opening with link indicator badges
+- **Content Reader component** — renders full pod content with hero image, article body with rewritten asset URLs, publisher metadata, reading time, word count, categories, tags, gallery, and content signature verification badge
+- **Content Reader modal** — ARIA dialog with focus trap, Escape to close, backdrop click to close, slide-up animation (respects `prefers-reduced-motion`), and focus restoration on close
+- **Content Reader placeholder** — shown in the 4K split layout right pane when no content is selected, with keyboard navigation hints (↑↓ navigate, Enter select, Esc close)
+- **External link badge** — overlay badge on all 5 card variants (grid, compact, feed, large list, large tile) indicating content that opens in a new tab
+
+**Dynamic Pod Features**
+- **Pod reactions** — emoji reaction bar (👍❤️🔥👏🤔) with optimistic toggle updates, count display, active state styling, and support for pod-specified custom reaction types
+- **Pod comments** — threaded comment display with recursive rendering up to configurable `maxDepth`, comment submission form with name/email/content fields, reply-to threading, loading skeletons, and empty state
+- **Pod newsletter** — inline subscription form with email input, loading spinner, success confirmation, error handling, and publisher name personalization
+- **Pod-proxy BFF** — all dynamic pod interactions proxied through the Studio BFF via `POST /discover/pod-proxy`, targeting `/_dynamic/api/reactions.php`, `/_dynamic/api/comments.php`, and `/_dynamic/api/newsletter.php`
+- **Capability-driven rendering** — dynamic sections only appear when the pod's `_roadbeat/config.json` advertises the feature as enabled
+
+**Tip System**
+- **Tip data model** — `TipRecord`, `TipBudgetConfig`, and `TipStats` types with localStorage persistence for both tip history (last 500 entries) and budget configuration
+- **Budget tracking** — monthly budget (default 100 units), computed spending stats (this month spent, remaining, top 5 publishers), and `canTip` guard that prevents exceeding the budget
+- **Tip multiplier UI** — 1x–5x pill selector in the content reader footer with budget progress bar (green/yellow/red), "Tipped!" confirmation badge, and disabled state when budget is exhausted
+- **Auto-tip** — configurable countdown timer (default 30s) that starts when content loads, displays a live countdown in the footer, and automatically fires a 1x tip when it reaches zero; respects budget limits and fires only once per content item
+- **Tip budget settings** — new "Tip Budget" section in Discover Settings with monthly budget slider (10–500), auto-tip toggle, delay slider (10–120s), auto-tip multiplier pills (1x–5x), spending stats summary, and clear old history action
+
+**Polish**
+- **Dark mode audit** — verified all new components have comprehensive `dark:` Tailwind variants; fixed external link badge bindings on feed card variant
+- **Enhanced loading skeleton** — realistic full-layout skeleton matching content reader structure: hero image, type badges, title, metadata row, article paragraphs, reaction pills, comment placeholders, and footer skeleton
+- **Context-specific error states** — 4 distinct error screens: pod unreachable (orange shield), content not found (gray document), signature verification failed (red warning triangle), and generic error — each with descriptive copy, error detail, Retry button, and Close link
+</Update>
+
 <Update label="2026-03-17" description="v0.9.13" tags={["feature", "bugfix"]}>
 ## Asset Library enhancements
 

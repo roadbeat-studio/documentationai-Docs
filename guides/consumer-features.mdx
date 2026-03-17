@@ -415,6 +415,147 @@ GET /api/v1/consumer/notifications/preferences
 PUT /api/v1/consumer/notifications/preferences
 ```
 
+## Content Reader
+
+The **Content Reader** provides an integrated inline reading experience for content from Content Pods, replacing the previous behavior of opening external URLs in new tabs.
+
+### Display Modes
+
+| Mode | Context | Behavior |
+|------|---------|----------|
+| **Split pane** | 4K / ultrawide (≥2560px) | Side-by-side: left 50% Discover list, right 50% reader pane |
+| **Modal overlay** | Regular desktop, tablet, mobile | Full-screen modal with focus trap, Escape to close, backdrop dismiss |
+| **External tab** | Self-hosted content (`isExternal`) | Opens in new browser tab with external-link badge on cards |
+
+### Content Reader Features
+
+- **Hero image** with alt text, resolved against the pod base URL
+- **Article body** rendered as sanitized HTML with relative asset URLs rewritten to absolute pod URLs
+- **Publisher metadata** — name, publication date, reading time, word count
+- **Content signature badge** — Verified (green), Signature invalid (red), or Unverified (gray)
+- **Categories, tags, and language badges**
+- **Image gallery** with resolved thumbnails and captions
+- **Loading skeleton** — realistic full-layout skeleton matching the content structure
+- **Error states** — 4 context-specific screens: pod unreachable, content not found, signature invalid, and generic error — each with Retry and Close actions
+
+### Content Reader API
+
+```bash
+# Fetch full content for the reader
+GET /api/v1/consumer/discover/content/:contentType/:slug
+
+# Proxy dynamic pod interactions
+POST /api/v1/consumer/discover/pod-proxy
+{
+  "podBaseUrl": "https://pod.example.com",
+  "endpoint": "/_dynamic/api/reactions.php",
+  "method": "GET",
+  "params": { "content_id": "c_001" }
+}
+```
+
+### Modal Accessibility
+
+The content reader modal includes:
+
+- **ARIA dialog** attributes (`role="dialog"`, `aria-modal="true"`)
+- **Focus trap** — Tab cycling within the modal
+- **Focus restoration** — returns focus to the previously focused element on close
+- **Keyboard support** — Escape to close
+- **Reduced motion** — animations disabled when `prefers-reduced-motion` is set
+
+## Dynamic Pod Features
+
+When content is loaded from a **dynamic Content Pod** (one that has `_roadbeat/config.json` with enabled features), the Content Reader displays interactive sections below the article body.
+
+<Callout kind="info">
+  Dynamic sections are **capability-driven** — they only appear when the pod's configuration explicitly enables them. The pod capabilities are probed automatically when content is loaded.
+</Callout>
+
+### Reactions
+
+Emoji reaction buttons (👍❤️🔥👏🤔) displayed below the article. Users can toggle reactions with optimistic UI updates. Pods can specify custom reaction types via their configuration.
+
+### Comments
+
+Threaded comment display with:
+
+- Recursive rendering up to a configurable `maxDepth` (default: 3)
+- Comment submission form with name, email, and content fields
+- Reply-to threading with visual indentation
+- Loading skeletons during fetch
+- Empty state with call-to-action
+
+### Newsletter
+
+Inline subscription form that appears when the pod advertises newsletter capability:
+
+- Email input with validation
+- Loading spinner during submission
+- Success confirmation message
+- Publisher name personalization in the header
+
+### Pod-Proxy Architecture
+
+All dynamic pod interactions are proxied through the Studio BFF to avoid CORS issues and provide a consistent API surface:
+
+```mermaid
+graph LR
+    UI[Consumer UI] -->|POST /pod-proxy| BFF[Studio BFF]
+    BFF -->|HTTP| Pod[Content Pod]
+    Pod -->|/_dynamic/api/*| DF[Dynamic Features]
+```
+
+The BFF endpoint accepts the pod base URL, target endpoint, HTTP method, and parameters, then forwards the request to the pod's dynamic API.
+
+## Tip System
+
+The **Tip System** lets users compensate content creators through a budget-based tipping mechanism. Tips are tracked locally in `localStorage` and represent appreciation for quality content.
+
+### How It Works
+
+<Steps>
+  <Step title="Content loads in reader" icon="book-open">
+    When content finishes loading, the auto-tip countdown starts (if enabled).
+  </Step>
+  <Step title="Countdown runs" icon="clock">
+    A configurable timer (default 30s) counts down in the footer. The user can manually tip at any time by selecting a multiplier and clicking confirm.
+  </Step>
+  <Step title="Tip recorded" icon="check-circle">
+    When the countdown reaches zero (or the user clicks confirm), the tip is recorded to localStorage with the teaser ID, publisher, multiplier, and timestamp.
+  </Step>
+  <Step title="Budget tracked" icon="wallet">
+    Monthly spending is computed from tip history. The budget progress bar updates in real-time, and tips are blocked when the monthly budget is exhausted.
+  </Step>
+</Steps>
+
+### Tip Multiplier
+
+The footer displays a **1x–5x multiplier selector** with pill buttons. The selected multiplier determines how many budget units are consumed per tip.
+
+### Budget Configuration
+
+Users configure their tip budget in **Discover Settings → Tip Budget**:
+
+| Setting | Range | Default | Description |
+|---------|-------|---------|-------------|
+| **Monthly budget** | 10–500 | 100 | Maximum tip units per month |
+| **Auto-tip** | on/off | on | Enable automatic tipping after reading |
+| **Auto-tip delay** | 10–120s | 30s | Seconds of reading before auto-tip fires |
+| **Auto-tip multiplier** | 1x–5x | 1x | Default multiplier for automatic tips |
+
+### Tip Stats
+
+The settings page displays:
+
+- **Spent this month** — total tip units consumed in the current calendar month
+- **Total tips given** — lifetime tip count
+- **Budget progress bar** — green (>50%), yellow (20–50%), red (<20%)
+
+<Callout kind="tip">
+  Tip data is stored in `localStorage` under `rb_tip_history` (last 500 records) and `rb_tip_budget` (configuration). Future versions will sync tip data to the Context Directory for cross-device persistence.
+</Callout>
+
 ## Content Detail
 
 Rich teaser detail views with content-type-specific sections:
@@ -474,6 +615,7 @@ The **Discover Settings** page (`/consumer/settings`) is a unified settings expe
 | **Privacy** | Toggles for goal sync, follows sync, bookmarks sync, location sharing, analytics consent |
 | **Notifications** | Goal digest frequency (daily/weekly/off), publisher updates, bookmark reminders, system announcements, browser push |
 | **Content Preferences** | Enable/disable content types in Discover feed (news, events, jobs, courses, recipes, real estate, press releases) |
+| **Tip Budget** | Monthly budget slider (10–500), auto-tip toggle, delay slider (10–120s), auto-tip multiplier (1x–5x), spending stats, clear history |
 | **Discovery Nodes** | Select which Discovery Nodes to query, with online/offline status badges |
 | **Security** | Change password (current + new + confirm) |
 
