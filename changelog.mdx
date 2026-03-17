@@ -3,6 +3,40 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-03-17" description="v0.9.13" tags={["feature", "bugfix"]}>
+## Asset Library enhancements
+
+**Pagination fix**
+- Fixed a bug where the asset library displayed incorrect page numbers (e.g., "Page 11 of 3") — caused by `page` and `limit` query parameters being treated as strings due to a TypeScript intersection type preventing `class-transformer` from converting them to numbers. Replaced with a proper `ListAssetsDto` class extending `PaginationDto`.
+
+**Search, sort & filter bar**
+- Added a **search input** with 300ms debounce for filtering assets by filename (case-insensitive contains)
+- Added a **sort dropdown** with options for newest first, name, size, and type
+- Added a **MIME type filter dropdown** with presets: All types, Images, Videos, Audio, PDF, Documents
+- Backend `ListAssetsDto` extended with `search` and `mimeType` query parameters
+
+**File-type icons**
+- Replaced the generic document icon for non-image assets with **file-type-specific Lucide icons** in both the grid card view and the detail drawer
+- Icon mapping covers audio (violet), video (rose), PDF (red), fonts (amber), archives (yellow), code files (emerald), spreadsheets (green), presentations (orange), Word/text documents (blue), SVG (pink), and a generic file fallback (gray)
+- Icons are larger and color-coded for quick visual identification
+
+**Media previews in detail drawer**
+- **Video player** — video assets now display a native HTML5 `<video>` player with controls in the detail drawer
+- **Audio player** — audio assets show a file-audio icon above a native HTML5 `<audio>` player with controls
+
+**View mode switch**
+- Added a **three-mode view toggle** in the filter bar (matching the Discover page's segmented control pattern):
+  - **Small tiles** — 6-column grid with compact icons and minimal labels; loads 48 items per page
+  - **Large tiles** (default) — 4-column grid with drag handles, full labels, and file size; loads 24 items per page
+  - **List view** — compact rows with thumbnail, filename, type, size, and date columns; loads 24 items per page
+
+**Folder management**
+- **Rename folders** — hover over a folder in the sidebar to reveal a rename (pencil) icon; click to edit inline with Enter/Escape support
+- **Delete folders** — hover to reveal a delete (trash) icon; confirms via modal and only succeeds for empty folders
+- **Move to folder** — a new "Move" button in the detail drawer footer opens a folder picker modal listing all folders plus root
+- **Drag-and-drop to folders** — drag any asset card from the grid onto a folder in the sidebar to move it; folders highlight on dragover
+</Update>
+
 <Update label="2026-03-16" description="v0.9.12" tags={["feature", "bugfix"]}>
 ## Discover UI refinements, boolean filter fix & content editor nested paths
 

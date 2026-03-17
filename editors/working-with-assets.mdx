@@ -34,12 +34,20 @@ The **Asset Library** is your central hub for all media files — images, videos
 
 ## Browsing and Finding Assets
 
-The Asset Library provides several ways to find files:
+The Asset Library includes a filter bar above the grid with these controls:
 
-- **Search** — type in the search bar to find assets by filename, title, or tags
-- **Filter by type** — click type tabs (Images, Videos, Audio, Documents) to filter
-- **Browse folders** — use the folder tree in the sidebar to navigate
-- **Sort** — sort by name, date uploaded, or file size
+- **Search** — type in the search field to find assets by filename (debounced, case-insensitive)
+- **Sort** — choose from Newest first, Name, Size, or Type
+- **Filter by type** — select All types, Images, Videos, Audio, PDF, or Documents from the dropdown
+- **View mode** — switch between three layouts using the toggle buttons on the right:
+  - **Small tiles** — compact 6-column grid showing more assets at once (48 per page)
+  - **Large tiles** (default) — 4-column grid with drag handles, filenames, and file sizes (24 per page)
+  - **List view** — compact rows with thumbnail, filename, type, size, and date (24 per page)
+- **Browse folders** — use the folder sidebar on the left to navigate
+
+<Callout kind="tip">
+  Non-image files (audio, video, PDF, etc.) display color-coded icons based on their file type, making it easy to identify assets at a glance.
+</Callout>
 
 ## Folders
 
@@ -47,26 +55,41 @@ Organize assets into folders for easy navigation:
 
 <Steps>
   <Step title="Create a folder">
-    Click the **New Folder** button in the Asset Library. Give it a descriptive name like "2026 Campaign" or "Product Photos".
+    Click the **+** button next to "Folders" in the sidebar header. Enter a descriptive name like "2026 Campaign" or "Product Photos".
   </Step>
-  <Step title="Move assets">
-    Select one or more assets and use the **Move to Folder** action to organize them.
+  <Step title="Rename a folder">
+    Hover over a folder in the sidebar to reveal the pencil icon. Click it to edit the name inline — press **Enter** to save or **Escape** to cancel.
+  </Step>
+  <Step title="Move assets to a folder">
+    You have two options:
+    - **Drag and drop** — drag any asset card from the grid onto a folder in the sidebar. The folder highlights when you hover over it.
+    - **Move button** — select an asset to open the detail drawer, then click the **Move** button in the footer. A folder picker modal lets you choose the target folder.
+  </Step>
+  <Step title="Delete a folder">
+    Hover over a folder and click the trash icon. Only empty folders can be deleted — move or delete the contents first.
   </Step>
   <Step title="Navigate">
-    Click folders in the sidebar tree to browse their contents. Use breadcrumbs to navigate back up.
+    Click folders in the sidebar to browse their contents. Click **All files** to return to the full asset list.
   </Step>
 </Steps>
+
+<Callout kind="info">
+  Deleting a folder does not delete the assets inside it. You must move or delete the assets before the folder can be removed.
+</Callout>
 
 ## Asset Details
 
 Click any asset to open the **detail panel** on the right side. Here you can:
 
-- **Preview** the file (images show a preview, documents show file info)
-- **Edit metadata** — title, description, alt text
-- **Add tags** — categorize with keywords for easier searching
+- **Preview** the file:
+  - **Images** — full image preview with object-fit scaling
+  - **Videos** — native HTML5 video player with playback controls
+  - **Audio** — file-type icon with native HTML5 audio player controls
+  - **Other files** — color-coded file-type icon with the file extension
+- **Rename** — click the pencil icon next to the filename to edit it
 - **Copy URL** — get the direct URL to the file
-- **View usage** — see which content items reference this asset
-- **Delete** — remove the asset (with a safety check if it's referenced)
+- **Move** — move the asset to a different folder via the folder picker modal
+- **Delete** — remove the asset (with a confirmation dialog)
 
 ## Using Assets in Content
 

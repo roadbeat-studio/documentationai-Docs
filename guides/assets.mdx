@@ -37,11 +37,13 @@ When you upload an image, Studio automatically extracts:
 
 ## Organizing with Folders
 
-Assets can be organized into a folder hierarchy:
+Assets can be organized into a folder hierarchy. The folder sidebar on the left provides full management capabilities:
 
-- Create folders and nested subfolders
-- Move assets between folders
-- Browse folders in the sidebar tree
+- **Create folders** — click the `+` button in the sidebar header, enter a name
+- **Rename folders** — hover over a folder to reveal the pencil icon; click to edit inline (Enter to save, Escape to cancel)
+- **Delete folders** — hover to reveal the trash icon; only empty folders can be deleted (move or delete contents first)
+- **Move assets to folders** — drag asset cards from the grid onto a folder in the sidebar, or use the **Move** button in the detail drawer to open a folder picker modal
+- **Browse folders** — click a folder in the sidebar to filter the grid to that folder's contents; click "All files" to show everything
 
 ```bash
 # Create a folder
@@ -50,6 +52,21 @@ POST /api/v1/assets/folders
   "name": "2026 Campaign",
   "parentId": null
 }
+
+# Rename a folder
+PATCH /api/v1/assets/folders/:id
+{ "name": "Thumbnails" }
+
+# Delete an empty folder
+DELETE /api/v1/assets/folders/:id
+
+# Move an asset to a folder
+PATCH /api/v1/assets/:id
+{ "folderId": "folder-uuid" }
+
+# Move an asset to root (no folder)
+PATCH /api/v1/assets/:id
+{ "folderId": null }
 
 # List folders
 GET /api/v1/assets/folders
@@ -76,20 +93,51 @@ DELETE /api/v1/assets/:id/tags
 GET /api/v1/assets/tags?limit=20
 ```
 
-## Asset Search
+## Search, Sort & Filter Bar
 
-The Asset Library supports advanced search with multiple filters:
+The Asset Library includes a unified filter bar above the asset grid with the following controls:
 
-| Filter | Description |
-|--------|-------------|
-| **Text** | Search by filename, title, or description |
-| **MIME Type** | Filter by file type (image, video, audio, document) |
-| **Folder** | Browse within a specific folder |
-| **Tags** | Filter by assigned tags |
-| **Date** | Filter by upload date |
+| Control | Description |
+|---------|-------------|
+| **Search** | Debounced (300ms) filename search — case-insensitive contains match |
+| **Sort** | Dropdown with Newest first, Name, Size, and Type |
+| **Type filter** | Dropdown with All types, Images, Videos, Audio, PDF, Documents |
+| **View mode** | Three-mode toggle: Small tiles, Large tiles (default), List view |
+
+### View Modes
+
+- **Small tiles** — 6-column grid with compact file-type icons and minimal labels; loads 48 items per page for higher density
+- **Large tiles** (default) — 4-column grid with drag handles, full filenames, and file sizes; loads 24 items per page
+- **List view** — compact rows with a 40×40px thumbnail, filename, MIME subtype, file size, and upload date; loads 24 items per page
+
+### File-Type Icons
+
+Non-image assets display **color-coded Lucide icons** based on their MIME type instead of a generic document icon:
+
+| File Type | Icon | Color |
+|-----------|------|-------|
+| Audio (MP3, WAV, etc.) | `file-audio` | Violet |
+| Video (MP4, WebM, etc.) | `file-video` | Rose |
+| PDF | `file-text` | Red |
+| Archives (ZIP, RAR, etc.) | `file-archive` | Yellow |
+| Code (JSON, HTML, etc.) | `file-code` | Emerald |
+| Spreadsheets (Excel, CSV) | `file-spreadsheet` | Green |
+| Presentations (PowerPoint) | `presentation` | Orange |
+| Documents (Word, TXT) | `file-text` | Blue |
+| Fonts | `file-type` | Amber |
+| SVG | `image` | Pink |
+
+### Media Previews
+
+The detail drawer provides native playback for media files:
+
+- **Video assets** — HTML5 `<video>` player with browser-native controls
+- **Audio assets** — file-audio icon with HTML5 `<audio>` player controls beneath
+
+### API Search
 
 ```bash
-GET /api/v1/assets/search?q=hero&mimeType=image&sort=newest
+GET /api/v1/assets?search=hero&mimeType=image/&sortBy=createdAt&sortOrder=desc&page=1&limit=24
 ```
 
 ### Facets
