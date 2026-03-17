@@ -2,359 +2,547 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
-
 <Update label="2026-03-17" description="v0.9.14" tags={["feature"]}>
-## Content Reader, Dynamic Pod Features & Tip System
+  ## Content Reader, Dynamic Pod Features & Tip System
 
-**Inline Content Reader**
-- **Three display modes** — 4K ultrawide (≥2560px) side-by-side split layout, regular desktop/tablet/mobile full-screen modal overlay, and external content new-tab opening with link indicator badges
-- **Content Reader component** — renders full pod content with hero image, article body with rewritten asset URLs, publisher metadata, reading time, word count, categories, tags, gallery, and content signature verification badge
-- **Content Reader modal** — ARIA dialog with focus trap, Escape to close, backdrop click to close, slide-up animation (respects `prefers-reduced-motion`), and focus restoration on close
-- **Content Reader placeholder** — shown in the 4K split layout right pane when no content is selected, with keyboard navigation hints (↑↓ navigate, Enter select, Esc close)
-- **External link badge** — overlay badge on all 5 card variants (grid, compact, feed, large list, large tile) indicating content that opens in a new tab
+  **Inline Content Reader**
 
-**Dynamic Pod Features**
-- **Pod reactions** — emoji reaction bar (👍❤️🔥👏🤔) with optimistic toggle updates, count display, active state styling, and support for pod-specified custom reaction types
-- **Pod comments** — threaded comment display with recursive rendering up to configurable `maxDepth`, comment submission form with name/email/content fields, reply-to threading, loading skeletons, and empty state
-- **Pod newsletter** — inline subscription form with email input, loading spinner, success confirmation, error handling, and publisher name personalization
-- **Pod-proxy BFF** — all dynamic pod interactions proxied through the Studio BFF via `POST /discover/pod-proxy`, targeting `/_dynamic/api/reactions.php`, `/_dynamic/api/comments.php`, and `/_dynamic/api/newsletter.php`
-- **Capability-driven rendering** — dynamic sections only appear when the pod's `_roadbeat/config.json` advertises the feature as enabled
+  - **Three display modes** — 4K ultrawide (≥2560px) side-by-side split layout, regular desktop/tablet/mobile full-screen modal overlay, and external content new-tab opening with link indicator badges
 
-**Tip System**
-- **Tip data model** — `TipRecord`, `TipBudgetConfig`, and `TipStats` types with localStorage persistence for both tip history (last 500 entries) and budget configuration
-- **Budget tracking** — monthly budget (default 100 units), computed spending stats (this month spent, remaining, top 5 publishers), and `canTip` guard that prevents exceeding the budget
-- **Tip multiplier UI** — 1x–5x pill selector in the content reader footer with budget progress bar (green/yellow/red), "Tipped!" confirmation badge, and disabled state when budget is exhausted
-- **Auto-tip** — configurable countdown timer (default 30s) that starts when content loads, displays a live countdown in the footer, and automatically fires a 1x tip when it reaches zero; respects budget limits and fires only once per content item
-- **Tip budget settings** — new "Tip Budget" section in Discover Settings with monthly budget slider (10–500), auto-tip toggle, delay slider (10–120s), auto-tip multiplier pills (1x–5x), spending stats summary, and clear old history action
+  - **Content Reader component** — renders full pod content with hero image, article body with rewritten asset URLs, publisher metadata, reading time, word count, categories, tags, gallery, and content signature verification badge
 
-**Studio as Content Source**
-- **Local content serving** — Content Reader fetches published content directly from the Studio database when available, eliminating the need for a deployed Content Pod in development, demos, and early-stage publisher setups
-- **`CANONICAL_URL_BASE` configuration** — new environment variable controls the base URL for published teasers; set to `http://localhost:3000` in dev so `classifyContentSource()` routes content to the local database instead of treating it as external
-- **Automatic source detection** — `getContentForReader()` checks the local database first; if published content exists for the requested content type and slug, it serves it directly without querying Discovery Node teaser endpoints
-- **Content transformation** — `transformStudioContentToPod()` maps Prisma database records to the `PodContentItemDto` format expected by the Content Reader, including headline, description, article body, media, classification, dates, publisher info, and metadata
+  - **Content Reader modal** — ARIA dialog with focus trap, Escape to close, backdrop click to close, slide-up animation (respects `prefers-reduced-motion`), and focus restoration on close
 
-**Map & Globe Interactions**
-- **OpenStreetMap popup click handlers** — clicking the hero image, title, or teaser description in a map popup opens the Content Reader (modal or 4K split pane); "Why am I seeing this?" and Bookmark buttons are fully wired with `stopPropagation`
-- **3D Globe popup click handlers** — hero image and title clicks open the Content Reader via `ngZone.run()` to ensure Angular change detection fires from outside the zone; Why This and Bookmark buttons work with `stopPropagation`
+  - **Content Reader placeholder** — shown in the 4K split layout right pane when no content is selected, with keyboard navigation hints (↑↓ navigate, Enter select, Esc close)
 
-**Polish**
-- **Dark mode audit** — verified all new components have comprehensive `dark:` Tailwind variants; fixed external link badge bindings on feed card variant
-- **Enhanced loading skeleton** — realistic full-layout skeleton matching content reader structure: hero image, type badges, title, metadata row, article paragraphs, reaction pills, comment placeholders, and footer skeleton
-- **Context-specific error states** — 4 distinct error screens: pod unreachable (orange shield), content not found (gray document), signature verification failed (red warning triangle), and generic error — each with descriptive copy, error detail, Retry button, and Close link
-- **4K split-pane reactivity fix** — converted `@Input() data` to a signal-backed setter so all `computed()` properties (title, body, hero, etc.) re-evaluate when switching between cards in the side-by-side layout
-- **Content body readability** — article text constrained to `max-w-2xl` (672px) and centered for comfortable reading on wide screens
-- **Responsive hero image** — `h-[55vh]` with `max-h-[600px]` and `min-h-[280px]`, vertically centered via `object-center`; ensures headline and article start are always visible below the image
-- **Compact footer** — Bookmark, Share, and Original links placed on the left; Tip slider on the right in a single row on wide screens, with reduced padding for a slimmer bar
+  - **External link badge** — overlay badge on all 5 card variants (grid, compact, feed, large list, large tile) indicating content that opens in a new tab
+
+  **Dynamic Pod Features**
+
+  - **Pod reactions** — emoji reaction bar (👍❤️🔥👏🤔) with optimistic toggle updates, count display, active state styling, and support for pod-specified custom reaction types
+
+  - **Pod comments** — threaded comment display with recursive rendering up to configurable `maxDepth`, comment submission form with name/email/content fields, reply-to threading, loading skeletons, and empty state
+
+  - **Pod newsletter** — inline subscription form with email input, loading spinner, success confirmation, error handling, and publisher name personalization
+
+  - **Pod-proxy BFF** — all dynamic pod interactions proxied through the Studio BFF via `POST /discover/pod-proxy`, targeting `/_dynamic/api/reactions.php`, `/_dynamic/api/comments.php`, and `/_dynamic/api/newsletter.php`
+
+  - **Capability-driven rendering** — dynamic sections only appear when the pod's `_roadbeat/config.json` advertises the feature as enabled
+
+  **Tip System**
+
+  - **Tip data model** — `TipRecord`, `TipBudgetConfig`, and `TipStats` types with localStorage persistence for both tip history (last 500 entries) and budget configuration
+
+  - **Budget tracking** — monthly budget (default 100 units), computed spending stats (this month spent, remaining, top 5 publishers), and `canTip` guard that prevents exceeding the budget
+
+  - **Tip multiplier UI** — 1x–5x pill selector in the content reader footer with budget progress bar (green/yellow/red), "Tipped!" confirmation badge, and disabled state when budget is exhausted
+
+  - **Auto-tip** — configurable countdown timer (default 30s) that starts when content loads, displays a live countdown in the footer, and automatically fires a 1x tip when it reaches zero; respects budget limits and fires only once per content item
+
+  - **Tip budget settings** — new "Tip Budget" section in Discover Settings with monthly budget slider (10–500), auto-tip toggle, delay slider (10–120s), auto-tip multiplier pills (1x–5x), spending stats summary, and clear old history action
+
+  **Studio as Content Source**
+
+  - **Local content serving** — Content Reader fetches published content directly from the Studio database when available, eliminating the need for a deployed Content Pod in development, demos, and early-stage publisher setups
+
+  - **`CANONICAL_URL_BASE`****&#x20;configuration** — new environment variable controls the base URL for published teasers; set to `http://localhost:3000` in dev so `classifyContentSource()` routes content to the local database instead of treating it as external
+
+  - **Automatic source detection** — `getContentForReader()` checks the local database first; if published content exists for the requested content type and slug, it serves it directly without querying Discovery Node teaser endpoints
+
+  - **Content transformation** — `transformStudioContentToPod()` maps Prisma database records to the `PodContentItemDto` format expected by the Content Reader, including headline, description, article body, media, classification, dates, publisher info, and metadata
+
+  **Map & Globe Interactions**
+
+  - **OpenStreetMap popup click handlers** — clicking the hero image, title, or teaser description in a map popup opens the Content Reader (modal or 4K split pane); "Why am I seeing this?" and Bookmark buttons are fully wired with `stopPropagation`
+
+  - **3D Globe popup click handlers** — hero image and title clicks open the Content Reader via `ngZone.run()` to ensure Angular change detection fires from outside the zone; Why This and Bookmark buttons work with `stopPropagation`
+
+  **Polish**
+
+  - **Dark mode audit** — verified all new components have comprehensive `dark:` Tailwind variants; fixed external link badge bindings on feed card variant
+
+  - **Enhanced loading skeleton** — realistic full-layout skeleton matching content reader structure: hero image, type badges, title, metadata row, article paragraphs, reaction pills, comment placeholders, and footer skeleton
+
+  - **Context-specific error states** — 4 distinct error screens: pod unreachable (orange shield), content not found (gray document), signature verification failed (red warning triangle), and generic error — each with descriptive copy, error detail, Retry button, and Close link
+
+  - **4K split-pane reactivity fix** — converted `@Input() data` to a signal-backed setter so all `computed()` properties (title, body, hero, etc.) re-evaluate when switching between cards in the side-by-side layout
+
+  - **Content body readability** — article text constrained to `max-w-2xl` (672px) and centered for comfortable reading on wide screens
+
+  - **Responsive hero image** — `h-[55vh]` with `max-h-[600px]` and `min-h-[280px]`, vertically centered via `object-center`; ensures headline and article start are always visible below the image
+
+  - **Compact footer** — Bookmark, Share, and Original links placed on the left; Tip slider on the right in a single row on wide screens, with reduced padding for a slimmer bar&#x20;
 </Update>
 
-<Update label="2026-03-17" description="v0.9.13" tags={["feature", "bugfix"]}>
-## Asset Library enhancements
+<Update label="2026-03-17" description="v0.9.13" tags={["feature","bugfix"]}>
+  ## Asset Library enhancements
 
-**Pagination fix**
-- Fixed a bug where the asset library displayed incorrect page numbers (e.g., "Page 11 of 3") — caused by `page` and `limit` query parameters being treated as strings due to a TypeScript intersection type preventing `class-transformer` from converting them to numbers. Replaced with a proper `ListAssetsDto` class extending `PaginationDto`.
+  **Pagination fix**
 
-**Search, sort & filter bar**
-- Added a **search input** with 300ms debounce for filtering assets by filename (case-insensitive contains)
-- Added a **sort dropdown** with options for newest first, name, size, and type
-- Added a **MIME type filter dropdown** with presets: All types, Images, Videos, Audio, PDF, Documents
-- Backend `ListAssetsDto` extended with `search` and `mimeType` query parameters
+  - Fixed a bug where the asset library displayed incorrect page numbers (e.g., "Page 11 of 3") — caused by `page` and `limit` query parameters being treated as strings due to a TypeScript intersection type preventing `class-transformer` from converting them to numbers. Replaced with a proper `ListAssetsDto` class extending `PaginationDto`.
 
-**File-type icons**
-- Replaced the generic document icon for non-image assets with **file-type-specific Lucide icons** in both the grid card view and the detail drawer
-- Icon mapping covers audio (violet), video (rose), PDF (red), fonts (amber), archives (yellow), code files (emerald), spreadsheets (green), presentations (orange), Word/text documents (blue), SVG (pink), and a generic file fallback (gray)
-- Icons are larger and color-coded for quick visual identification
+  **Search, sort & filter bar**
 
-**Media previews in detail drawer**
-- **Video player** — video assets now display a native HTML5 `<video>` player with controls in the detail drawer
-- **Audio player** — audio assets show a file-audio icon above a native HTML5 `<audio>` player with controls
+  - Added a **search input** with 300ms debounce for filtering assets by filename (case-insensitive contains)
 
-**View mode switch**
-- Added a **three-mode view toggle** in the filter bar (matching the Discover page's segmented control pattern):
-  - **Small tiles** — 6-column grid with compact icons and minimal labels; loads 48 items per page
-  - **Large tiles** (default) — 4-column grid with drag handles, full labels, and file size; loads 24 items per page
-  - **List view** — compact rows with thumbnail, filename, type, size, and date columns; loads 24 items per page
+  - Added a **sort dropdown** with options for newest first, name, size, and type
 
-**Folder management**
-- **Rename folders** — hover over a folder in the sidebar to reveal a rename (pencil) icon; click to edit inline with Enter/Escape support
-- **Delete folders** — hover to reveal a delete (trash) icon; confirms via modal and only succeeds for empty folders
-- **Move to folder** — a new "Move" button in the detail drawer footer opens a folder picker modal listing all folders plus root
-- **Drag-and-drop to folders** — drag any asset card from the grid onto a folder in the sidebar to move it; folders highlight on dragover
+  - Added a **MIME type filter dropdown** with presets: All types, Images, Videos, Audio, PDF, Documents
+
+  - Backend `ListAssetsDto` extended with `search` and `mimeType` query parameters
+
+  **File-type icons**
+
+  - Replaced the generic document icon for non-image assets with **file-type-specific Lucide icons** in both the grid card view and the detail drawer
+
+  - Icon mapping covers audio (violet), video (rose), PDF (red), fonts (amber), archives (yellow), code files (emerald), spreadsheets (green), presentations (orange), Word/text documents (blue), SVG (pink), and a generic file fallback (gray)
+
+  - Icons are larger and color-coded for quick visual identification
+
+  **Media previews in detail drawer**
+
+  - **Video player** — video assets now display a native HTML5 `<video>` player with controls in the detail drawer
+
+  - **Audio player** — audio assets show a file-audio icon above a native HTML5 `<audio>` player with controls
+
+  **View mode switch**
+
+  - Added a **three-mode view toggle** in the filter bar (matching the Discover page's segmented control pattern):
+
+    - **Small tiles** — 6-column grid with compact icons and minimal labels; loads 48 items per page
+
+    - **Large tiles** (default) — 4-column grid with drag handles, full labels, and file size; loads 24 items per page
+
+    - **List view** — compact rows with thumbnail, filename, type, size, and date columns; loads 24 items per page
+
+  **Folder management**
+
+  - **Rename folders** — hover over a folder in the sidebar to reveal a rename (pencil) icon; click to edit inline with Enter/Escape support
+
+  - **Delete folders** — hover to reveal a delete (trash) icon; confirms via modal and only succeeds for empty folders
+
+  - **Move to folder** — a new "Move" button in the detail drawer footer opens a folder picker modal listing all folders plus root
+
+  - **Drag-and-drop to folders** — drag any asset card from the grid onto a folder in the sidebar to move it; folders highlight on dragover
 </Update>
 
-<Update label="2026-03-16" description="v0.9.12" tags={["feature", "bugfix"]}>
-## Discover UI refinements, boolean filter fix & content editor nested paths
+<Update label="2026-03-16" description="v0.9.12" tags={["feature","bugfix"]}>
+  ## Discover UI refinements, boolean filter fix & content editor nested paths
 
-**Discover UI**
-- **Humanized content type names** — a new `HumanizeContentTypePipe` transforms content type slugs (e.g., `blog-post`) into display names (`Blog Post`) across all view modes: grid cards, compact cards, feed cards, large list, large tile, content type badges, bookmark popovers, and the transparency drawer
-- **Filter header styling** — content-type-specific filter headers now use a violet background matching the active filter badge color, with no borders and equal top/bottom padding
-- **i18n active filter labels** — active filter badges now resolve i18n-translated labels from facet bucket data instead of displaying raw enum codes (e.g., "Analysis" instead of `analysis`)
-- **Boolean toggle switches** — boolean facets (e.g., "Exclusive", "Breaking News", "Free content") now render as compact one-liner toggle switches instead of checkboxes, with aggregation doc counts displayed next to the label
+  **Discover UI**
 
-**Boolean filter fix**
-- **Root cause** — boolean filters returned no results because the form editor saved dot-notation field IDs (e.g., `editorial.is_breaking`) as flat object keys instead of nested object paths, causing the `enrichTypeFilters` schema walker to read stale seed data instead of user-edited values
-- **Form editor fix** — `updateField()` and all field accessors (`getFieldValue`, `getBooleanValue`, `getStringValue`, etc.) now handle dot-notation field IDs as nested object paths via new `setNestedValue()`/`getNestedValue()` helpers
-- **`walkSchemaForFilters` fallback** — the teaser generator's schema walker now accepts a `rootData` parameter and falls back to flat dot-notation keys in the root data when the nested value is missing, ensuring compatibility with legacy content data
-- **Boolean pass-through** — reverted boolean-to-string normalization (`true` → `"1"`) since Elasticsearch already has boolean-typed `type_filters` fields; booleans are now passed through as-is, with the Discovery Node query builder coercing `"1"`/`"0"` to `true`/`false` on the query side
+  - **Humanized content type names** — a new `HumanizeContentTypePipe` transforms content type slugs (e.g., `blog-post`) into display names (`Blog Post`) across all view modes: grid cards, compact cards, feed cards, large list, large tile, content type badges, bookmark popovers, and the transparency drawer
 
-**Active filter badge labels**
-- **Content type humanization** — active filter badges humanize content type values (e.g., "News" instead of `news`)
+  - **Filter header styling** — content-type-specific filter headers now use a violet background matching the active filter badge color, with no borders and equal top/bottom padding
+
+  - **i18n active filter labels** — active filter badges now resolve i18n-translated labels from facet bucket data instead of displaying raw enum codes (e.g., "Analysis" instead of `analysis`)
+
+  - **Boolean toggle switches** — boolean facets (e.g., "Exclusive", "Breaking News", "Free content") now render as compact one-liner toggle switches instead of checkboxes, with aggregation doc counts displayed next to the label
+
+  **Boolean filter fix**
+
+  - **Root cause** — boolean filters returned no results because the form editor saved dot-notation field IDs (e.g., `editorial.is_breaking`) as flat object keys instead of nested object paths, causing the `enrichTypeFilters` schema walker to read stale seed data instead of user-edited values
+
+  - **Form editor fix** — `updateField()` and all field accessors (`getFieldValue`, `getBooleanValue`, `getStringValue`, etc.) now handle dot-notation field IDs as nested object paths via new `setNestedValue()`/`getNestedValue()` helpers
+
+  - **`walkSchemaForFilters`****&#x20;fallback** — the teaser generator's schema walker now accepts a `rootData` parameter and falls back to flat dot-notation keys in the root data when the nested value is missing, ensuring compatibility with legacy content data
+
+  - **Boolean pass-through** — reverted boolean-to-string normalization (`true` → `"1"`) since Elasticsearch already has boolean-typed `type_filters` fields; booleans are now passed through as-is, with the Discovery Node query builder coercing `"1"`/`"0"` to `true`/`false` on the query side
+
+  **Active filter badge labels**
+
+  - **Content type humanization** — active filter badges humanize content type values (e.g., "News" instead of `news`)
 </Update>
 
 <Update label="2026-03-16" description="v0.9.11" tags={["feature"]}>
-## Schema-driven content-type-specific filters in Discover
+  ## Schema-driven content-type-specific filters in Discover
 
-**Teaser enrichment**
-- **`enrichTypeFilters()`** — generic schema-driven method in `TeaserGeneratorService` that reads `x-filter` annotations from the content type's metadata schema (via Schema Registry) and extracts filterable values into `teaser.type_filters` at publish time
-- **Pattern support** — handles all x-filter extraction patterns: simple values (A), object with value_path (B), arrays (C), arrays of objects with value_path (D)
-- **Non-fatal** — if the Schema Registry is unreachable, the teaser is still valid without `type_filters`
+  **Teaser enrichment**
 
-**Consumer BFF**
-- **`translateBffFilters()` rewrite** — cleanly passes through `type_filters.*` keys to the Discovery Node alongside existing DN-native paths
-- **`FacetGroupDto` expanded** — added `content_type_specific`, `ui_hint`, `unit`, `labels`, `priority` fields to the BFF facet DTO
-- **Facet metadata pass-through** — both BFF facet mapping locations now forward type-specific metadata from DN aggregation responses
+  - **`enrichTypeFilters()`** — generic schema-driven method in `TeaserGeneratorService` that reads `x-filter` annotations from the content type's metadata schema (via Schema Registry) and extracts filterable values into `teaser.type_filters` at publish time
 
-**Discover UI**
-- **Computed signals** — `selectedSingleContentType`, `globalFacets`, `typeSpecificFacets` in `DiscoverStateService` for reactive type-specific filter rendering
-- **`ContentTypeFilterHeaderComponent`** — colored divider between global and type-specific filters with content type icon, accent color, and active filter count
-- **Type-specific filter section** — appears in the facet sidebar when a single content type is selected, showing schema-driven filters below the global ones
-- **Chips widget** — new pill/chip toggle rendering for small enum facets (≤6 values or `ui_hint: "chips"`)
-- **Range units** — range filter inputs now display unit labels (m², min, €) from the schema
-- **Auto-clear** — type-specific filters (`type_filters.*`) are automatically cleared when the content type selection changes to multi or none
-- **Violet filter pills** — active type-specific filters show as violet-tinted dismissible pills in the `ActiveFiltersComponent`, visually distinct from global brand-colored pills
+  - **Pattern support** — handles all x-filter extraction patterns: simple values (A), object with value\_path (B), arrays (C), arrays of objects with value\_path (D)
+
+  - **Non-fatal** — if the Schema Registry is unreachable, the teaser is still valid without `type_filters`
+
+  **Consumer BFF**
+
+  - **`translateBffFilters()`****&#x20;rewrite** — cleanly passes through `type_filters.*` keys to the Discovery Node alongside existing DN-native paths
+
+  - **`FacetGroupDto`****&#x20;expanded** — added `content_type_specific`, `ui_hint`, `unit`, `labels`, `priority` fields to the BFF facet DTO
+
+  - **Facet metadata pass-through** — both BFF facet mapping locations now forward type-specific metadata from DN aggregation responses
+
+  **Discover UI**
+
+  - **Computed signals** — `selectedSingleContentType`, `globalFacets`, `typeSpecificFacets` in `DiscoverStateService` for reactive type-specific filter rendering
+
+  - **`ContentTypeFilterHeaderComponent`** — colored divider between global and type-specific filters with content type icon, accent color, and active filter count
+
+  - **Type-specific filter section** — appears in the facet sidebar when a single content type is selected, showing schema-driven filters below the global ones
+
+  - **Chips widget** — new pill/chip toggle rendering for small enum facets (≤6 values or `ui_hint: "chips"`)
+
+  - **Range units** — range filter inputs now display unit labels (m², min, €) from the schema
+
+  - **Auto-clear** — type-specific filters (`type_filters.*`) are automatically cleared when the content type selection changes to multi or none
+
+  - **Violet filter pills** — active type-specific filters show as violet-tinted dismissible pills in the `ActiveFiltersComponent`, visually distinct from global brand-colored pills
 </Update>
 
 <Update label="2026-03-16" description="v0.9.10" tags={["feature"]}>
-## Lucide content type icons across all views
+  ## Lucide content type icons across all views
 
-**Shared icon utility**
-- **51 content type icons** — created a shared `content-type-icons` utility in the `@roadbeat/consumer` library providing Lucide-style SVG icon paths, complete inline SVG rendering, and per-category color mappings for all 51 content types
-- **Three helper functions** — `getContentTypeIconPaths()` for raw SVG paths, `getContentTypeIconSvg()` for complete inline SVG elements, and `getContentTypeColor()` for category-based colors
+  **Shared icon utility**
 
-**Content type list (Studio admin)**
-- **Lucide icons in admin list** — the Content Types management page now shows content-type-specific Lucide icons instead of emojis, rendered via the `rb-lucide-icon` component
+  - **51 content type icons** — created a shared `content-type-icons` utility in the `@roadbeat/consumer` library providing Lucide-style SVG icon paths, complete inline SVG rendering, and per-category color mappings for all 51 content types
 
-**Discover view cards**
-- **List view** — content type badges now include a 14px Lucide icon before the type name
-- **Tile view** — overlay badges on tile cards include content type icons
-- **Compact view** — inline badges display a 12px icon alongside the type name
-- **Feed view** — full icon treatment: avatar fallback icon (20px), content type indicator (16px), and badge icon (12px) all use content-type-specific Lucide SVGs
+  - **Three helper functions** — `getContentTypeIconPaths()` for raw SVG paths, `getContentTypeIconSvg()` for complete inline SVG elements, and `getContentTypeColor()` for category-based colors
 
-**Facet sidebar**
-- **Filter list icons** — the Content Types filter group in the facet sidebar now displays a 16px Lucide icon next to each content type checkbox label
+  **Content type list (Studio admin)**
 
-**OpenStreetMap 2D map**
-- **Custom circle markers** — replaced default blue Leaflet pin markers with custom `divIcon` markers: 36px white circles with a color-coded border and content-type-specific SVG icon inside (e.g., calendar for events, briefcase for jobs, pen for blog posts)
-- **Popup badge spacing** — fixed missing gap between the SVG icon and content type text in map popup cards
+  - **Lucide icons in admin list** — the Content Types management page now shows content-type-specific Lucide icons instead of emojis, rendered via the `rb-lucide-icon` component
 
-**3D Globe**
-- **SVG icon markers** — replaced emoji markers with Lucide SVG icons inside the colored circle markers, matching the new 2D map marker style
-- **SVG icons in popup badges** — globe popup cards now show the Lucide icon inline with the content type name
+  **Discover view cards**
+
+  - **List view** — content type badges now include a 14px Lucide icon before the type name
+
+  - **Tile view** — overlay badges on tile cards include content type icons
+
+  - **Compact view** — inline badges display a 12px icon alongside the type name
+
+  - **Feed view** — full icon treatment: avatar fallback icon (20px), content type indicator (16px), and badge icon (12px) all use content-type-specific Lucide SVGs
+
+  **Facet sidebar**
+
+  - **Filter list icons** — the Content Types filter group in the facet sidebar now displays a 16px Lucide icon next to each content type checkbox label
+
+  **OpenStreetMap 2D map**
+
+  - **Custom circle markers** — replaced default blue Leaflet pin markers with custom `divIcon` markers: 36px white circles with a color-coded border and content-type-specific SVG icon inside (e.g., calendar for events, briefcase for jobs, pen for blog posts)
+
+  - **Popup badge spacing** — fixed missing gap between the SVG icon and content type text in map popup cards
+
+  **3D Globe**
+
+  - **SVG icon markers** — replaced emoji markers with Lucide SVG icons inside the colored circle markers, matching the new 2D map marker style
+
+  - **SVG icons in popup badges** — globe popup cards now show the Lucide icon inline with the content type name
 </Update>
 
 <Update label="2026-03-16" description="v0.9.9" tags={["feature"]}>
-## Calendar week view & dynamic teaser count
+  ## Calendar week view & dynamic teaser count
 
-**Week view drill-down**
-- **"+N more" switches to week view** — clicking the "+N more" link on any day in the monthly calendar now opens a dedicated week view (Monday–Sunday) for that day's week, showing all teasers without truncation
-- **Full teaser list per day** — week view displays every teaser with title, color-coded content type badge, and publisher name; each day column has a scrollable area filling the available viewport height
-- **Week navigation** — previous/next week arrows in the header; date range label (e.g., "10 Mar – 16 Mar 2026") updates dynamically
-- **Today highlight** — the current day column receives a ring highlight for quick orientation
-- **"Month" button** — returns to the monthly grid from any week view
+  **Week view drill-down**
 
-**Dynamic teaser count in month view**
-- **ResizeObserver-based calculation** — a `ResizeObserver` on the month grid measures actual cell height and calculates how many teasers fit per day: `floor((cellHeight - 56px overhead) / 18px per item)`
-- **Responsive to screen size** — on 4K monitors with tall cells, 5+ teasers are shown per day; on smaller screens, 1–2; the "+N more" count adjusts automatically
-- **Viewport-filling grid** — both month and week grids use `flex-1` with `min-height: calc(100vh - 280px)` to fill the available viewport, eliminating wasted whitespace below the calendar
+  - **"+N more" switches to week view** — clicking the "+N more" link on any day in the monthly calendar now opens a dedicated week view (Monday–Sunday) for that day's week, showing all teasers without truncation
+
+  - **Full teaser list per day** — week view displays every teaser with title, color-coded content type badge, and publisher name; each day column has a scrollable area filling the available viewport height
+
+  - **Week navigation** — previous/next week arrows in the header; date range label (e.g., "10 Mar – 16 Mar 2026") updates dynamically
+
+  - **Today highlight** — the current day column receives a ring highlight for quick orientation
+
+  - **"Month" button** — returns to the monthly grid from any week view
+
+  **Dynamic teaser count in month view**
+
+  - **ResizeObserver-based calculation** — a `ResizeObserver` on the month grid measures actual cell height and calculates how many teasers fit per day: `floor((cellHeight - 56px overhead) / 18px per item)`
+
+  - **Responsive to screen size** — on 4K monitors with tall cells, 5+ teasers are shown per day; on smaller screens, 1–2; the "+N more" count adjusts automatically
+
+  - **Viewport-filling grid** — both month and week grids use `flex-1` with `min-height: calc(100vh - 280px)` to fill the available viewport, eliminating wasted whitespace below the calendar
 </Update>
 
 <Update label="2026-03-16" description="v0.9.8" tags={["feature"]}>
-## 3D Globe view in Discover
+  ## 3D Globe view in Discover
 
-**Mapbox 3D Globe**
-- **Interactive globe** — the Discover page now includes a 3D globe view mode powered by Mapbox GL JS with the `globe` projection, using the colorful `streets-v12` style with atmosphere, stars, and fog effects
-- **Custom emoji markers** — each content type is represented by a unique circular marker with a white background, colored border, and emoji icon (🎉 Event, 📰 News, 🎪 Festival, 💼 Job, 🍳 Recipe, 🏠 Property, 🎓 Course, 🛍️ Product, 📍 default). Markers scale up smoothly on hover
-- **Compact popup cards** — clicking a marker opens a 260px-wide popup card with: hero image (120px, rounded corners) with close button overlay, outlined content type badge, publisher name, bold title, truncated description, and a footer with publication date and info/bookmark action buttons
-- **Smart camera positioning** — the globe automatically flies to the geographic center of all markers, with zoom level calculated from the coordinate span (single marker → zoom 6, continent-wide → zoom 1.5)
-- **Optional spin** — globe auto-rotation is disabled by default but can be toggled via the spin button; rotation pauses during user interaction and slows at higher zoom levels
+  **Mapbox 3D Globe**
 
-**Backend: Mapbox configuration**
-- **Public mapbox-config endpoint** — new `GET /consumer/discover/mapbox-config` controller serves the Mapbox token without authentication, gated by the `MAPBOX_TOKEN` environment variable
-- **Globe availability** — when no Mapbox token is configured, the globe view mode is automatically hidden from the view toggle bar
+  - **Interactive globe** — the Discover page now includes a 3D globe view mode powered by Mapbox GL JS with the `globe` projection, using the colorful `streets-v12` style with atmosphere, stars, and fog effects
+
+  - **Custom emoji markers** — each content type is represented by a unique circular marker with a white background, colored border, and emoji icon (🎉 Event, 📰 News, 🎪 Festival, 💼 Job, 🍳 Recipe, 🏠 Property, 🎓 Course, 🛍️ Product, 📍 default). Markers scale up smoothly on hover
+
+  - **Compact popup cards** — clicking a marker opens a 260px-wide popup card with: hero image (120px, rounded corners) with close button overlay, outlined content type badge, publisher name, bold title, truncated description, and a footer with publication date and info/bookmark action buttons
+
+  - **Smart camera positioning** — the globe automatically flies to the geographic center of all markers, with zoom level calculated from the coordinate span (single marker → zoom 6, continent-wide → zoom 1.5)
+
+  - **Optional spin** — globe auto-rotation is disabled by default but can be toggled via the spin button; rotation pauses during user interaction and slows at higher zoom levels
+
+  **Backend: Mapbox configuration**
+
+  - **Public mapbox-config endpoint** — new `GET /consumer/discover/mapbox-config` controller serves the Mapbox token without authentication, gated by the `MAPBOX_TOKEN` environment variable
+
+  - **Globe availability** — when no Mapbox token is configured, the globe view mode is automatically hidden from the view toggle bar
 </Update>
 
 <Update label="2026-03-15" description="v0.9.7" tags={["feature"]}>
-## Interactive map view in Discover
+  ## Interactive map view in Discover
 
-**Map view**
-- **Leaflet + OpenStreetMap** — the Discover page now includes a fully interactive map view using Leaflet with OpenStreetMap tiles, accessible via the map icon in the view mode toggle bar
-- **Marker clustering** — nearby markers are grouped into cluster badges (blue &lt;10, amber 10–99, red 100+) that expand on zoom or click, powered by Leaflet.markercluster
-- **Vertical popup cards** — clicking a marker opens a rich popup card matching the teaser grid card design: full-width hero image, content type badge, publisher name, title (2-line clamp), description (2-line clamp), publication date, and info/bookmark action buttons
-- **Facet sidebar visible** — unlike the calendar view, the map renders inside the content area alongside the facet sidebar, so users can filter by content type, language, topic, publisher, and date while viewing the map
-- **Auto-fit bounds** — the map automatically zooms to fit all visible markers with padding, up to zoom level 14
-- **Reactive to filters** — changing any filter, goal tab, or search query dynamically updates the markers on the map
-- **Dark mode support** — popup cards, cluster badges, and action buttons adapt to dark mode
+  **Map view**
 
-**Backend geo data pipeline**
-- **TeaserDto extended** — `location` field now includes `lat`, `lon`, and `name` for geographic coordinates
-- **mapHitToTeaser extraction** — the BFF extracts `geographic.locations[0].coordinates` from Discovery Node responses and maps them to the teaser DTO
-- **extractGeographic fix** — the teaser generator now correctly handles both structured `geographic` objects and single `location` objects with `latitude`/`longitude` coordinate keys
-- **Coordinate format fix** — standardized on `lon` (matching Elasticsearch `geo_point`) instead of `lng` throughout the backend
+  - **Leaflet + OpenStreetMap** — the Discover page now includes a fully interactive map view using Leaflet with OpenStreetMap tiles, accessible via the map icon in the view mode toggle bar
+
+  - **Marker clustering** — nearby markers are grouped into cluster badges (blue \<10, amber 10–99, red 100+) that expand on zoom or click, powered by Leaflet.markercluster
+
+  - **Vertical popup cards** — clicking a marker opens a rich popup card matching the teaser grid card design: full-width hero image, content type badge, publisher name, title (2-line clamp), description (2-line clamp), publication date, and info/bookmark action buttons
+
+  - **Facet sidebar visible** — unlike the calendar view, the map renders inside the content area alongside the facet sidebar, so users can filter by content type, language, topic, publisher, and date while viewing the map
+
+  - **Auto-fit bounds** — the map automatically zooms to fit all visible markers with padding, up to zoom level 14
+
+  - **Reactive to filters** — changing any filter, goal tab, or search query dynamically updates the markers on the map
+
+  - **Dark mode support** — popup cards, cluster badges, and action buttons adapt to dark mode
+
+  **Backend geo data pipeline**
+
+  - **TeaserDto extended** — `location` field now includes `lat`, `lon`, and `name` for geographic coordinates
+
+  - **mapHitToTeaser extraction** — the BFF extracts `geographic.locations[0].coordinates` from Discovery Node responses and maps them to the teaser DTO
+
+  - **extractGeographic fix** — the teaser generator now correctly handles both structured `geographic` objects and single `location` objects with `latitude`/`longitude` coordinate keys
+
+  - **Coordinate format fix** — standardized on `lon` (matching Elasticsearch `geo_point`) instead of `lng` throughout the backend
 </Update>
 
-<Update label="2026-03-14" description="v0.9.6" tags={["feature", "bugfix"]}>
-## Goal-driven search & bookmarking
+<Update label="2026-03-14" description="v0.9.6" tags={["feature","bugfix"]}>
+  ## Goal-driven search & bookmarking
 
-**Goal-based content filtering**
-- **All Goals active by default** — the Discover page now uses the user's entire goal portfolio to filter content on initial load, combining all content_queries into a single batched Elasticsearch `bool.should` query for sub-100ms performance
-- **Six search modes** — All Goals (default), Goal Group (category tab), Single Goal, Browse All (unfiltered), Random/Surprise, and Followed Publishers Only (toggle filter)
-- **Batched ES query architecture** — instead of one HTTP request per content_query (which would mean 150+ requests for 50 goals), all queries are sent in a single request to the Discovery Node's new `POST /search/by-goals` endpoint
-- **Random/Surprise mode** — "✨ Random" button uses Elasticsearch `function_score` with `random_score` for serendipitous content discovery, with optional light bias from user's goal categories
-- **"All" button** — browse all content without goal filtering, using manual facet filters and full-text search
-- **Content_queries resolved at portfolio load** — goal definitions are fetched from the Context Directory once (cached in Redis for 30 minutes), `{{param}}` placeholders substituted with user values, and attached to each goal for instant use in searches
+  **Goal-based content filtering**
 
-**Bookmark popover**
-- **Collection selector** — clicking the bookmark icon on any card opens a centered modal dialog showing all bookmark collections with checkboxes
-- **Last-used collection pre-selected** — the most recently used collection is automatically checked for new bookmarks (persisted in localStorage)
-- **Inline collection creation** — "New collection" button reveals an inline text input; created collections immediately appear in the list and get selected
-- **Update & remove** — already-bookmarked teasers show "Update" and "Remove bookmark" options
-- **Teaser preview** — the dialog shows the content title, type, and publisher for confirmation
+  - **All Goals active by default** — the Discover page now uses the user's entire goal portfolio to filter content on initial load, combining all content\_queries into a single batched Elasticsearch `bool.should` query for sub-100ms performance
 
-**Discover UX improvements**
-- **Scrollable facet lists** — filter groups with more than 8 options are now height-limited (240px) with overflow scrolling and a search-as-you-type input that filters by label or key
-- **Publication date filter** — new dropdown with preset timespans (Today, Last 7 days, Last 30 days, This month, This quarter, This year) and custom from/to date pickers with locale-aware formatting
-- **DN request debug panel** — collapsible `<details>` block below search results showing the exact JSON payloads sent to each Discovery Node, for Elasticsearch query debugging during development
-- **Goal tab filter fix** — resolved "property filters should not exist" validation error when clicking goal tabs by adding `filters` and `contentQueries` to `GoalSearchDto`
-- **Filter path mapping** — goal catalog paths (`category.tags`, `category.categories`) correctly mapped to DN classification paths (`classification.tags`, `classification.categories`); content-type-specific fields like `event_type` are ignored since the teaser generator doesn't populate them
+  - **Six search modes** — All Goals (default), Goal Group (category tab), Single Goal, Browse All (unfiltered), Random/Surprise, and Followed Publishers Only (toggle filter)
+
+  - **Batched ES query architecture** — instead of one HTTP request per content\_query (which would mean 150+ requests for 50 goals), all queries are sent in a single request to the Discovery Node's new `POST /search/by-goals` endpoint
+
+  - **Random/Surprise mode** — "✨ Random" button uses Elasticsearch `function_score` with `random_score` for serendipitous content discovery, with optional light bias from user's goal categories
+
+  - **"All" button** — browse all content without goal filtering, using manual facet filters and full-text search
+
+  - **Content\_queries resolved at portfolio load** — goal definitions are fetched from the Context Directory once (cached in Redis for 30 minutes), `{{param}}` placeholders substituted with user values, and attached to each goal for instant use in searches
+
+  **Bookmark popover**
+
+  - **Collection selector** — clicking the bookmark icon on any card opens a centered modal dialog showing all bookmark collections with checkboxes
+
+  - **Last-used collection pre-selected** — the most recently used collection is automatically checked for new bookmarks (persisted in localStorage)
+
+  - **Inline collection creation** — "New collection" button reveals an inline text input; created collections immediately appear in the list and get selected
+
+  - **Update & remove** — already-bookmarked teasers show "Update" and "Remove bookmark" options
+
+  - **Teaser preview** — the dialog shows the content title, type, and publisher for confirmation
+
+  **Discover UX improvements**
+
+  - **Scrollable facet lists** — filter groups with more than 8 options are now height-limited (240px) with overflow scrolling and a search-as-you-type input that filters by label or key
+
+  - **Publication date filter** — new dropdown with preset timespans (Today, Last 7 days, Last 30 days, This month, This quarter, This year) and custom from/to date pickers with locale-aware formatting
+
+  - **DN request debug panel** — collapsible `<details>` block below search results showing the exact JSON payloads sent to each Discovery Node, for Elasticsearch query debugging during development
+
+  - **Goal tab filter fix** — resolved "property filters should not exist" validation error when clicking goal tabs by adding `filters` and `contentQueries` to `GoalSearchDto`
+
+  - **Filter path mapping** — goal catalog paths (`category.tags`, `category.categories`) correctly mapped to DN classification paths (`classification.tags`, `classification.categories`); content-type-specific fields like `event_type` are ignored since the teaser generator doesn't populate them
 </Update>
 
-<Update label="2026-03-14" description="v0.9.5" tags={["feature", "bugfix"]}>
-## Compass & Discover UX improvements
+<Update label="2026-03-14" description="v0.9.5" tags={["feature","bugfix"]}>
+  ## Compass & Discover UX improvements
 
-- **Drag-and-drop goal reordering** — replaced up/down arrow buttons on goal cards with Angular CDK drag-and-drop, allowing users to reorder goals by dragging within their Compass portfolio
-- **Segment-based editing in goal editor** — when editing an existing goal, the standardized goal text with inline variable inputs is now shown (same as the add flow), with the full title editable below; parameter changes automatically update the resolved goal name
-- **Two-level goal group tabs in Discover** — the Discover page now shows goal category tabs (e.g., "Business & Organisation Goals", "Personal Goals") as a first level, with individual goals as a second-level tab row beneath; tab order follows the user's Compass sort order
-- **Improved Discovery Node error messages** — the BFF now includes the Axios error code (e.g., `ECONNREFUSED`) when a Discovery Node is unreachable, instead of showing an empty error message
-- **8 view modes in Discover** — expanded view mode switching from 3 to 8 options: Activity Feed, Compact List, Large List, Compact Tiles, Large Tiles, Calendar, Map, and 3D Globe
-- **Activity Feed view** — new social-media-style feed as the first view mode, with timeline connector, publisher avatar, big hero images, relative timestamps, and engagement action bar (Why this, Save, Share)
-- **Large List view** — new detailed list rows with 192×128px thumbnails, full 3-line descriptions, content type badges, publisher name, location with region, and relevance score
-- **Large Tiles view** — new 3-per-row card grid with taller 16:10 images, overlay action buttons, badge chips with overflow count, and a footer with location and relevance score
-- **Map & 3D Globe placeholders** — toggle buttons for Map and 3D Globe views with styled "Coming soon" placeholder panels (detailed implementations to follow)
-- **Grouped view mode toggle** — the view mode switcher is now split into 5 visually grouped button clusters: Feed | Lists | Tiles | Calendar | Geo, with spacing between groups for better scannability
+  - **Drag-and-drop goal reordering** — replaced up/down arrow buttons on goal cards with Angular CDK drag-and-drop, allowing users to reorder goals by dragging within their Compass portfolio
+
+  - **Segment-based editing in goal editor** — when editing an existing goal, the standardized goal text with inline variable inputs is now shown (same as the add flow), with the full title editable below; parameter changes automatically update the resolved goal name
+
+  - **Two-level goal group tabs in Discover** — the Discover page now shows goal category tabs (e.g., "Business & Organisation Goals", "Personal Goals") as a first level, with individual goals as a second-level tab row beneath; tab order follows the user's Compass sort order
+
+  - **Improved Discovery Node error messages** — the BFF now includes the Axios error code (e.g., `ECONNREFUSED`) when a Discovery Node is unreachable, instead of showing an empty error message
+
+  - **8 view modes in Discover** — expanded view mode switching from 3 to 8 options: Activity Feed, Compact List, Large List, Compact Tiles, Large Tiles, Calendar, Map, and 3D Globe
+
+  - **Activity Feed view** — new social-media-style feed as the first view mode, with timeline connector, publisher avatar, big hero images, relative timestamps, and engagement action bar (Why this, Save, Share)
+
+  - **Large List view** — new detailed list rows with 192×128px thumbnails, full 3-line descriptions, content type badges, publisher name, location with region, and relevance score
+
+  - **Large Tiles view** — new 3-per-row card grid with taller 16:10 images, overlay action buttons, badge chips with overflow count, and a footer with location and relevance score
+
+  - **Map & 3D Globe placeholders** — toggle buttons for Map and 3D Globe views with styled "Coming soon" placeholder panels (detailed implementations to follow)
+
+  - **Grouped view mode toggle** — the view mode switcher is now split into 5 visually grouped button clusters: Feed | Lists | Tiles | Calendar | Geo, with spacing between groups for better scannability
 </Update>
 
-<Update label="2026-03-13" description="v0.9.4" tags={["feature", "bugfix"]}>
-## Unified Discover Settings & API fixes
+<Update label="2026-03-13" description="v0.9.4" tags={["feature","bugfix"]}>
+  ## Unified Discover Settings & API fixes
 
-- **Unified Discover Settings** — merged Account Settings and Consumer Settings into a single page at `/consumer/settings` with 7 card sections: Discover Profile, Language & Region, Privacy, Notifications, Content Preferences, Discovery Nodes, and Security
-- **Dual-account UX concept** — info banner explaining the relationship between the Studio account (CMS admin) and the Discover profile (roadbeat network identity), with a link to System → Settings for Studio-level configuration
-- **CD profile API fix** — corrected Context Directory profile endpoint from `/api/v1/users/me` (404) to `/api/v1/auth/profile`, with field mapping (`username` → `email`, `displayName` → `name`)
-- **Resilient profile loading** — `GET /api/v1/consumer/user` now returns Studio user data as primary source, enriching with CD data when available instead of failing if the CD is unreachable
-- **Notifications migration** — added `notifications` and `notification_preferences` tables to the Studio database with indexes, foreign keys, and auto-created default preferences
-- **Settings in sidebar** — added "Settings" link with sliders icon to the Discover section of the Studio sidebar navigation
-- **Profile page consolidation** — simplified profile page settings links from 6 entries to 3 (Discover Settings, Sync & App, My Data) with correct `/consumer/*` paths
-- **SVG icon fix** — replaced broken link icon on the "Linked to roadbeat network" indicator with a proper check-circle icon
+  - **Unified Discover Settings** — merged Account Settings and Consumer Settings into a single page at `/consumer/settings` with 7 card sections: Discover Profile, Language & Region, Privacy, Notifications, Content Preferences, Discovery Nodes, and Security
+
+  - **Dual-account UX concept** — info banner explaining the relationship between the Studio account (CMS admin) and the Discover profile (roadbeat network identity), with a link to System → Settings for Studio-level configuration
+
+  - **CD profile API fix** — corrected Context Directory profile endpoint from `/api/v1/users/me` (404) to `/api/v1/auth/profile`, with field mapping (`username` → `email`, `displayName` → `name`)
+
+  - **Resilient profile loading** — `GET /api/v1/consumer/user` now returns Studio user data as primary source, enriching with CD data when available instead of failing if the CD is unreachable
+
+  - **Notifications migration** — added `notifications` and `notification_preferences` tables to the Studio database with indexes, foreign keys, and auto-created default preferences
+
+  - **Settings in sidebar** — added "Settings" link with sliders icon to the Discover section of the Studio sidebar navigation
+
+  - **Profile page consolidation** — simplified profile page settings links from 6 entries to 3 (Discover Settings, Sync & App, My Data) with correct `/consumer/*` paths
+
+  - **SVG icon fix** — replaced broken link icon on the "Linked to roadbeat network" indicator with a proper check-circle icon
 </Update>
 
 <Update label="2026-03-13" description="v0.9.3" tags={["feature"]}>
-## Transparency drawer improvements
+  ## Transparency drawer improvements
 
-- **Goal matching in drawer** — the "Why am I seeing this?" drawer now displays which of the user's goals relate to each content item, using a three-tier matching strategy: direct goal-based search match, active goal tab, and fuzzy matching against badges and content type
-- **Dynamic goal match indicator** — green "Goal match" box when goals are matched, blue "Content match" box with contextual guidance when no goals match or none are set up
-- **Matched goals display** — green badges with checkmark icons showing goal name and category, or informative empty-state messages ("No specific goal matched" / "No goals set up yet")
-- **Navigation links** — "Edit your goals" now navigates to the Compass page, "Adjust location settings" navigates to Profile Settings
-- **Goal ID tagging** — teasers from goal-based searches now carry the originating `goalId` for guaranteed match attribution
+  - **Goal matching in drawer** — the "Why am I seeing this?" drawer now displays which of the user's goals relate to each content item, using a three-tier matching strategy: direct goal-based search match, active goal tab, and fuzzy matching against badges and content type
+
+  - **Dynamic goal match indicator** — green "Goal match" box when goals are matched, blue "Content match" box with contextual guidance when no goals match or none are set up
+
+  - **Matched goals display** — green badges with checkmark icons showing goal name and category, or informative empty-state messages ("No specific goal matched" / "No goals set up yet")
+
+  - **Navigation links** — "Edit your goals" now navigates to the Compass page, "Adjust location settings" navigates to Profile Settings
+
+  - **Goal ID tagging** — teasers from goal-based searches now carry the originating `goalId` for guaranteed match attribution
 </Update>
 
 <Update label="2026-03-11" description="v0.9.2" tags={["feature"]}>
-## Compass horizon filtering
+  ## Compass horizon filtering
 
-- **Horizon tabs in category detail** — time horizon filter tabs (All, Life, Year, Month, Week, Day) now appear when viewing a single category's goals, with the goal count updating to reflect filtered results
-- **Grouped goal list on overview** — selecting a specific horizon on the main Compass page shows a flat goal list grouped by category name instead of category cards, with only categories containing matching goals displayed
-- **Horizon normalization fix** — abbreviated time horizons (`l`, `y`, `m`, `w`, `d`) are now correctly matched against full-word filters (`life`, `year`, `month`, `week`, `day`) across all views
+  - **Horizon tabs in category detail** — time horizon filter tabs (All, Life, Year, Month, Week, Day) now appear when viewing a single category's goals, with the goal count updating to reflect filtered results
+
+  - **Grouped goal list on overview** — selecting a specific horizon on the main Compass page shows a flat goal list grouped by category name instead of category cards, with only categories containing matching goals displayed
+
+  - **Horizon normalization fix** — abbreviated time horizons (`l`, `y`, `m`, `w`, `d`) are now correctly matched against full-word filters (`life`, `year`, `month`, `week`, `day`) across all views
 </Update>
 
 <Update label="2026-03-10" description="v0.9.1" tags={["feature"]}>
-## Goal editor redesign
+  ## Goal editor redesign
 
-- **Multi-select goals** — Step 2 now supports selecting multiple goals at once with checkbox toggles and a selection count badge
-- **Per-goal customization** — Step 3 displays a scrollable list of selected goal cards, each with inline parameter inputs and integrated time horizon selection
-- **Goal removal** — Step 4 (Confirm) shows goal cards with an X button to remove individual goals before saving
-- **Bulk save API** — New `POST /api/v1/consumer/goals/bulk` endpoint for creating multiple goals in a single request
-- **Inline parameter inputs** — Goal text templates render with embedded text fields and searchable dropdowns for parameters with suggestions
-- **Time horizon preselection** — Automatically selects horizon when a goal has exactly one `time_context` value; shows suggested horizons with grey background when multiple options exist
-- **Horizon normalization** — Short forms (`y`, `m`, `w`, `d`, `l`) are normalized to full words (`year`, `month`, `week`, `day`, `life`) throughout the UI
-- **Compact goal cards** — Goal list cards now show parameters and time horizon on a single line with the horizon badge right-aligned
-- **Search results mapping** — Fixed MeiliSearch camelCase-to-snake_case field mapping for goal search results
+  - **Multi-select goals** — Step 2 now supports selecting multiple goals at once with checkbox toggles and a selection count badge
+
+  - **Per-goal customization** — Step 3 displays a scrollable list of selected goal cards, each with inline parameter inputs and integrated time horizon selection
+
+  - **Goal removal** — Step 4 (Confirm) shows goal cards with an X button to remove individual goals before saving
+
+  - **Bulk save API** — New `POST /api/v1/consumer/goals/bulk` endpoint for creating multiple goals in a single request
+
+  - **Inline parameter inputs** — Goal text templates render with embedded text fields and searchable dropdowns for parameters with suggestions
+
+  - **Time horizon preselection** — Automatically selects horizon when a goal has exactly one `time_context` value; shows suggested horizons with grey background when multiple options exist
+
+  - **Horizon normalization** — Short forms (`y`, `m`, `w`, `d`, `l`) are normalized to full words (`year`, `month`, `week`, `day`, `life`) throughout the UI
+
+  - **Compact goal cards** — Goal list cards now show parameters and time horizon on a single line with the horizon badge right-aligned
+
+  - **Search results mapping** — Fixed MeiliSearch camelCase-to-snake\_case field mapping for goal search results
 </Update>
 
 <Update label="2026-03-09" description="v0.9.0" tags={["feature"]}>
-## Consumer library & dark mode
-- **Consumer Features** — full consumer library with Compass, Discover, Publishers, Bookmarks, Notifications, Content Detail, Sync, Profile & Settings, Help, About
-- **Consumer BFF** — 14 backend-for-frontend modules proxying Context Directory and Discovery Nodes
-- **Dark Mode** — signal-based theme service with light/dark/system toggle
-- **i18n** — 24 EU locale support with lazy-loaded JSON and browser detection
-- **SEO Service** — dynamic meta/OG/Twitter Card tags, canonical URLs, JSON-LD
-- **Cookie Consent** — GDPR banner with Accept/Essential Only
-- **Health Endpoints** — consumer health check with DB, readiness, and liveness probes
+  ## Consumer library & dark mode
+
+  - **Consumer Features** — full consumer library with Compass, Discover, Publishers, Bookmarks, Notifications, Content Detail, Sync, Profile & Settings, Help, About
+
+  - **Consumer BFF** — 14 backend-for-frontend modules proxying Context Directory and Discovery Nodes
+
+  - **Dark Mode** — signal-based theme service with light/dark/system toggle
+
+  - **i18n** — 24 EU locale support with lazy-loaded JSON and browser detection
+
+  - **SEO Service** — dynamic meta/OG/Twitter Card tags, canonical URLs, JSON-LD
+
+  - **Cookie Consent** — GDPR banner with Accept/Essential Only
+
+  - **Health Endpoints** — consumer health check with DB, readiness, and liveness probes
 </Update>
 
 <Update label="2026-03-01" description="v0.8.0" tags={["feature"]}>
-## Content layouts & CDN integration
-- **Content Layouts** — visual rendering system with 30+ region types, device preview, live preview panel
-- **Layout Gallery** — default layouts for news, events, and cooking recipes
-- **CDN Integration** — URL generation, signing, responsive images, edge caching with provider support (CloudFront, Cloudflare, Bunny)
+  ## Content layouts & CDN integration
+
+  - **Content Layouts** — visual rendering system with 30+ region types, device preview, live preview panel
+
+  - **Layout Gallery** — default layouts for news, events, and cooking recipes
+
+  - **CDN Integration** — URL generation, signing, responsive images, edge caching with provider support (CloudFront, Cloudflare, Bunny)
 </Update>
 
 <Update label="2026-02-25" description="v0.7.0" tags={["feature"]}>
-## Multilingual localization & RTL support
-- **CE Localization** — locale management, translation workflows, content variants, machine translation (DeepL/Google/Azure ready), RTL support
-- **24 EU locales** with fallback chains and circular dependency detection
+  ## Multilingual localization & RTL support
+
+  - **CE Localization** — locale management, translation workflows, content variants, machine translation (DeepL/Google/Azure ready), RTL support
+
+  - **24 EU locales** with fallback chains and circular dependency detection
 </Update>
 
 <Update label="2026-02-21" description="v0.6.0" tags={["feature"]}>
-## Publishing pipeline & schema registry
-- **Publishing Pipeline** — Ed25519 key pair management, teaser generation, Discovery Node distribution with automatic retries
-- **Schema Registry Integration** — browse, search, and one-click import content types from the central registry
-- **Content Editor** — rich tabbed form from form schema with basic/extended view mode
-- **MeiliSearch** — full-text search across content, assets, and users with Ctrl+K command palette
+  ## Publishing pipeline & schema registry
+
+  - **Publishing Pipeline** — Ed25519 key pair management, teaser generation, Discovery Node distribution with automatic retries
+
+  - **Schema Registry Integration** — browse, search, and one-click import content types from the central registry
+
+  - **Content Editor** — rich tabbed form from form schema with basic/extended view mode
+
+  - **MeiliSearch** — full-text search across content, assets, and users with Ctrl+K command palette
 </Update>
 
 <Update label="2026-02-17" description="v0.5.0" tags={["feature"]}>
-## Asset library & Delivery API
-- **Asset Library** — upload, folders, tags, metadata extraction (EXIF, dimensions), usage tracking, search with facets
-- **Webhooks** — outbound webhooks with HMAC-SHA256 signing, delivery log, test endpoint
-- **API Keys** — scoped API key management for the Delivery API
-- **Delivery API** — read-only content, content types, assets, layouts (API key auth)
+  ## Asset library & Delivery API
+
+  - **Asset Library** — upload, folders, tags, metadata extraction (EXIF, dimensions), usage tracking, search with facets
+
+  - **Webhooks** — outbound webhooks with HMAC-SHA256 signing, delivery log, test endpoint
+
+  - **API Keys** — scoped API key management for the Delivery API
+
+  - **Delivery API** — read-only content, content types, assets, layouts (API key auth)
 </Update>
 
 <Update label="2026-02-13" description="v0.4.0" tags={["feature"]}>
-## Content management & relations
-- **Content Management** — CRUD, versioning, publish/unpublish, bulk operations, reorder
-- **Content Relations** — single/multi references, hierarchical trees
-- **Comments** — threaded comments on content items
-- **Export** — backup/restore and Content Pod export
+  ## Content management & relations
+
+  - **Content Management** — CRUD, versioning, publish/unpublish, bulk operations, reorder
+
+  - **Content Relations** — single/multi references, hierarchical trees
+
+  - **Comments** — threaded comments on content items
+
+  - **Export** — backup/restore and Content Pod export
 </Update>
 
 <Update label="2026-02-09" description="v0.3.0" tags={["feature"]}>
-## Plugin system & feature gating
-- **Plugin System** — plugin loader, manifest serving, license validation (Ed25519 offline)
-- **Feature Gating** — CE limits for users (3), webhooks (3), API keys (2), versions (10), storage (5 GB)
-- **Plugin SDK** — `@roadbeat/plugin-sdk` with interfaces, events, preventable events
-- **Plugin Frontend** — web component architecture via `@angular/elements`
+  ## Plugin system & feature gating
+
+  - **Plugin System** — plugin loader, manifest serving, license validation (Ed25519 offline)
+
+  - **Feature Gating** — CE limits for users (3), webhooks (3), API keys (2), versions (10), storage (5 GB)
+
+  - **Plugin SDK** — `@roadbeat/plugin-sdk` with interfaces, events, preventable events
+
+  - **Plugin Frontend** — web component architecture via `@angular/elements`
 </Update>
 
 <Update label="2026-02-05" description="v0.2.0" tags={["feature"]}>
-## Admin UI foundation
-- **Admin UI** — Angular 19 with Dashboard, Content list, Content editor, Content Type Builder, Asset Library, User management, Settings
-- **Shell Layout** — collapsible sidebar, breadcrumbs, modal system
-- **Auth UI** — login, setup wizard, forgot/reset password
+  ## Admin UI foundation
+
+  - **Admin UI** — Angular 19 with Dashboard, Content list, Content editor, Content Type Builder, Asset Library, User management, Settings
+
+  - **Shell Layout** — collapsible sidebar, breadcrumbs, modal system
+
+  - **Auth UI** — login, setup wizard, forgot/reset password
 </Update>
 
 <Update label="2026-02-01" description="v0.1.0" tags={["feature"]}>
-## Initial API & database foundation
-- **Initial Release** — NestJS 10 API with Auth, Users, Organizations, ContentTypes, Content, Database (Prisma), Redis, Health modules
-- **PostgreSQL schema** — 28+ models with migrations
-- **Docker Compose** — 6-service development stack
-- **Pino logging** — structured JSON with request correlation
-- **Rate limiting** — 100 req/min global, 5 req/min login
+  ## Initial API & database foundation
+
+  - **Initial Release** — NestJS 10 API with Auth, Users, Organizations, ContentTypes, Content, Database (Prisma), Redis, Health modules
+
+  - **PostgreSQL schema** — 28+ models with migrations
+
+  - **Docker Compose** — 6-service development stack
+
+  - **Pino logging** — structured JSON with request correlation
+
+  - **Rate limiting** — 100 req/min global, 5 req/min login
 </Update>
+
