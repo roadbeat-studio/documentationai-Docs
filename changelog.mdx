@@ -2,6 +2,30 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-03-19" description="v0.9.15" tags={["bugfix"]}>
+  ## Discover UI Polish
+
+  **Feed View Selection Highlight**
+
+  - Replaced the full-card ring border (`ring-2`) with a subtle **left accent bar** (`border-l-4`) and light background tint for the selected item in feed view — blends naturally with the social-media-style timeline layout
+
+  **List View Click Fix**
+
+  - Fixed row clicks in both compact list and large list views not opening the Content Reader — the title `<a>` tag was intercepting clicks with default link navigation; now prevented so clicks bubble up to the row wrapper
+
+  **Keyboard Navigation Scroll**
+
+  - Selected item now **auto-scrolls into view** when navigating with arrow keys — uses `scrollIntoView({ behavior: 'smooth', block: 'nearest' })` so it only scrolls when the item is outside the visible viewport
+
+  - Added `data-teaser-id` attributes to all 5 view mode wrappers (feed, list, list-large, cards, cards-large) for DOM-based element lookup
+
+  **Scrollbar Styling**
+
+  - Added `.scrollbar-thin` CSS utility for light and dark mode — goal tabs horizontal scrollbar and facet group long-list scrollbar now use a subtle 15% black thumb in light mode instead of the browser's dark default
+
+  - Main page vertical scrollbar (`body`) styled to match — 8px wide, transparent track, subtle thumb that adapts to light/dark mode
+</Update>
+
 <Update label="2026-03-17" description="v0.9.14" tags={["feature"]}>
   ## Content Reader, Dynamic Pod Features & Tip System
 
