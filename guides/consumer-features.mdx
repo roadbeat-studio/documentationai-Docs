@@ -179,7 +179,7 @@ GET /api/v1/consumer/discover/facets/:contentType
 
 - **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles)
 - **Goal group tabs** — two-level tab navigation: the first row shows goal categories (e.g., "Business & Organisation Goals", "Personal Goals") plus an "All Goals" tab; selecting a category reveals a second row of individual goal tabs within that category. Tab order follows the user's Compass sort order. Selecting a goal tab triggers a goal-based search.
-- **View modes** — 10 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Masonry (4-column Pinterest-style), Large Masonry (3-column Pinterest-style), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (interactive Mapbox globe with custom markers)
+- **View modes** — 10 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Masonry (4-column variable-height), Large Masonry (3-column variable-height), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (interactive Mapbox globe with custom markers)
 - **Infinite scrolling** — optional auto-loading of next pages on scroll, toggled via pagination controls or facet sidebar
 - **Sort controls** — by relevance, date, or other fields
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
@@ -273,7 +273,7 @@ Clicking "+N more" on any day opens a week view for that Monday–Sunday range:
 
 ### Masonry View
 
-The **Masonry** view modes display content in a Pinterest-style multi-column layout where cards have natural image heights, creating an organic, visually rich grid.
+The **Masonry** view modes display content in a variable-height multi-column layout where cards preserve their natural image proportions, creating an organic, visually rich grid.
 
 Two variants are available via the grouped toggle:
 

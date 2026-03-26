@@ -15,7 +15,7 @@ description: Release notes and updates for roadbeat Studio.
 
   **Masonry View Modes**
 
-  - **Compact Masonry** (4 columns) and **Large Masonry** (3 columns) — two new Pinterest-style view modes with grouped toggle icons matching the Lists and Tiles groups
+  - **Compact Masonry** (4 columns) and **Large Masonry** (3 columns) — two new variable-height masonry view modes with grouped toggle icons matching the Lists and Tiles groups
   - **JS-based `MasonryGridComponent`** replaces CSS `columns` layout — items are assigned to the shortest column by item count, ensuring existing items never reflow when new content is appended via infinite scroll
   - **Container-width responsive breakpoints** via `ResizeObserver` — column count adapts based on the content area width (not viewport), accounting for the facet sidebar
   - **Append detection** — distinguishes fresh searches (full reset) from infinite scroll appends (distribute only new items) by comparing first item ID and array length
