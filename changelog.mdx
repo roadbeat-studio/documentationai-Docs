@@ -2,6 +2,30 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-03-26" description="v0.9.16" tags={["feature", "bugfix"]}>
+  ## Infinite Scrolling & Masonry View Modes
+
+  **Infinite Scrolling**
+
+  - **Optional infinite scroll** for all list-based view modes — click the ∞ button next to pagination to enable; disable via the toggle in the facet sidebar
+  - **IntersectionObserver sentinel** with 200px root margin triggers automatic next-page loading as the user scrolls near the bottom
+  - **Accumulated teasers** — `displayTeasers` computed signal returns accumulated items during infinite scroll, single-page results during normal pagination
+  - **Loading guard** — `isLoadingMore` flag prevents concurrent page loads; sentinel only fires when the previous load has completed and more pages remain
+  - **Facet sidebar toggle** — "Infinite scrolling" switch appears at the bottom of the filter sidebar (only when active), with proper sticky positioning and conditional padding
+
+  **Masonry View Modes**
+
+  - **Compact Masonry** (4 columns) and **Large Masonry** (3 columns) — two new Pinterest-style view modes with grouped toggle icons matching the Lists and Tiles groups
+  - **JS-based `MasonryGridComponent`** replaces CSS `columns` layout — items are assigned to the shortest column by item count, ensuring existing items never reflow when new content is appended via infinite scroll
+  - **Container-width responsive breakpoints** via `ResizeObserver` — column count adapts based on the content area width (not viewport), accounting for the facet sidebar
+  - **Append detection** — distinguishes fresh searches (full reset) from infinite scroll appends (distribute only new items) by comparing first item ID and array length
+  - **`maxColumns` input** — `MasonryGridComponent` accepts a configurable max column count (4 for compact, 3 for large) with appropriate responsive step-down
+
+  **Keyboard Navigation Fix**
+
+  - Fixed arrow key navigation (↑/↓) during infinite scroll — the handler now uses the full `displayTeasers` accumulated array instead of single-page `results().teasers`, preventing jumps to the next loaded page boundary when pressing ArrowDown
+</Update>
+
 <Update label="2026-03-19" description="v0.9.15" tags={["bugfix"]}>
   ## Discover UI Polish
 

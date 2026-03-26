@@ -179,7 +179,8 @@ GET /api/v1/consumer/discover/facets/:contentType
 
 - **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles)
 - **Goal group tabs** — two-level tab navigation: the first row shows goal categories (e.g., "Business & Organisation Goals", "Personal Goals") plus an "All Goals" tab; selecting a category reveals a second row of individual goal tabs within that category. Tab order follows the user's Compass sort order. Selecting a goal tab triggers a goal-based search.
-- **View modes** — 8 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (interactive Mapbox globe with custom markers)
+- **View modes** — 10 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Masonry (4-column Pinterest-style), Large Masonry (3-column Pinterest-style), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (interactive Mapbox globe with custom markers)
+- **Infinite scrolling** — optional auto-loading of next pages on scroll, toggled via pagination controls or facet sidebar
 - **Sort controls** — by relevance, date, or other fields
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
 - **Active filter pills** — dismissible badges showing current filters
@@ -268,6 +269,56 @@ Clicking "+N more" on any day opens a week view for that Monday–Sunday range:
 
 <Callout kind="tip">
   The week view is especially useful for days with many events — like conference weeks or festival periods — where the month view's limited cell height would hide most content behind "+N more".
+</Callout>
+
+### Masonry View
+
+The **Masonry** view modes display content in a Pinterest-style multi-column layout where cards have natural image heights, creating an organic, visually rich grid.
+
+Two variants are available via the grouped toggle:
+
+| Variant | Max Columns | Responsive Breakpoints |
+|---------|-------------|----------------------|
+| **Compact Masonry** | 4 columns | 1 → 2 → 3 → 4 (at 400/600/800px container width) |
+| **Large Masonry** | 3 columns | 1 → 2 → 3 (at 400/600px container width) |
+
+- **Natural image heights** — unlike the fixed-aspect-ratio tile views, masonry cards preserve original image proportions for a more varied, editorial feel
+- **JS-based column distribution** — items are assigned to the shortest column (by item count) rather than using CSS `columns`, which would rebalance all items on every DOM change
+- **Stable infinite scroll** — when new pages load, only the new items are distributed to columns; existing items never change position. This is achieved by tracking the distribution count and only processing items beyond the previous watermark
+- **Responsive columns** — a `ResizeObserver` on the container element dynamically adjusts the column count based on the content area width (not viewport width, since the facet sidebar reduces available space)
+- **Append detection** — the component distinguishes between a fresh search (reset all columns) and an infinite scroll append (distribute only new items) by comparing the first item's ID and array length
+
+Each masonry card includes: hero image at natural aspect ratio, content type badge with icon, external link indicator, publisher name, publication date, title (2-line clamp), description (3-line clamp), and bookmark/info action buttons.
+
+### Infinite Scrolling
+
+Infinite scrolling automatically loads the next page of results when the user scrolls near the bottom of the content area, replacing traditional pagination.
+
+#### Enabling & Disabling
+
+- **Enable** — click the ∞ button next to the "Next" button in the pagination controls. The current page's results become the starting accumulation, and subsequent pages load automatically.
+- **Disable** — toggle the "Infinite scrolling" switch in the facet sidebar (bottom of the filter panel, only visible when active). This resets to page 1 with standard pagination.
+
+#### How It Works
+
+<Steps>
+  <Step title="IntersectionObserver sentinel" icon="eye">
+    A hidden sentinel element sits below the last content item. When it enters the viewport (with a 200px margin), the next page loads.
+  </Step>
+  <Step title="Accumulated teasers" icon="layers">
+    Results from each page are appended to an accumulated array. The `displayTeasers` computed signal returns this array during infinite scroll, or the single-page results during normal pagination.
+  </Step>
+  <Step title="Loading guard" icon="shield">
+    The `isLoadingMore` flag prevents concurrent page loads. The sentinel only triggers when the previous load has completed and more pages are available.
+  </Step>
+</Steps>
+
+#### Keyboard Navigation
+
+Arrow key navigation (↑/↓) works across all accumulated items during infinite scroll. The handler uses the full `displayTeasers` array to find the current selection and move to the adjacent item, regardless of which page it came from. `scrollSelectedIntoView` ensures the newly selected item is visible.
+
+<Callout kind="info">
+  Infinite scrolling works with all view modes: feed, list, list-large, masonry, masonry-large, cards, and cards-large. For masonry views, the JS-based column distribution ensures new items append smoothly without reflowing existing columns.
 </Callout>
 
 ### Transparency Drawer
