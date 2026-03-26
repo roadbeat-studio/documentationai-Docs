@@ -185,6 +185,83 @@ GET /api/v1/consumer/discover/facets/:contentType
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
 - **Active filter pills** — dismissible badges showing current filters
 
+### Masonry View
+
+The **Masonry** view modes display content in a variable-height multi-column layout where cards preserve their natural image proportions, creating an organic, visually rich grid.
+
+Two variants are available via the grouped toggle:
+
+| Variant | Max Columns | Responsive Breakpoints |
+|---------|-------------|----------------------|
+| **Compact Masonry** | 4 columns | 1 → 2 → 3 → 4 (at 400/600/800px container width) |
+| **Large Masonry** | 3 columns | 1 → 2 → 3 (at 400/600px container width) |
+
+- **Natural image heights** — unlike the fixed-aspect-ratio tile views, masonry cards preserve original image proportions for a more varied, editorial feel
+- **JS-based column distribution** — items are assigned to the shortest column (by item count) rather than using CSS `columns`, which would rebalance all items on every DOM change
+- **Stable infinite scroll** — when new pages load, only the new items are distributed to columns; existing items never change position. This is achieved by tracking the distribution count and only processing items beyond the previous watermark
+- **Responsive columns** — a `ResizeObserver` on the container element dynamically adjusts the column count based on the content area width (not viewport width, since the facet sidebar reduces available space)
+- **Append detection** — the component distinguishes between a fresh search (reset all columns) and an infinite scroll append (distribute only new items) by comparing the first item's ID and array length
+
+Each masonry card includes: hero image at natural aspect ratio, content type badge with icon, external link indicator, publisher name, publication date, title (2-line clamp), description (3-line clamp), and bookmark/info action buttons.
+
+### Infinite Scrolling
+
+Infinite scrolling automatically loads the next page of results when the user scrolls near the bottom of the content area, replacing traditional pagination.
+
+#### Enabling & Disabling
+
+- **Enable** — click the ∞ button next to the "Next" button in the pagination controls. The current page's results become the starting accumulation, and subsequent pages load automatically.
+- **Disable** — toggle the "Infinite scrolling" switch in the facet sidebar (bottom of the filter panel, only visible when active). This resets to page 1 with standard pagination.
+
+#### How It Works
+
+<Steps>
+  <Step title="IntersectionObserver sentinel" icon="eye">
+    A hidden sentinel element sits below the last content item. When it enters the viewport (with a 200px margin), the next page loads.
+  </Step>
+  <Step title="Accumulated teasers" icon="layers">
+    Results from each page are appended to an accumulated array. The `displayTeasers` computed signal returns this array during infinite scroll, or the single-page results during normal pagination.
+  </Step>
+  <Step title="Loading guard" icon="shield">
+    The `isLoadingMore` flag prevents concurrent page loads. The sentinel only triggers when the previous load has completed and more pages are available.
+  </Step>
+</Steps>
+
+#### Keyboard Navigation
+
+Arrow key navigation (↑/↓) works across all accumulated items during infinite scroll. The handler uses the full `displayTeasers` array to find the current selection and move to the adjacent item, regardless of which page it came from. `scrollSelectedIntoView` ensures the newly selected item is visible.
+
+<Callout kind="info">
+  Infinite scrolling works with all view modes: feed, list, list-large, masonry, masonry-large, cards, and cards-large. For masonry views, the JS-based column distribution ensures new items append smoothly without reflowing existing columns.
+</Callout>
+
+### Calendar View
+
+The **Calendar** view mode displays content on a month grid, organized by publication date. Each day cell shows a preview of scheduled events, news, jobs, and other date-based content.
+
+#### Month View
+
+- **6-row grid** — Monday-start weeks filling the full viewport height via `calc(100vh - offset)` with `grid-rows-6` for evenly distributed rows.
+- **Dynamic teaser count** — a `ResizeObserver` measures actual cell height and calculates how many teasers fit per day. On 4K monitors, 5+ items may be visible; on smaller screens, 1–2.
+- **Color-coded entries** — each content type has a distinct color: purple for events, blue for news, green for jobs, amber for courses.
+- **"+N more" drill-down** — when a day has more teasers than the cell can display, a clickable "+N more" link switches to the **week view** for that day's week.
+- **Month navigation** — previous/next month arrows with a header showing the current month and year.
+
+#### Week View
+
+Clicking "+N more" on any day opens a week view for that Monday–Sunday range:
+
+- **Full event list** — all teasers for each day are shown (no truncation), with publisher names displayed below each title.
+- **Taller cells** — each day column fills the remaining viewport height with a scrollable teaser list.
+- **Event count** — a small badge in each day header shows the number of events.
+- **Today highlight** — the current day gets a ring highlight for quick orientation.
+- **Week navigation** — previous/next week arrows; the header shows the date range (e.g., "10 Mar – 16 Mar 2026").
+- **Back to month** — a "Month" button in the header returns to the monthly grid.
+
+<Callout kind="tip">
+  The week view is especially useful for days with many events — like conference weeks or festival periods — where the month view's limited cell height would hide most content behind "+N more".
+</Callout>
+
 ### Map View
 
 The **Map** view mode renders content with geographic coordinates on an interactive map using [Leaflet](https://leafletjs.com/) with OpenStreetMap tiles.
@@ -243,83 +320,6 @@ Both the 2D map and 3D globe use consistent color-coded circle markers with Luci
 | **Media & Entertainment** | Pink (`#ec4899`) | Music, Mic, Camera, Palette |
 | **Knowledge & Reference** | Indigo (`#6366f1`) | Microscope, FlaskConical, FolderKanban |
 | **Default** | Indigo (`#6366f1`) | FileText |
-
-### Calendar View
-
-The **Calendar** view mode displays content on a month grid, organized by publication date. Each day cell shows a preview of scheduled events, news, jobs, and other date-based content.
-
-#### Month View
-
-- **6-row grid** — Monday-start weeks filling the full viewport height via `calc(100vh - offset)` with `grid-rows-6` for evenly distributed rows.
-- **Dynamic teaser count** — a `ResizeObserver` measures actual cell height and calculates how many teasers fit per day. On 4K monitors, 5+ items may be visible; on smaller screens, 1–2.
-- **Color-coded entries** — each content type has a distinct color: purple for events, blue for news, green for jobs, amber for courses.
-- **"+N more" drill-down** — when a day has more teasers than the cell can display, a clickable "+N more" link switches to the **week view** for that day's week.
-- **Month navigation** — previous/next month arrows with a header showing the current month and year.
-
-#### Week View
-
-Clicking "+N more" on any day opens a week view for that Monday–Sunday range:
-
-- **Full event list** — all teasers for each day are shown (no truncation), with publisher names displayed below each title.
-- **Taller cells** — each day column fills the remaining viewport height with a scrollable teaser list.
-- **Event count** — a small badge in each day header shows the number of events.
-- **Today highlight** — the current day gets a ring highlight for quick orientation.
-- **Week navigation** — previous/next week arrows; the header shows the date range (e.g., "10 Mar – 16 Mar 2026").
-- **Back to month** — a "Month" button in the header returns to the monthly grid.
-
-<Callout kind="tip">
-  The week view is especially useful for days with many events — like conference weeks or festival periods — where the month view's limited cell height would hide most content behind "+N more".
-</Callout>
-
-### Masonry View
-
-The **Masonry** view modes display content in a variable-height multi-column layout where cards preserve their natural image proportions, creating an organic, visually rich grid.
-
-Two variants are available via the grouped toggle:
-
-| Variant | Max Columns | Responsive Breakpoints |
-|---------|-------------|----------------------|
-| **Compact Masonry** | 4 columns | 1 → 2 → 3 → 4 (at 400/600/800px container width) |
-| **Large Masonry** | 3 columns | 1 → 2 → 3 (at 400/600px container width) |
-
-- **Natural image heights** — unlike the fixed-aspect-ratio tile views, masonry cards preserve original image proportions for a more varied, editorial feel
-- **JS-based column distribution** — items are assigned to the shortest column (by item count) rather than using CSS `columns`, which would rebalance all items on every DOM change
-- **Stable infinite scroll** — when new pages load, only the new items are distributed to columns; existing items never change position. This is achieved by tracking the distribution count and only processing items beyond the previous watermark
-- **Responsive columns** — a `ResizeObserver` on the container element dynamically adjusts the column count based on the content area width (not viewport width, since the facet sidebar reduces available space)
-- **Append detection** — the component distinguishes between a fresh search (reset all columns) and an infinite scroll append (distribute only new items) by comparing the first item's ID and array length
-
-Each masonry card includes: hero image at natural aspect ratio, content type badge with icon, external link indicator, publisher name, publication date, title (2-line clamp), description (3-line clamp), and bookmark/info action buttons.
-
-### Infinite Scrolling
-
-Infinite scrolling automatically loads the next page of results when the user scrolls near the bottom of the content area, replacing traditional pagination.
-
-#### Enabling & Disabling
-
-- **Enable** — click the ∞ button next to the "Next" button in the pagination controls. The current page's results become the starting accumulation, and subsequent pages load automatically.
-- **Disable** — toggle the "Infinite scrolling" switch in the facet sidebar (bottom of the filter panel, only visible when active). This resets to page 1 with standard pagination.
-
-#### How It Works
-
-<Steps>
-  <Step title="IntersectionObserver sentinel" icon="eye">
-    A hidden sentinel element sits below the last content item. When it enters the viewport (with a 200px margin), the next page loads.
-  </Step>
-  <Step title="Accumulated teasers" icon="layers">
-    Results from each page are appended to an accumulated array. The `displayTeasers` computed signal returns this array during infinite scroll, or the single-page results during normal pagination.
-  </Step>
-  <Step title="Loading guard" icon="shield">
-    The `isLoadingMore` flag prevents concurrent page loads. The sentinel only triggers when the previous load has completed and more pages are available.
-  </Step>
-</Steps>
-
-#### Keyboard Navigation
-
-Arrow key navigation (↑/↓) works across all accumulated items during infinite scroll. The handler uses the full `displayTeasers` array to find the current selection and move to the adjacent item, regardless of which page it came from. `scrollSelectedIntoView` ensures the newly selected item is visible.
-
-<Callout kind="info">
-  Infinite scrolling works with all view modes: feed, list, list-large, masonry, masonry-large, cards, and cards-large. For masonry views, the JS-based column distribution ensures new items append smoothly without reflowing existing columns.
-</Callout>
 
 ### Transparency Drawer
 
