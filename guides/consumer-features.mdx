@@ -406,7 +406,7 @@ Publishers have 4 trust levels displayed as colored badges:
 
 ## Bookmarks
 
-Save content and organize into collections.
+Save content and organize into collections. The bookmarks page displays saved items as a **3-column card grid** (default) or a **compact list**, with collection tabs, sorting, and pagination. Clicking any bookmark opens a detail view using the same Content Reader as the Discover page.
 
 ```bash
 # Get bookmarks (paginated, filterable)
@@ -422,6 +422,40 @@ DELETE /api/v1/consumer/bookmarks/:teaserId
 # Check if bookmarked
 GET /api/v1/consumer/bookmarks/:teaserId/status
 ```
+
+### Bookmark Detail View
+
+Clicking a bookmark card or list row opens the full content in the Content Reader, using the same responsive display pattern as the Discover page:
+
+| Mode | Screen Width | Behavior |
+|------|-------------|----------|
+| **Split pane** | ≥2560px (4K / ultrawide) | Side-by-side layout: left 50% bookmarks list, right 50% content reader. A placeholder is shown when no bookmark is selected. |
+| **Modal overlay** | &lt;2560px (regular desktop) | Full-screen modal with focus trap, Escape to close, backdrop dismiss. The left navigation sidebar remains visible. |
+
+The currently selected bookmark is highlighted with a brand-colored ring in both grid and list views. The URL updates to `/consumer/bookmarks/read/:contentType/:id` while reading and restores to `/consumer/bookmarks` when the reader is closed.
+
+### Keyboard Navigation
+
+When the content reader is open in **split pane mode** (4K screens), arrow keys navigate between bookmarks:
+
+| Key | Action |
+|-----|--------|
+| **↓ ArrowDown** | Open the next bookmark in the list |
+| **↑ ArrowUp** | Open the previous bookmark in the list |
+| **Escape** | Close the content reader |
+
+The selected bookmark card or list row automatically scrolls into view when navigating with arrow keys. Keyboard navigation is only active in split pane mode — the modal handles its own keyboard events (Escape to close, focus trap).
+
+<Callout kind="info">
+  Keyboard navigation uses the same pattern as the Discover page. Each bookmark element carries a `data-bookmark-id` attribute used by `scrollSelectedIntoView` to ensure the active item is visible in the scrollable list.
+</Callout>
+
+### View Modes
+
+The bookmarks page supports two view modes, toggled via icon buttons next to the sort dropdown:
+
+- **Card grid** (default) — 3-column responsive grid with thumbnail images, content type badges, titles, descriptions, publisher names, and relative timestamps. Hover reveals collection and delete action buttons.
+- **Compact list** — single-column rows with small thumbnails, inline metadata, collection tags, and action buttons.
 
 ### Collections
 
@@ -447,6 +481,26 @@ POST /api/v1/consumer/bookmarks/collections/:id/items
 # Remove item from collection
 DELETE /api/v1/consumer/bookmarks/collections/:id/items/:teaserId
 ```
+
+### Bookmark Popover (Discover Integration)
+
+When saving a bookmark from the Discover page, a **popover** appears allowing the user to select one or more collections before saving:
+
+<Steps>
+  <Step title="Bookmark created on server" icon="bookmark">
+    The bookmark is first created via `POST /bookmarks` and the server confirms the record exists before proceeding.
+  </Step>
+  <Step title="Collections assigned" icon="folder-plus">
+    Selected collections are assigned via `POST /bookmarks/collections/:id/items` — these calls only execute after the bookmark is confirmed on the server.
+  </Step>
+  <Step title="Last-used collection remembered" icon="clock">
+    The first selected collection is stored as "last used" and pre-selected the next time the popover opens for a new bookmark.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  The bookmark-then-assign workflow is sequential — the system awaits the bookmark creation response before adding collection memberships. This ensures the backend's `addToCollection` endpoint can find the bookmark record.
+</Callout>
 
 ## Notifications
 
@@ -476,7 +530,7 @@ The **Content Reader** provides an integrated inline reading experience for cont
 
 | Mode | Context | Behavior |
 |------|---------|----------|
-| **Split pane** | 4K / ultrawide (≥2560px) | Side-by-side: left 50% Discover list, right 50% reader pane |
+| **Split pane** | 4K / ultrawide (≥2560px) | Side-by-side: left 50% content list (Discover or Bookmarks), right 50% reader pane |
 | **Modal overlay** | Regular desktop, tablet, mobile | Full-screen modal with focus trap, Escape to close, backdrop dismiss |
 | **External tab** | Self-hosted content (`isExternal`) | Opens in new browser tab with external-link badge on cards |
 

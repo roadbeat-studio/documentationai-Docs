@@ -2,6 +2,27 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-03-28" description="v0.9.18" tags={["feature", "bugfix"]}>
+  ## Bookmark Detail View & Collection Fix
+
+  **Bookmark detail view**
+
+  - **Content Reader integration** — clicking a bookmark card or list row now opens the full content in the Content Reader, using the same responsive layout as the Discover page
+  - **4K split pane** — on ultrawide screens (≥2560px), the bookmarks page splits into a left 50% bookmark list and right 50% content reader pane with a placeholder when nothing is selected
+  - **Modal overlay** — on regular screens (<2560px), bookmarks open in a full-screen modal with focus trap, Escape to close, and backdrop dismiss — the left navigation sidebar stays visible
+  - **Active selection highlight** — the currently open bookmark gets a brand-colored ring in both card grid and list views
+  - **URL state management** — URL updates to `/consumer/bookmarks/read/:contentType/:id` while reading and restores on close
+
+  **Keyboard navigation**
+
+  - **Arrow key navigation** — when the content reader is open in split pane mode, ArrowDown opens the next bookmark, ArrowUp opens the previous, and Escape closes the reader
+  - **Auto-scroll** — the selected bookmark card or list row scrolls into view smoothly when navigating with arrow keys via `data-bookmark-id` attributes
+
+  **Bug fixes**
+
+  - **Collection assignment race condition** — fixed a bug where bookmarking content and assigning it to a collection from the Discover page popover would silently fail because the collection assignment fired before the bookmark was created on the server. `addBookmark` now returns a Promise, and `saveBookmarkToCollections` awaits it before adding collection memberships.
+</Update>
+
 <Update label="2026-03-28" description="v0.9.17" tags={["feature", "bugfix"]}>
   ## Content List Filters, Calendar Date Source & Map/Globe Redesign
 
