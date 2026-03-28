@@ -2,6 +2,33 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-03-28" description="v0.9.17" tags={["feature", "bugfix"]}>
+  ## Content List Filters, Calendar Date Source & Map/Globe Redesign
+
+  **Content type-specific filters (CMS)**
+
+  - **Schema-driven facets** — when a single content type is selected in the CMS content list, type-specific filters now appear below the standard filters in the sidebar, derived from `x-filter` annotations in the content type's JSON Schema
+  - **JSONB facet computation** — backend `computeJsonTermsFacet`, `computeJsonArrayTermsFacet`, and `computeJsonObjectTermsFacet` methods support `schemaType` and `valuePath` for nested object and array fields
+  - **Schema sync** — `x-filter` annotations from the schemas repository are synced into the Studio database's `content_types.schema` column via a dedicated sync script
+
+  **Calendar date source filter**
+
+  - **Date source selector** — the calendar view now displays a pill-button bar at the top with four date source options: Content Date, Published, Created, and Updated
+  - **Content Date extraction** — intelligently reads content type-specific dates from the JSONB `data` field (e.g., `schedule.start_date` for events, `publication_date` for news), falling back to `publishedAt` then `createdAt`
+  - **Dynamic rebuild** — switching date source instantly rebuilds the calendar with items positioned on the selected date
+
+  **Map & Globe icon markers**
+
+  - **Content type icon markers** — replaced plain circle-dot markers with 36px white circles containing content type-specific Lucide SVG icons (e.g., calendar for events, newspaper for news) colored by content type category
+  - **Status border preserved** — marker circle borders remain color-coded by publish status (green, yellow, gray, slate)
+  - **Redesigned popup cards** — popups now show: hero image (140px), colored type badge with icon, status pill, bold title, 2-line description excerpt, author row (initials + name + relative time), and icon-only action buttons (Edit, Publish/Unpublish, Delete)
+  - **Delete action** — new delete button and `delete` output wired on both map and globe components, matching all other content list views
+
+  **Bug fixes**
+
+  - **Z-index fix** — lowered map overlay elements (geo count badge, Fit All button) from `z-[1000]` to `z-10` so the New Content dropdown (`z-50`) renders above them correctly
+</Update>
+
 <Update label="2026-03-26" description="v0.9.16" tags={["feature", "bugfix"]}>
   ## Infinite Scrolling & Masonry View Modes
 

@@ -137,6 +137,62 @@ The content list supports powerful filtering:
 | **Created By** | Filter by author |
 | **Date Range** | Filter by creation or modification date |
 
+### Content Type-Specific Filters
+
+When a **single content type** is selected, schema-driven filters appear below the standard filters in the sidebar. These are derived from `x-filter` annotations in the content type's JSON Schema.
+
+Supported filter types:
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Terms** | Multi-select from known values | Event type, News category |
+| **Boolean** | Toggle switch | Is free, Is breaking |
+| **Range** | Min/max numeric inputs | Price, Duration |
+| **Date Range** | From/to date pickers | Event start date |
+
+<Callout kind="tip">
+  Type-specific filters work with nested JSONB fields. The `value_path` property in the schema's `x-filter` annotation specifies which sub-property to extract for object and array fields (e.g., `"value_path": "code"` extracts the `code` key from `{ "code": "marathon", "label": "Marathon" }`).
+</Callout>
+
+### Calendar View — Date Source Filter
+
+The calendar view displays a **date source selector** at the top, allowing you to choose which date field positions content items on the calendar:
+
+| Date Source | Description |
+|-------------|-------------|
+| **Content Date** | Extracts the content type's primary date (e.g., event start date, publication date). Falls back to Published → Created. |
+| **Published** | Uses the `publishedAt` timestamp |
+| **Created** | Uses the `createdAt` timestamp |
+| **Updated** | Uses the `updatedAt` timestamp |
+
+<Callout kind="info">
+  **Content Date** intelligently inspects the content item's data fields. For events, it reads `schedule.start_date`. For news/blog posts, it looks for `publication_date`, `date_published`, or `publish_date`. For other types, it checks generic date fields like `date` or `start_date`.
+</Callout>
+
+### Map & Globe Views
+
+The **Map** (OpenStreetMap/Leaflet) and **3D Globe** (Mapbox GL) views display content items with geographic coordinates as interactive markers.
+
+**Markers** use content type-specific icons:
+
+- Each marker displays the content type's **Lucide icon** (e.g., calendar for events, newspaper for news) inside a white circle
+- The icon is colored according to the content type's **category color** (e.g., purple for events, blue for news)
+- The circle border is colored by **publish status** — green for published, yellow for draft, gray for unpublished, slate for archived
+
+**Popup cards** appear when clicking a marker and include:
+
+- **Hero image** — full-width thumbnail from the content data
+- **Type badge** — colored chip with the content type icon and name
+- **Status pill** — publish status indicator
+- **Title** — clickable, navigates to the content editor
+- **Description** — two-line excerpt from the content data
+- **Author** — avatar initials, name, and relative timestamp
+- **Action buttons** — Edit (pencil icon), Publish/Unpublish (status-dependent), and Delete (trash icon)
+
+<Callout kind="tip">
+  The map's status legend at the bottom shows all four status colors for reference. Use **Fit All** to zoom the map to encompass all markers.
+</Callout>
+
 ## Comments
 
 Team members can leave threaded comments on content items to discuss changes, provide feedback, or coordinate work.
