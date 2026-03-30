@@ -93,14 +93,36 @@ Click any asset to open the **detail panel** on the right side. Here you can:
 
 ## Using Assets in Content
 
-### Image Fields
+### Image and Media Fields
 
-When your content type has an image field:
+When your content type has an image or media field:
 
-1. Click the **Browse** button on the image field
-2. The Asset Library picker opens
-3. Search or browse for the image you need
-4. Click to select — the image is linked to your content
+<Steps>
+  <Step title="Open the Asset Picker" icon="image">
+    Click the **Select Image** placeholder on an empty field, or hover over an existing image and click **Replace**.
+  </Step>
+  <Step title="Browse or search" icon="search">
+    The Asset Picker modal opens with your full library. Use the search bar, folder sidebar, or scroll through the grid. The picker automatically filters by media type — image fields show only images, video fields show only videos.
+  </Step>
+  <Step title="Select or upload" icon="check">
+    Click an asset to select it immediately. Or click **Upload** (or drag-and-drop files) to add new assets — in single-select mode, a newly uploaded file is auto-selected.
+  </Step>
+</Steps>
+
+The selected asset displays as a **thumbnail preview** in the form with **Replace** and **Remove** buttons on hover.
+
+### Gallery Fields (Image Gallery / Media Gallery)
+
+Gallery fields support multiple assets:
+
+- Existing items appear as a **thumbnail grid** (images) or **inline video players** (videos)
+- Click **Add Images** or **Add Videos** to open the picker in multi-select mode — check multiple assets, then click **Select N Assets**
+- Remove individual items with the **×** button on each thumbnail
+- The button label adapts to the field type: "Add Videos" for video galleries, "Add Audio Files" for audio, etc.
+
+### File Fields
+
+Non-image file fields show a compact row with the filename, URL, and **Replace** / **Remove** actions on hover. Click **Select File** to open the picker without any MIME filter.
 
 ### Inserting Images in Rich Text
 

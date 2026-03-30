@@ -2,6 +2,35 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-03-30" description="v0.9.19" tags={["feature", "bugfix"]}>
+  ## Asset Picker Modal & Media Field Improvements
+
+  **Asset Picker Modal**
+
+  - **New `AssetPickerModalComponent`** — reusable modal for selecting assets from the library, with search, folder navigation, drag-and-drop upload, and pagination
+  - **Single and multi-select modes** — single-select emits immediately on click; multi-select shows checkmarks with a confirm button
+  - **MIME type filtering** — the modal pre-filters by media type based on the field (e.g. `image/*` for image fields, `video/*` for video galleries)
+  - **Adaptive page size** — the number of thumbnails per page auto-adjusts to fill the available grid space based on modal dimensions
+  - **Pinned pagination** — Prev/Next buttons are always visible below the grid without scrolling
+
+  **Content editor media fields**
+
+  - **Image / Media fields** — replaced the plain text input with a thumbnail preview showing the selected image, with **Replace** and **Remove** hover overlay buttons, and a dashed **Select Image** placeholder when empty
+  - **Gallery fields (image_array / media_gallery)** — thumbnail grid for images, inline `<video>` players for videos, per-item remove buttons, and a dynamic **Add Images** / **Add Videos** button that adapts to the field's media type
+  - **File fields** — compact row display with filename, URL, and **Replace** / **Remove** on hover
+  - **Dynamic labels** — gallery button text inferred from field name: "Add Videos" for video fields, "Add Audio Files" for audio, "Add Documents" for document fields
+
+  **Layout preview**
+
+  - **Asset object resolution** — the layout resolver now unwraps asset objects `{id, url, mimeType}` to extract the URL, so hero images and inline images render correctly in the preview
+  - **Image gallery region** — new `image-gallery` region type renders a 3-column thumbnail grid in the preview
+  - **Video gallery rendering** — `list-section` regions with video asset items render as stacked `<video>` players instead of raw JSON text
+
+  **Content list**
+
+  - **Thumbnail extraction fix** — `getContentThumbnail` now searches dot-notation keys (e.g. `media.hero_image`), nested objects, and extracts URLs from structured asset objects, so hero images appear correctly on content cards
+</Update>
+
 <Update label="2026-03-28" description="v0.9.18" tags={["feature", "bugfix"]}>
   ## Bookmark Detail View & Collection Fix
 

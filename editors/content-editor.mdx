@@ -65,8 +65,10 @@ The editor renders different input components based on field type:
     - **DateTime** — date and time picker
   </Tab>
   <Tab title="Media & References" icon="image">
-    - **Image** — click to open Asset Library picker
-    - **File** — generic file attachment from Asset Library
+    - **Image / Media** — thumbnail preview with hover overlay for **Replace** / **Remove**; click the dashed placeholder to open the Asset Picker modal
+    - **Image Gallery / Media Gallery** — grid of thumbnails with per-item remove buttons and an **Add Images** / **Add Videos** button; the button label and modal filter adapt automatically based on the field name (e.g. a "Videos" field opens the picker filtered to `video/*`)
+    - **Video** — gallery items with a video MIME type render as inline `<video>` players with controls
+    - **File** — compact row showing filename and URL with **Replace** / **Remove** on hover
     - **Reference** — link to another content item (with type filtering)
     - **Multi-reference** — link to multiple content items
   </Tab>
@@ -157,6 +159,32 @@ The content editor handles this transparently:
 <Callout kind="info">
   Top-level field IDs (without dots) continue to work as before — they read and write directly on the root data object.
 </Callout>
+
+## Asset Picker Modal
+
+When you click an image, gallery, or file field placeholder (or the **Replace** button on an existing asset), the **Asset Picker Modal** opens as a full-screen overlay:
+
+- **Search** — type in the search bar to filter assets by filename
+- **Folders** — browse the folder tree in the left sidebar
+- **Upload** — click the **Upload** button or drag-and-drop files directly onto the modal
+- **MIME filtering** — the picker automatically filters by media type based on the field (e.g. only images for an image field, only videos for a video gallery)
+- **Single select** — click an asset to select it immediately (for single image/media/file fields)
+- **Multi select** — check multiple assets, then click **Select N Assets** (for gallery fields)
+- **Adaptive page size** — the number of thumbnails per page adjusts automatically to fill the available space
+- **Pagination** — Prev/Next buttons are pinned below the grid, always visible without scrolling
+
+<Callout kind="tip">
+  Uploading a file in single-select mode automatically selects the newly uploaded asset and closes the picker.
+</Callout>
+
+## Layout Preview
+
+The editor includes a **live layout preview** panel on the right side (on wide screens) that renders your content using the content type's layout definition. The preview updates in real time as you edit fields.
+
+- **Image fields** — resolved from asset objects to display the actual image
+- **Image galleries** — rendered as a 3-column thumbnail grid
+- **Video galleries** — rendered as stacked video players with filename labels
+- **Breakpoint toggle** — switch between desktop, tablet, and mobile previews
 
 ## Keyboard Shortcuts
 
