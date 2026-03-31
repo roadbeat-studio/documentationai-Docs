@@ -2,6 +2,34 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-03-31" description="v0.9.21" tags={["feature", "bugfix"]}>
+  ## Object Array Subforms, Date Validation & Preview Fixes
+
+  **Object Array Subform component**
+
+  - **New `object_array` field type** — renders structured array fields as collapsible item cards instead of a raw JSON textarea; each card shows a title, type badge, and headliner pill with an inline edit form on expand
+  - **Generic `rb-array-subform` component** — reusable for any content type; fields are configured via `item_fields` in the form schema `settings`
+  - **Applied to Festival and Fair** — `performers` (name, type, website, headliner), `cuisine_types`, `featured_foods`, `traditional_elements`, and `keywords` all converted from raw JSON to subforms
+
+  **Cross-field date validation**
+
+  - **`after_field` validation rule** — date fields can specify another date field they must come after; the field border turns red and an inline error message appears when violated
+  - **Native browser `min` constraint** — the date picker also enforces the minimum date natively
+  - **Applied to Festival and Fair** — `dates.end_date` must be after `dates.start_date`
+
+  **Layout preview improvements**
+
+  - **Date formatting** — ISO datetime strings (e.g. `2026-03-31T19:00`) now render as `Mar 31, 2026, 7:00 PM`; date-only values render as `Mar 31, 2026`
+  - **Duration unit** — duration values in the metadata strip now show the configured unit (e.g. "4 days")
+  - **Enum i18n labels** — enum values in tag lists now show their translated label instead of the raw code
+
+  **Festival and Fair form schema**
+
+  - `long_description` changed to rich text editor, visible in basic view
+  - `secondary_types` (Additional Categories) now has selectable values
+  - `tags` field removed from Categorization section (redundant with Keywords)
+</Update>
+
 <Update label="2026-03-31" description="v0.9.20" tags={["feature", "bugfix"]}>
   ## Location Search with OpenStreetMap
 

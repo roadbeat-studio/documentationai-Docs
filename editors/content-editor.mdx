@@ -77,6 +77,7 @@ The editor renders different input components based on field type:
     - **Color** — color picker with hex value
     - **Location** — search-as-you-type location finder with map preview and automatic address fill (see [Location Search](#location-search) below)
     - **SEO** — combined meta title, description, and OG image fields
+    - **Object Array (Subform)** — structured list of objects rendered as collapsible item cards with an inline add form; each item shows a title, optional type badge, and headliner indicator. Configured via `item_fields` in the form schema's `settings`.
   </Tab>
 </Tabs>
 
@@ -142,6 +143,7 @@ Fields are validated both inline (as you type) and on save/publish:
 - **Required fields** — highlighted with a red border if empty
 - **Min/max length** — character count shown for text fields
 - **Pattern validation** — regex patterns for emails, URLs, etc.
+- **Cross-field date validation** — an `after_field` rule on a date field ensures it cannot be set before the referenced field (e.g. end date must be after start date); the field border turns red and an inline error message appears
 - **Custom rules** — content-type-specific validation
 
 Validation errors are shown inline below each field and summarized in a notification if publish is blocked.
@@ -213,6 +215,8 @@ The editor includes a **live layout preview** panel on the right side (on wide s
 - **Image fields** — resolved from asset objects to display the actual image
 - **Image galleries** — rendered as a 3-column thumbnail grid
 - **Video galleries** — rendered as stacked video players with filename labels
+- **Date/datetime values** — ISO strings (e.g. `2026-03-31T19:00`) are formatted as readable dates (`Mar 31, 2026, 7:00 PM`)
+- **Enum labels** — i18n labels are displayed instead of raw enum codes
 - **Breakpoint toggle** — switch between desktop, tablet, and mobile previews
 
 ## Keyboard Shortcuts
