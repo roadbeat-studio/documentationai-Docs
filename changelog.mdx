@@ -2,6 +2,24 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-03-31" description="v0.9.20" tags={["feature", "bugfix"]}>
+  ## Location Search with OpenStreetMap
+
+  **Search-as-you-type location finder**
+
+  - **New `LocationSearchComponent`** — integrated into the content editor for all content types with location/coordinates fields (e.g., Festival and Fair, Point of Interest, Accommodation Listing)
+  - **OpenStreetMap Nominatim geocoding** — type a place name, address, or landmark and matching results appear in a dropdown after 3 characters, with 350ms debounce to avoid excessive API calls
+  - **Keyboard navigation** — arrow keys to highlight results, Enter to select, Escape to dismiss
+  - **Banner-style Leaflet map** — selecting a location displays an interactive 160px-tall map preview with the pinned location and OpenStreetMap tiles
+  - **Automatic address field population** — selecting a result fills all related address fields in the form: street address, city, region/state, postal code, country code, and coordinates (latitude/longitude)
+  - **Dual schema pattern support** — handles both nested address fields (`location.address.street`, `location.address.city`) and flat fields (`location.street_address`, `location.locality`)
+  - **Section-level rendering** — the search component renders at the top of any form section containing a coordinates field, above the individual address inputs, so users can search before manually entering data
+
+  **Layout preview fix**
+
+  - **`[object Object]` removed** — key-value regions in the layout preview no longer display `[object Object]` for fields containing objects, arrays, or null values; non-primitive values are now filtered out so only displayable data appears
+</Update>
+
 <Update label="2026-03-30" description="v0.9.19" tags={["feature", "bugfix"]}>
   ## Asset Picker Modal & Media Field Improvements
 

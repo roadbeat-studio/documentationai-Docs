@@ -75,7 +75,7 @@ The editor renders different input components based on field type:
   <Tab title="Advanced" icon="settings">
     - **JSON** — free-form JSON editor with syntax highlighting
     - **Color** — color picker with hex value
-    - **Location** — latitude/longitude inputs with optional address
+    - **Location** — search-as-you-type location finder with map preview and automatic address fill (see [Location Search](#location-search) below)
     - **SEO** — combined meta title, description, and OG image fields
   </Tab>
 </Tabs>
@@ -175,6 +175,35 @@ When you click an image, gallery, or file field placeholder (or the **Replace** 
 
 <Callout kind="tip">
   Uploading a file in single-select mode automatically selects the newly uploaded asset and closes the picker.
+</Callout>
+
+## Location Search
+
+Content types with location fields (coordinates, addresses) get an integrated **location search** powered by OpenStreetMap. The search component appears at the top of any form section that contains a coordinates field, above the individual address fields.
+
+<Steps>
+  <Step title="Search for a location" icon="search">
+    Start typing a place name, address, or landmark in the **Search Location** field. After 3 characters, matching results appear in a dropdown powered by the OpenStreetMap Nominatim geocoding API.
+  </Step>
+  <Step title="Select from results" icon="map-pin">
+    Click a result (or use arrow keys + Enter) to select it. A **banner-style map** appears showing the pinned location on an interactive OpenStreetMap tile layer.
+  </Step>
+  <Step title="Address fields auto-fill" icon="check-circle">
+    When you select a location, all related address fields in the same section are automatically populated:
+
+    - **Street Address** — road and house number
+    - **City** — city, town, or village
+    - **Region / State** — state or county
+    - **Postal Code** — postcode
+    - **Country Code** — ISO 2-letter country code (e.g., DE, AT, CH)
+    - **Coordinates** — latitude and longitude
+  </Step>
+</Steps>
+
+The latitude and longitude fields remain manually editable below the map for fine-tuning. The search supports two common schema patterns — nested address fields (`location.address.street`) and flat fields (`location.street_address`).
+
+<Callout kind="tip">
+  The location search uses the free OpenStreetMap Nominatim API — no API key or external service configuration is required.
 </Callout>
 
 ## Layout Preview
