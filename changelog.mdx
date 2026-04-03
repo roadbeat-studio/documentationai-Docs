@@ -2,6 +2,41 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-03" description="v0.9.22" tags={["feature"]}>
+  ## Event Form Structured Subforms & Timezone Selector
+
+  Replaces all raw JSON textareas in the Event content type form with purpose-built structured subforms, enabling proper editing of all complex fields.
+
+  **Location tab**
+
+  - **Coordinates field split** — the single `location` object field is replaced by `location.geo` (the search-as-you-type map picker) plus six individual address text fields: `location.name` (Venue Name), `location.street_address`, `location.locality` (City), `location.region`, `location.postal_code`, and `location.country` (ISO alpha-2 Country Code); selecting a location via the map picker auto-fills all address fields
+  - **Virtual Location subform** — `virtual_location` now renders as a structured card with: Platform select (Zoom, Teams, Meet, Webex, YouTube Live, Twitch, Custom), Join URL, Meeting ID / Room, Passcode / Access Code, and Access Notes; replaces the raw JSON textarea
+  - **Additional Locations repeater** — `additional_locations` renders as an add/edit/delete repeater; each location card contains Venue Name, Street Address, City + Region (side by side), Postal Code + Country Code (side by side), and optional Latitude / Longitude inputs
+
+  **People & Organizations tab**
+
+  - **Organizer subform** — `organizer` renders as a compact structured form with Name (required), Email + Phone (side by side), and Website; replaces the raw JSON textarea
+  - **Co-Organizers repeater** — `co_organizers` renders as an add/edit/delete repeater with Name (required), Role (e.g. Host, Presenting Sponsor), Email + Phone, and Website per card
+  - **Performers/Speakers repeater** — `performers` renders as an add/edit/delete repeater with Name (required), Role / Type (e.g. Keynote Speaker, DJ), Bio / Description (2-row textarea), Website, and Social / Profile Link per card
+  - **Sponsors repeater** — `sponsors` renders as an add/edit/delete repeater with Name (required), Sponsorship Tier (Title / Platinum / Gold / Silver / Bronze / Media Partner / Community Partner), Website + Logo URL (side by side), and Description per card
+
+  **Tickets & Registration tab**
+
+  - **Price Range subform** — `tickets.price_range` renders as a compact 3-column form with Min Price, Max Price, and Currency (ISO 4217, e.g. EUR); replaces the raw JSON textarea
+  - **Ticket Tiers repeater** — `tickets.tiers` renders as an add/edit/delete repeater with Tier Name (required), Price + Currency + Quantity / Capacity (3-column), Sale Start + Sale End date pickers (side by side), and Description per card; card header shows tier name and price for quick scanning
+
+  **Schedule tab**
+
+  - **Timezone selector** — `schedule.timezone` now uses a dedicated `timezone_select` component that populates via the browser's `Intl.supportedValuesOf('timeZone')` API, providing the complete current IANA timezone database (~600 entries) without any hardcoded lists; replaces the empty select dropdown
+
+  **Technical**
+
+  - Eight new `getInputCategory()` mappings added: `org_editor`, `people_repeater`, `performers_repeater`, `sponsors_repeater`, `virtual_location_editor`, `array_editor`, `price_range_editor`, `ticket_tiers_repeater`, `timezone_select`
+  - New `ianaTimezones` readonly property on `ContentEditorComponent` computed from `Intl.supportedValuesOf` at class init
+  - All repeater subforms reuse existing `getRepeaterItems`, `addRepeaterItem`, `removeRepeaterItem`, `updateRepeaterItemField` helper methods
+  - Schema component names updated in both the schema JSON files and the database via SQL migration scripts
+</Update>
+
 <Update label="2026-03-31" description="v0.9.21" tags={["feature", "bugfix"]}>
   ## Object Array Subforms, Date Validation & Preview Fixes
 
