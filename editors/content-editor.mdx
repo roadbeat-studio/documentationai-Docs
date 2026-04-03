@@ -79,9 +79,8 @@ The editor renders different input components based on field type:
     - **SEO** — combined meta title, description, and OG image fields
     - **Object Array (Subform)** — structured list of objects rendered as collapsible item cards with an inline add form; each item shows a title, optional type badge, and headliner indicator. Configured via `item_fields` in the form schema's `settings`.
     - **Timezone** — searchable select populated from the browser's `Intl.supportedValuesOf('timeZone')` API — always up-to-date with the full IANA timezone database
-    - **Object Subform** — a single object rendered as a structured inline card (e.g. Organizer with name, email, phone, website); no add/remove, just direct sub-field editing
-    - **Repeater Subforms** — type-specific repeaters for people lists (name, role, email, phone, website), performers (name, role, bio, website, social), sponsors (name, tier, website, logo, description), location lists, virtual locations, and ticket tiers; each card has a summary header and a Remove button
-    - **Price Range** — compact 3-column inline form for min price, max price, and ISO 4217 currency code
+    - **Object Subform** — a single object field rendered as a structured inline card with labelled inputs for each sub-field; no add/remove controls
+    - **Repeater Subform** — an array of objects rendered as a vertical stack of cards with a dashed **Add** button; each card shows a summary header and a **Remove** button
   </Tab>
 </Tabs>
 
@@ -185,36 +184,22 @@ When you click an image, gallery, or file field placeholder (or the **Replace** 
 
 ## Structured Subforms
 
-Complex object and array fields in rich content types (such as Events) render as **structured subforms** instead of raw JSON textareas. There are two patterns:
+Complex object and array fields render as **structured subforms** instead of raw JSON textareas. The form schema's `ui.component` value for a field determines which subform pattern is used. There are two patterns:
 
 ### Object Subforms
 
 A single object field renders as an inline bordered card with labelled inputs for each sub-field. No add/remove controls — the object always exists and you edit its properties directly.
 
-**Examples**: Organizer (name, email, phone, website), Price Range (min, max, currency).
-
 ### Repeater Subforms
 
 An array field renders as a **repeater** — a vertical stack of cards, each representing one item, with a dashed **Add** button at the bottom. Each card has:
 
-- A **header bar** showing the item number and a summary (e.g. `#1 — Belgian Brewers Association · Platinum`) plus a **Remove** button
+- A **header bar** showing the item number and a brief summary of its key fields, plus a **Remove** button
 - **Structured inputs** for all sub-fields of the item
 
 <Callout kind="tip">
-  The card header summarises the most important fields (name, role, tier, city, etc.) so you can scan a long list without expanding each card.
+  The card header summarises the most important fields so you can scan a long list at a glance without expanding each card.
 </Callout>
-
-**Repeater types and their fields:**
-
-| Repeater | Fields |
-|---|---|
-| **Co-Organizers** | Name (required), Role, Email, Phone, Website |
-| **Performers / Speakers** | Name (required), Role / Type, Bio / Description, Website, Social / Profile Link |
-| **Sponsors** | Name (required), Tier (Title / Platinum / Gold / Silver / Bronze / Media / Community), Website, Logo URL, Description |
-| **Additional Locations** | Venue Name, Street Address, City (required), Region / State, Postal Code, Country Code (required, ISO alpha-2), Latitude, Longitude |
-| **Virtual Location** | Platform (select), Join URL (required), Meeting ID / Room, Passcode / Access Code, Access Notes |
-| **Ticket Tiers** | Tier Name (required), Price, Currency (ISO 4217), Quantity / Capacity, Sale Start, Sale End, Description |
-| **Sessions / Programme Items** | Title (required), Start Time, End Time, Speaker, Description |
 
 ## Location Search
 
