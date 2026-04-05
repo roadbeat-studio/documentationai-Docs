@@ -123,14 +123,24 @@ All platform endpoints require super admin authentication and are prefixed with 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/organizations` | List orgs with search, filter, pagination |
-| `POST` | `/organizations` | Create a new organization |
-| `GET` | `/organizations/:id` | Get org details |
-| `PUT` | `/organizations/:id` | Update org settings |
-| `POST` | `/organizations/:id/deactivate` | Deactivate an org |
+| `POST` | `/organizations` | Create a new organization with initial admin |
+| `GET` | `/organizations/:id` | Get org details with stats |
+| `PUT` | `/organizations/:id` | Update org settings, plan, limits |
+| `DELETE` | `/organizations/:id` | Deactivate an org (soft disable) |
+| `GET` | `/organizations/:id/users` | List users of an organization |
+| `POST` | `/organizations/:id/owner` | Set the owner of an organization |
+| `POST` | `/organizations/:id/switch` | Switch super admin context to this org |
+| `GET` | `/organizations/:orgId/content-types` | List content types enabled for an org |
+| `POST` | `/organizations/:orgId/content-types/copy` | Copy a content type between orgs |
+| `DELETE` | `/organizations/:orgId/content-types/:id` | Disable a content type for an org |
 | `GET` | `/stats` | Platform-wide statistics |
 | `GET` | `/admins` | List super admins |
-| `POST` | `/admins/:userId/grant` | Grant super admin |
-| `POST` | `/admins/:userId/revoke` | Revoke super admin |
+| `POST` | `/admins` | Grant super admin to a user |
+| `DELETE` | `/admins/:userId` | Revoke super admin from a user |
+
+<Callout kind="tip">
+  For a full walkthrough of the Platform Admin dashboard UI, see the [Platform Administration](/guides/platform-administration) guide.
+</Callout>
 
 ## Data Isolation Details
 

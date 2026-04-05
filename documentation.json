@@ -81,6 +81,11 @@
                 "icon": "shield"
               },
               {
+                "title": "Platform Administration",
+                "path": "guides/platform-administration",
+                "icon": "shield-check"
+              },
+              {
                 "title": "Webhooks",
                 "path": "guides/webhooks",
                 "icon": "webhook"

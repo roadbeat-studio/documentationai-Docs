@@ -186,6 +186,17 @@ Super admins see a **Platform Admin** link in the sidebar (shield icon). The das
   Super admin access is tracked in the `platform_admins` table. Revoking super admin does not affect the user's organization-level role.
 </Callout>
 
+### Organization Switching
+
+Super admins can switch their active organization context without logging out. This re-issues a new JWT scoped to the target organization, allowing the super admin to manage content and users within that org.
+
+- **Platform Admin UI** — use the organization switcher in the sidebar to select a different org
+- **API** — `POST /api/v1/platform/organizations/:id/switch` — returns new access and refresh tokens scoped to the target organization
+
+<Callout kind="info">
+  Switching org context does not change the super admin's home organization or their org-level role. The new JWT simply carries a different `organizationId` claim.
+</Callout>
+
 ### Multi-Org Login
 
 If the same email address exists in multiple organizations, the login response returns an **org picker** instead of a JWT. The user selects which organization to log into, then receives tokens scoped to that organization.

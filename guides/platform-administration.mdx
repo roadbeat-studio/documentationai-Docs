@@ -1,0 +1,236 @@
+---
+title: Platform Administration
+description: Manage organizations, super admins, and platform-wide settings from the Platform Admin dashboard.
+---
+
+## Overview
+
+The **Platform Admin dashboard** is a dedicated area for super admins to manage the entire roadbeat Studio instance. From here you can create and configure organizations, monitor platform-wide statistics, and control who has super admin privileges.
+
+<Callout kind="info">
+  Only users with **Super Admin** status can access the Platform Admin dashboard. The sidebar shows a **Platform Admin** link (shield icon) when the logged-in user is a super admin.
+</Callout>
+
+## Accessing the Dashboard
+
+<Steps>
+  <Step title="Log in as a super admin" icon="log-in">
+    Log in with an account that has been granted super admin privileges. The first super admin is created during the initial setup wizard.
+  </Step>
+  <Step title="Open Platform Admin" icon="shield">
+    Click the **Platform Admin** link in the left sidebar. This link only appears for super admin users.
+  </Step>
+  <Step title="Browse the dashboard" icon="layout-dashboard">
+    The Platform Overview shows KPI cards, organization breakdown, and quick actions.
+  </Step>
+</Steps>
+
+## Platform Overview
+
+The overview page (`/platform`) displays instance-wide statistics at a glance:
+
+### KPI Cards
+
+| Card | Description |
+|------|-------------|
+| **Organizations** | Total count with active/inactive breakdown |
+| **Total Users** | Sum of all users across all organizations |
+| **Total Content** | Sum of all content entries across all organizations |
+| **Total Assets** | Asset count and total storage used |
+
+### Organizations by Plan
+
+A bar chart shows how many organizations are on each plan (`free`, `starter`, `team`, `business`, `enterprise`).
+
+### Recently Created
+
+The five most recently created organizations with their plan and creation date. Click **View all** to go to the full organization list.
+
+### Quick Actions
+
+<Columns cols={3}>
+  <Card title="New Organization" icon="plus" href="/guides/platform-administration#creating-an-organization">
+    Create a new tenant with plan, limits, and initial admin user.
+  </Card>
+  <Card title="Manage Organizations" icon="building" href="/guides/platform-administration#organization-list">
+    Search, filter, and manage all organizations.
+  </Card>
+  <Card title="Manage Admins" icon="shield" href="/guides/platform-administration#super-admin-management">
+    Grant or revoke super admin privileges.
+  </Card>
+</Columns>
+
+## Organization List
+
+Navigate to **Platform** → **Manage Organizations** to see all organizations in a searchable, paginated table.
+
+### Filtering
+
+- **Search** — filter by organization name or slug
+- **Plan** — filter by subscription plan
+- **Status** — filter by active/inactive
+
+### Table Columns
+
+| Column | Description |
+|--------|-------------|
+| **Name** | Organization name and slug |
+| **Plan** | Current subscription plan |
+| **Users** | Number of users in the organization |
+| **Content** | Number of content entries |
+| **Status** | Active or inactive badge |
+| **Created** | Organization creation date |
+
+Click any row to open the **Organization Detail** page.
+
+## Organization Detail
+
+The detail page (`/platform/organizations/:id`) has three tabs:
+
+<Tabs>
+  <Tab title="Overview" icon="bar-chart-3">
+    KPI cards showing users (with max limit), content count, asset count, and storage limit. Below the cards is a details section with the organization ID, domain, creation/update timestamps, and description.
+  </Tab>
+  <Tab title="Users" icon="users">
+    Lists all users in the organization with their name, email, role, status, and last login date.
+  </Tab>
+  <Tab title="Settings" icon="settings">
+    Edit the organization's name, slug, plan, user limit, storage limit, domain, and description. Changes are saved via `PUT /api/v1/platform/organizations/:id`.
+  </Tab>
+</Tabs>
+
+### Deactivating an Organization
+
+Click the **Deactivate** button on the organization detail page to soft-disable the organization. Deactivated organizations:
+
+- Cannot log in or access the API
+- Retain all data for potential reactivation
+- Are marked as inactive in the organization list
+
+<Callout kind="alert">
+  Deactivation is reversible. No data is deleted. Reactivate by updating the organization's `isActive` flag via the API.
+</Callout>
+
+### Content Type Management
+
+Super admins can manage which content types are available to each organization:
+
+- **View** — `GET /api/v1/platform/organizations/:orgId/content-types`
+- **Copy** — `POST /api/v1/platform/organizations/:orgId/content-types/copy` — copies a content type from one org to another
+- **Disable** — `DELETE /api/v1/platform/organizations/:orgId/content-types/:id`
+
+## Creating an Organization
+
+Navigate to **Platform** → **Manage Organizations** → **New Organization**.
+
+<Steps>
+  <Step title="Organization details" icon="building">
+    Enter the organization **name** and **slug** (URL-safe identifier, must be globally unique).
+  </Step>
+  <Step title="Plan and limits" icon="settings">
+    Select a **plan** and configure **max users** and **max storage** limits.
+  </Step>
+  <Step title="Initial admin user" icon="user-plus">
+    Provide the **email**, **name**, and **password** for the first admin user of the new organization.
+  </Step>
+  <Step title="Create" icon="check">
+    The organization, admin user, and default settings are created in a single transaction.
+  </Step>
+</Steps>
+
+## Organization Switching
+
+Super admins can switch their active organization context to operate within any org without logging out. This is useful for managing content, users, and settings as if you were a local admin of that organization.
+
+When you switch org context:
+
+1. A new JWT is issued with the target organization's ID
+2. Your access and refresh tokens are replaced in the browser
+3. The page reloads with the new org context
+4. Your super admin status and home organization are preserved
+
+<Callout kind="info">
+  Use the **organization switcher** in the sidebar to quickly switch between organizations. Your home organization is always available to return to.
+</Callout>
+
+## Super Admin Management
+
+Navigate to **Platform** → **Manage Admins** to view and manage super admin privileges.
+
+### Current Super Admins
+
+The table shows all users with super admin status:
+
+| Column | Description |
+|--------|-------------|
+| **User** | Name, email, and avatar |
+| **Organization** | The user's home organization |
+| **Role** | Super Admin badge plus their org-level role |
+| **Last Login** | Most recent login timestamp |
+| **Granted** | When super admin was granted |
+
+### Granting Super Admin
+
+<Steps>
+  <Step title="Click Grant Super Admin" icon="plus">
+    Click the **Grant Super Admin** button to open the search panel.
+  </Step>
+  <Step title="Search by email" icon="search">
+    Type at least 3 characters of the user's email to search across all organizations.
+  </Step>
+  <Step title="Select user" icon="user-check">
+    Click **Grant** next to the user to grant super admin privileges.
+  </Step>
+</Steps>
+
+### Revoking Super Admin
+
+Click **Revoke** next to any super admin in the list. A confirmation dialog appears. Revoking super admin:
+
+- Removes the user's entry from the `platform_admins` table
+- Does **not** affect the user's organization-level role
+- Does **not** delete the user account
+- Takes effect on the user's next token refresh or login
+
+<Callout kind="danger">
+  You cannot revoke your own super admin status from the UI to prevent accidental lockout.
+</Callout>
+
+## API Reference
+
+All platform endpoints require a valid JWT with super admin privileges. They are prefixed with `/api/v1/platform/`.
+
+### Organizations
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/organizations` | List organizations (search, filter, paginate) |
+| `POST` | `/organizations` | Create organization with initial admin |
+| `GET` | `/organizations/:id` | Get organization detail with stats |
+| `PUT` | `/organizations/:id` | Update organization settings |
+| `DELETE` | `/organizations/:id` | Deactivate organization |
+| `GET` | `/organizations/:id/users` | List organization users |
+| `POST` | `/organizations/:id/owner` | Set organization owner |
+| `POST` | `/organizations/:id/switch` | Switch org context (re-issue JWT) |
+
+### Content Types
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/organizations/:orgId/content-types` | List enabled content types |
+| `POST` | `/organizations/:orgId/content-types/copy` | Copy content type between orgs |
+| `DELETE` | `/organizations/:orgId/content-types/:id` | Disable content type for org |
+
+### Super Admins
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/admins` | List all super admins |
+| `POST` | `/admins` | Grant super admin (body: `{ userId }`) |
+| `DELETE` | `/admins/:userId` | Revoke super admin |
+
+### Statistics
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/stats` | Platform-wide KPIs and breakdowns |
