@@ -45,6 +45,7 @@ graph TD
 - Plugins are loaded dynamically at runtime from the `PLUGINS_DIR` directory
 - Each plugin is a self-contained NestJS module
 - License validation is offline (no phone-home) via Ed25519 signed JWT
+- All plugin data is **org-scoped** — plugin tables include `organization_id`, queries filter by org, and event handlers verify `organizationId` before acting
 
 ## How It Works
 

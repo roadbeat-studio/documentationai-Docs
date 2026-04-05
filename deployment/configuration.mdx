@@ -122,12 +122,27 @@ Redis is used for caching, session storage, and BullMQ job queues.
 | `LOG_LEVEL` | `debug` | Pino log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` |
 | `LOG_PRETTY` | `true` | Pretty-print logs (disable in production) |
 
+## Multi-Tenancy
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CANONICAL_URL_BASE` | — | Fallback base URL for published content canonical URLs (per-org override in `organization.settings.canonicalUrlBase` takes priority) |
+| `UPLOAD_DIR` | `./uploads` | Root directory for asset uploads (org files stored under `{orgSlug}/` subdirectories) |
+
+<Callout kind="tip">
+  Most multi-tenancy settings are configured per-organization via the Platform Admin dashboard rather than environment variables. See [Multi-Tenancy](/guides/multi-tenancy) for details.
+</Callout>
+
 ## Rate Limiting
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `THROTTLE_TTL` | `60000` | Rate limit window in ms |
-| `THROTTLE_LIMIT` | `100` | Max requests per window |
+| `THROTTLE_LIMIT` | `100` | Max requests per window per org+IP |
+
+<Callout kind="info">
+  Rate limiting is **org-aware**. The throttle key is `org:{orgId}:{ip}` for authenticated requests, so one organization's traffic cannot exhaust another's rate limit budget.
+</Callout>
 
 ## Machine Translation (Optional)
 

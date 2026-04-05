@@ -7,6 +7,10 @@ description: Upload, organize, tag, and manage media files in the Studio Asset L
 
 The **Asset Library** is Studio's central media management system. It handles images, videos, documents, and other files with automatic metadata extraction, folder organization, tagging, and usage tracking.
 
+<Callout kind="info">
+  All assets are **org-scoped**. Uploaded files are stored under `{orgSlug}/{year}/{month}/` paths, and the `/uploads` endpoint enforces org-ownership for authenticated requests. See [Multi-Tenancy](/guides/multi-tenancy#asset-storage-isolation) for details.
+</Callout>
+
 ## Uploading Assets
 
 <Tabs>

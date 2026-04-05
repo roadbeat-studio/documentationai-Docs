@@ -2,6 +2,58 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-05" description="v0.10.0" tags={["feature", "security"]}>
+  ## Multi-Tenancy — Zero Data Leakage
+
+  roadbeat Studio is now fully multi-tenant. Multiple organizations share a single database and application instance with strict data isolation.
+
+  **Database Foundation (Phase 1)**
+
+  - New `platform_admins` table for super admin tracking
+  - `content_types` table refactored to composite primary key `(organization_id, id)` — orgs can have content types with the same IDs
+  - All foreign keys from `content` and `content_type_layouts` updated to composite references
+  - Removed `organization_content_types` junction table (no longer needed)
+
+  **Authentication & Platform Module (Phase 2)**
+
+  - Multi-org email resolution — login handles users with the same email across multiple organizations (org picker)
+  - `setupInitialAdmin()` creates the first platform admin and default locale
+  - Platform admin API: organization CRUD, platform stats, super admin grant/revoke
+  - `superAdminGuard` for platform-level route protection
+
+  **Core Services (Phase 3)**
+
+  - `ContentTypesService` — all methods require `organizationId`; composite PK queries (`organizationId_id`)
+  - `SearchService` — org-scoped `clearIndexForOrg()`, `getIndexStatsForOrg()`, `reindexForOrg()`
+  - `SearchController` — `reindex()` and `stats()` scoped to requesting user's org
+  - `DiscoveryNodesService`, `PublishingService`, `PublisherKeyService`, `DeliveryService`, `DashboardService` — all org-scoped
+  - `ContentRelationsService` — cross-org validation hardened on back-references, usage, and delete checks
+  - Cache keys audited — all 8 org-scoped calls include `${organizationId}` in key
+  - Asset storage keys prefixed with `{orgSlug}/` for human-readable paths
+  - `HealthController` — removed `process.uptime()` from public endpoints; queue stats behind auth
+  - `canonicalUrlBase` reads from `organization.settings` first, falls back to env var
+  - `ExportModule` (`BackupService`, `ContentPodService`) verified org-scoped
+  - `FeatureGateService.getLimit()` reads per-org overrides via `OrgLimitsLoaderService`
+  - `OrgThrottlerGuard` — rate limit key = `org:{orgId}:{ip}` for per-org throttling
+  - Asset serving guard middleware — checks JWT org against path org dir; super-admin bypass
+
+  **Pro Plugin Isolation (Phase 4)**
+
+  - `pro-realtime` — WebSocket rooms org-prefixed; `sendToContentRoom()` requires `organizationId`; REST admin endpoints return per-org data; all `@OnEvent` handlers guard missing `organizationId`
+  - `pro-scheduling` — `organization_id` added to `pro_scheduled_actions`; all queries org-scoped
+  - `pro-import` — `organization_id` added to `pro_imported_content`
+
+  **Frontend (Phases 5–6)**
+
+  - Sidebar org header with logo and name
+  - Super-admin org-switcher dropdown
+  - Settings org tab with plan, limits, and domain configuration
+  - Content Types enable/disable tab for per-org content type management
+  - Platform Admin dashboard: organization list with search/filter/pagination, org detail with users/stats/settings tabs, create-org wizard with 4-step flow
+  - Platform stats component with KPI cards, orgs-by-plan chart, recent orgs
+  - Platform admins component with admin table, grant/revoke with user search modal
+</Update>
+
 <Update label="2026-04-03" description="v0.9.22" tags={["feature"]}>
   ## Event Form Structured Subforms & Timezone Selector
 

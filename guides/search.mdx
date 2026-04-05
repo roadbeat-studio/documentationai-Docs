@@ -7,6 +7,10 @@ description: Full-text search across content, assets, and users powered by Meili
 
 roadbeat Studio uses **MeiliSearch** for fast, typo-tolerant full-text search across content, assets, and users. The search is accessible through the admin UI's **command palette** (Ctrl+K) and via the API.
 
+<Callout kind="info">
+  All search operations are **org-scoped**. Queries automatically filter by the authenticated user's `organizationId`, and reindexing only affects the current organization's documents. See [Multi-Tenancy](/guides/multi-tenancy#search-index-isolation) for details.
+</Callout>
+
 ## Command Palette
 
 Press **Ctrl+K** (or **Cmd+K** on macOS) anywhere in the admin UI to open the global search command palette. It supports:

@@ -64,11 +64,12 @@ The API is organized into 30+ NestJS modules, each responsible for a specific do
   <Tab title="Core" icon="server">
     | Module | Path | Description |
     |--------|------|-------------|
-    | **Auth** | `auth/` | JWT login, setup wizard, refresh, password management |
-    | **Users** | `users/` | User CRUD with CE limits (3 users) |
+    | **Auth** | `auth/` | JWT login, setup wizard, refresh, password management, multi-org email resolution |
+    | **Users** | `users/` | User CRUD with per-org limits |
     | **Organizations** | `organizations/` | Organization settings and configuration |
+    | **Platform** | `platform/` | Super admin: org CRUD, platform stats, admin management |
     | **Database** | `database/` | Prisma client, connection management |
-    | **Redis** | `redis/` | Cache service with get/set/del/pattern operations |
+    | **Redis** | `redis/` | Cache service with org-scoped key namespacing |
     | **Queue** | `queue/` | BullMQ job processing for async tasks |
     | **Config** | `config/` | Environment configuration with Joi validation |
   </Tab>
@@ -126,6 +127,7 @@ The Angular 19 frontend uses **standalone components** and **signal-based** stat
 | `/users/*` | User management with roles | JWT (admin) |
 | `/settings/*` | Organization config, webhooks, API keys | JWT (admin) |
 | `/consumer/*` | Consumer discovery features from `@roadbeat/consumer` | JWT |
+| `/platform/*` | Platform admin: org management, stats, super admin | JWT (super admin) |
 | `/pro/*` | Pro plugin routes loaded dynamically | JWT |
 
 ### Key Frontend Services

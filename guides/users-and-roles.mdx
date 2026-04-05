@@ -5,7 +5,7 @@ description: Manage users, roles, and permissions in roadbeat Studio.
 
 ## Overview
 
-roadbeat Studio provides role-based access control (RBAC) to manage who can do what within your organization. CE includes three fixed roles; Pro plugins extend this with granular per-content-type permissions and custom roles.
+roadbeat Studio provides role-based access control (RBAC) to manage who can do what within your organization. CE includes three organization-level roles plus a cross-org **Super Admin** role for platform administration. Pro plugins extend this with granular per-content-type permissions and custom roles.
 
 ## User Management
 
@@ -35,7 +35,7 @@ roadbeat Studio provides role-based access control (RBAC) to manage who can do w
 </Tabs>
 
 <Callout kind="alert">
-  CE is limited to **3 users** per organization. Pro has unlimited users.
+  CE defaults to **3 users** per organization. This limit can be configured per-org by a super admin via the Platform Admin dashboard. Pro has unlimited users.
 </Callout>
 
 ### User Properties
@@ -161,6 +161,34 @@ GET /api/v1/auth/me
 PATCH /api/v1/auth/me
 { "name": "New Name", "avatarUrl": "https://..." }
 ```
+
+## Super Admin & Platform Administration
+
+Super admins operate at the **platform level**, above individual organizations. They can manage all organizations, view cross-org statistics, and grant or revoke super admin privileges.
+
+### Becoming a Super Admin
+
+The first super admin is created automatically during the initial setup wizard. Additional super admins can be granted by existing super admins via:
+
+- **Platform Admin UI** — navigate to **Platform** → **Admins** → search for a user → click **Grant Super Admin**
+- **API** — `POST /api/v1/platform/admins/:userId/grant`
+
+### Platform Admin Dashboard
+
+Super admins see a **Platform Admin** link in the sidebar (shield icon). The dashboard provides:
+
+- **Organization list** — search, filter by plan/status, paginate, create new orgs
+- **Organization detail** — view users, content stats, settings; update plan and limits
+- **Platform statistics** — total orgs, users, content items, storage usage; orgs-by-plan chart
+- **Admin management** — list current super admins, grant/revoke privileges
+
+<Callout kind="alert">
+  Super admin access is tracked in the `platform_admins` table. Revoking super admin does not affect the user's organization-level role.
+</Callout>
+
+### Multi-Org Login
+
+If the same email address exists in multiple organizations, the login response returns an **org picker** instead of a JWT. The user selects which organization to log into, then receives tokens scoped to that organization.
 
 ## Pro: Advanced Roles
 

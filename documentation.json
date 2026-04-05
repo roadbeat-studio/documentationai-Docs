@@ -76,6 +76,11 @@
                 "icon": "users"
               },
               {
+                "title": "Multi-Tenancy",
+                "path": "guides/multi-tenancy",
+                "icon": "shield"
+              },
+              {
                 "title": "Webhooks",
                 "path": "guides/webhooks",
                 "icon": "webhook"

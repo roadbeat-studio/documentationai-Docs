@@ -123,19 +123,33 @@ Studio provides two distinct APIs:
   </Tab>
 </Tabs>
 
-## Organizations
+## Organizations & Multi-Tenancy
 
-Studio is **multi-tenant** at the data level. Each installation has one organization, and all content, users, and assets belong to that organization. Users are assigned roles within the organization.
+Studio is **multi-tenant** — multiple organizations share a single database and application instance, but all data is strictly isolated per organization. Every query includes an `organizationId` filter, ensuring zero data leakage between tenants.
+
+Each organization has its own:
+
+- **Content and content types** (content types use a composite primary key `(organization_id, id)`)
+- **Users and roles**
+- **Assets** (stored under org-specific directory paths)
+- **Webhooks, API keys, and settings**
+- **Search indexes** (org-scoped filtering and reindexing)
+- **Rate limits** (per-org throttling)
+
+<Callout kind="tip">
+  See the [Multi-Tenancy guide](/guides/multi-tenancy) for full architecture details, platform administration, and data isolation mechanisms.
+</Callout>
 
 ## Roles
 
-CE provides three built-in roles:
+CE provides three organization-level roles plus a cross-org platform role:
 
-| Role | Permissions |
-|------|------------|
-| **Admin** | Full access — users, settings, content, publishing |
-| **Editor** | Create, edit, publish content and manage assets |
-| **Viewer** | Read-only access to content and assets |
+| Role | Scope | Permissions |
+|------|-------|------------|
+| **Super Admin** | Platform-wide | Create/manage organizations, view platform stats, grant/revoke super admin |
+| **Admin** | Organization | Full access — users, settings, content, publishing, search reindex |
+| **Editor** | Organization | Create, edit, publish content and manage assets |
+| **Viewer** | Organization | Read-only access to content and assets |
 
 <Callout kind="info">
   Pro plugins like `pro-advanced-roles` add granular per-content-type permissions and custom roles.
