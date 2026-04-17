@@ -1,11 +1,15 @@
 ---
 title: Backup & Export
-description: Back up your Studio data and export content for portability and disaster recovery.
+description: Back up your Studio data, export content for portability, and import archives with conflict resolution.
 ---
 
 ## Overview
 
-roadbeat Studio provides built-in backup and export capabilities to ensure data portability and disaster recovery. You can export your entire database, individual content items, or generate Content Pod bundles for static hosting.
+roadbeat Studio provides built-in backup, export, and import capabilities to ensure data portability, disaster recovery, and smooth migration between instances. You can export your entire database, generate Content Pod bundles, and import data from other Studio instances with full conflict resolution.
+
+<Callout kind="tip">
+  For a guided experience, use the **Migration Wizard** at **Settings → Organization → Open Migration Wizard** or navigate directly to `/settings/migration`. See the [Migration guide](/guides/migration) for details.
+</Callout>
 
 ## Database Backup
 
@@ -36,6 +40,31 @@ This creates a backup containing:
   Backups contain sensitive data including hashed passwords and API key hashes. Store them securely and restrict access.
 </Callout>
 
+### Export Progress
+
+During export, you can poll the progress of an in-progress backup:
+
+```bash
+GET /api/v1/export/backups/:id/progress
+```
+
+The response includes the current phase, percentage, and a human-readable message:
+
+```json
+{
+  "data": {
+    "backupId": "abc-123",
+    "phase": "content",
+    "percentage": 50,
+    "message": "Exported 142 content items",
+    "itemsProcessed": 142,
+    "itemsTotal": 142
+  }
+}
+```
+
+Export phases progress through: `preparing` → `content_types` → `content` → `assets` → `config` → `archiving` → `storing` → `completed`.
+
 ### Listing and Downloading Backups
 
 ```bash
@@ -65,6 +94,76 @@ POST /api/v1/export/backups/:id/restore
 
 <Callout kind="danger">
   Restoring a backup **replaces existing data** for the selected categories. This action cannot be undone. Always create a fresh backup before restoring.
+</Callout>
+
+## Import with Validation & Conflict Resolution
+
+When importing data from another Studio instance, you can validate the archive first and choose how conflicts are handled.
+
+### Validating an Archive
+
+Upload a ZIP file for pre-import validation. The endpoint checks the manifest, counts items, and detects conflicts with existing data:
+
+```bash
+POST /api/v1/export/validate-import
+Content-Type: multipart/form-data
+
+file: <backup.zip>
+```
+
+The response includes:
+
+```json
+{
+  "data": {
+    "valid": true,
+    "manifestVersion": "1.0",
+    "generator": "roadbeat-studio",
+    "sourceOrgId": "org-abc-123",
+    "counts": {
+      "contentTypes": 5,
+      "content": 142,
+      "assets": 38
+    },
+    "conflicts": [
+      {
+        "type": "content",
+        "id": "item-456",
+        "name": "welcome-post",
+        "existingUpdatedAt": "2026-04-10T12:00:00Z",
+        "incomingUpdatedAt": "2026-04-15T08:30:00Z"
+      }
+    ],
+    "errors": []
+  }
+}
+```
+
+### Importing with Conflict Resolution
+
+Import the archive with a chosen conflict resolution strategy:
+
+```bash
+POST /api/v1/export/import
+Content-Type: multipart/form-data
+
+file: <backup.zip>
+strategy: "merge"
+restoreContent: true
+restoreAssets: true
+restoreConfig: true
+```
+
+Three conflict resolution strategies are available:
+
+| Strategy | Behavior |
+|---|---|
+| `skip` | Keep existing items unchanged. Only new items are imported. |
+| `overwrite` | Replace existing items with imported data. |
+| `merge` | Compare timestamps — the more recently updated version wins. |
+
+<Callout kind="info">
+  The `merge` strategy is recommended for most migration scenarios. It preserves recent edits on the target instance while still importing newer changes from the source.
 </Callout>
 
 ## Content Pod Export

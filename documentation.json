@@ -101,6 +101,12 @@
                 "icon": "download"
               },
               {
+                "title": "Migration",
+                "path": "guides/migration",
+                "icon": "arrow-right-left",
+                "badge": "New"
+              },
+              {
                 "title": "Content Relations",
                 "path": "guides/content-relations",
                 "icon": "link"

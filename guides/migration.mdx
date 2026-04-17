@@ -1,0 +1,141 @@
+---
+title: Migration
+description: Migrate data between Studio instances using the built-in Migration Wizard with export progress tracking and conflict resolution.
+---
+
+## Overview
+
+The **Migration Wizard** provides a guided UI for moving data between roadbeat Studio instances. Common use cases include:
+
+- Migrating from a hosted instance to a self-hosted deployment
+- Moving content between staging and production environments
+- Creating point-in-time snapshots for disaster recovery
+- Merging content from multiple organizations
+
+<Callout kind="tip">
+  Access the Migration Wizard from **Settings → Organization → Open Migration Wizard**, or navigate directly to `/settings/migration`.
+</Callout>
+
+## Migration Wizard
+
+The wizard guides you through two main flows: **Export** (create a backup) and **Import** (restore from an archive).
+
+### Exporting Data
+
+<Steps>
+  <Step title="Open the wizard">
+    Navigate to **Settings → Organization** and click **Open Migration Wizard**, or go to `/settings/migration`.
+  </Step>
+  <Step title="Choose Export">
+    Select **Export Data** from the landing screen.
+  </Step>
+  <Step title="Configure export options">
+    Optionally provide a label (e.g. "Pre-migration backup") and choose what to include:
+
+    - **Content** — all articles, entries, and version history
+    - **Assets metadata** — file references (actual files remain in S3)
+    - **Content types & organization settings** — schemas, webhooks, config
+  </Step>
+  <Step title="Monitor progress">
+    After clicking **Start Export**, a real-time progress bar tracks each phase:
+
+    `preparing` → `content_types` → `content` → `assets` → `config` → `archiving` → `storing` → `completed`
+
+    The UI polls `GET /api/v1/export/backups/:id/progress` every 800ms to update the bar.
+  </Step>
+  <Step title="Download the archive">
+    Once complete, download the ZIP archive. The export summary shows content count, asset count, and archive size.
+  </Step>
+</Steps>
+
+### Importing Data
+
+<Steps>
+  <Step title="Choose Import">
+    From the wizard landing screen, select **Import Data**.
+  </Step>
+  <Step title="Upload archive">
+    Select the `.zip` file exported from another Studio instance.
+  </Step>
+  <Step title="Validation">
+    Click **Validate & Continue**. Studio extracts and inspects the archive:
+
+    - Checks `manifest.json` for correct format and generator
+    - Counts content types, content items, and assets
+    - Detects **conflicts** — items that already exist in this organization
+  </Step>
+  <Step title="Resolve conflicts">
+    If conflicts are detected, choose a resolution strategy:
+
+    | Strategy | Behavior |
+    |---|---|
+    | **Skip** (default) | Keep existing items. Only new items are imported. |
+    | **Overwrite** | Replace existing items with imported data. |
+    | **Merge** | Compare timestamps — the more recently updated version wins. |
+
+    You can expand the conflict details to see each conflicting item with its type, name, and timestamps.
+  </Step>
+  <Step title="Execute import">
+    Click **Import** to begin. The wizard shows a progress indicator while data is being restored. On completion, a summary displays how many content types, content items, assets, and config changes were applied.
+  </Step>
+</Steps>
+
+## Conflict Resolution Strategies
+
+When importing into an organization that already has data, conflicts arise when an item in the archive has the same ID as an existing item. Studio detects conflicts for:
+
+- **Content types** — matched by content type ID within the organization
+- **Content items** — matched by content item UUID
+- **Assets** — matched by asset UUID
+
+### Skip (Keep Existing)
+
+The safest option. Conflicting items are ignored — only items that don't exist yet are imported. Use this when:
+
+- You're importing supplementary content from another instance
+- You want to preserve all local edits
+
+### Overwrite (Replace)
+
+All conflicting items are replaced with the imported version. Use this when:
+
+- The source instance is authoritative
+- You're restoring from a known-good backup
+
+<Callout kind="alert">
+  Overwrite replaces existing data and cannot be undone. Always create a backup before importing with the overwrite strategy.
+</Callout>
+
+### Merge (Keep Newer)
+
+For each conflict, Studio compares the `updatedAt` timestamps. The more recently updated version wins — whether it's the local or imported copy. Use this when:
+
+- Both instances have been actively edited
+- You want the most up-to-date version of each item
+
+## API Reference
+
+The Migration Wizard uses these API endpoints under the hood:
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/export/backups` | `POST` | Create a backup |
+| `/api/v1/export/backups` | `GET` | List all backups |
+| `/api/v1/export/backups/:id` | `GET` | Get backup status |
+| `/api/v1/export/backups/:id/progress` | `GET` | Poll export progress |
+| `/api/v1/export/backups/:id/download` | `GET` | Download backup ZIP |
+| `/api/v1/export/backups/:id` | `DELETE` | Delete a backup |
+| `/api/v1/export/validate-import` | `POST` | Validate archive (multipart) |
+| `/api/v1/export/import` | `POST` | Import with conflict resolution (multipart) |
+
+<Callout kind="info">
+  All endpoints require JWT authentication. The organization context is derived from the authenticated user's token.
+</Callout>
+
+## Best Practices
+
+- **Always create a backup** on the target instance before importing
+- **Use `merge` strategy** for active-active scenarios where both instances have edits
+- **Use `skip` strategy** when importing additive content that shouldn't overwrite existing work
+- **Validate before importing** — the validation step catches manifest errors and gives you a conflict summary before any data is modified
+- **Asset files are not included** — backup archives contain asset metadata only. Transfer actual files separately via S3 sync or your storage provider's tools

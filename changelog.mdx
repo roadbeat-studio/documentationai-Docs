@@ -2,6 +2,33 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-17" description="v0.10.1" tags={["feature"]}>
+  ## Migration Wizard, Export Progress & Import Conflict Resolution
+
+  A complete migration toolkit for moving data between Studio instances.
+
+  **Migration Wizard UI**
+
+  - New multi-step wizard at **Settings → Organization → Open Migration Wizard** (`/settings/migration`)
+  - Export flow: configure options → real-time progress bar → download ZIP
+  - Import flow: upload archive → validate → review conflicts → choose strategy → execute
+  - Previous backups list with download and delete actions
+
+  **Export Progress Indicator**
+
+  - Real-time progress tracking during backup creation via `GET /api/v1/export/backups/:id/progress`
+  - Phased updates: `preparing` → `content_types` → `content` → `assets` → `config` → `archiving` → `storing` → `completed`
+  - Frontend polls every 800ms with animated progress bar showing phase, percentage, and item counts
+
+  **Import Validation & Conflict Resolution**
+
+  - New `POST /api/v1/export/validate-import` endpoint — checks manifest, counts items, detects ID conflicts
+  - New `POST /api/v1/export/import` endpoint — import with conflict resolution strategy
+  - Three strategies: **Skip** (keep existing), **Overwrite** (replace), **Merge** (keep newer by timestamp)
+  - Conflict detail table with type badges, names, and timestamp comparison
+  - Validation catches malformed archives and unrecognized manifest formats before any data is modified
+</Update>
+
 <Update label="2026-04-05" description="v0.10.0" tags={["feature", "security"]}>
   ## Multi-Tenancy — Zero Data Leakage
 

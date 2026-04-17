@@ -7,33 +7,48 @@ description: Deploy roadbeat Studio on your own infrastructure with Docker Compo
 
 roadbeat Studio is designed to be self-hosted. You deploy it on your own servers, keeping full control over your data and infrastructure. The recommended deployment method is **Docker Compose** with 6 services.
 
+Studio supports **multi-tenancy** out of the box — a single instance can host multiple organizations with full data isolation (shared-database, per-org scoping, namespaced storage, per-org rate limiting).
+
 ## System Requirements
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
-| **CPU** | 2 cores | 4 cores |
-| **RAM** | 4 GB | 8 GB |
-| **Storage** | 20 GB | 100 GB |
+| **CPU** | 2 vCPU | 4 vCPU |
+| **RAM** | 2 GB | 4 GB |
+| **Storage** | 20 GB SSD | 50 GB+ SSD |
 | **Network** | 10 Mbps | 100 Mbps |
+| **OS** | Ubuntu 22.04+ / Debian 12+ / any Docker-compatible Linux | |
+| **Docker** | Docker Engine 24+ with Docker Compose v2 | |
+
+<Callout kind="info">
+  A Hetzner CX22 (~€5/month) or comparable VPS is sufficient for small-to-medium setups.
+</Callout>
 
 ## Docker Compose Deployment
 
 <Steps>
-  <Step title="Create your project directory">
+  <Step title="Clone the Studio repository">
+    ```bash
+    git clone https://git.roadbeat.net/roadbeat/studio.git
+    cd studio
+    ```
+
+    Alternatively, create a project directory and use the Docker images directly:
+
     ```bash
     mkdir roadbeat-studio && cd roadbeat-studio
     ```
   </Step>
 
   <Step title="Create docker-compose.yml">
-    ```yaml
-    version: '3.8'
+    If you cloned the repository, use the provided `docker/docker-compose.prod.yml`. Otherwise, create a `docker-compose.yml`:
 
+    ```yaml
     services:
-      api:
-        image: ghcr.io/roadbeat/studio-api:latest
+      studio-api:
+        image: git.roadbeat.net/roadbeat/studio/api:latest
         environment:
-          DATABASE_URL: postgresql://studio:${DB_PASSWORD}@postgres:5432/studio
+          DATABASE_URL: postgresql://studio:${DB_PASSWORD}@postgres:5432/roadbeat_studio
           REDIS_HOST: redis
           REDIS_PORT: 6379
           JWT_SECRET: ${JWT_SECRET}
@@ -47,42 +62,62 @@ roadbeat Studio is designed to be self-hosted. You deploy it on your own servers
         ports:
           - "3000:3000"
         depends_on:
-          - postgres
-          - redis
-          - meilisearch
+          postgres: { condition: service_healthy }
+          redis: { condition: service_healthy }
+          meilisearch: { condition: service_healthy }
         restart: unless-stopped
+        healthcheck:
+          test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/v1/health"]
+          interval: 30s
+          timeout: 5s
+          retries: 3
 
-      web:
-        image: ghcr.io/roadbeat/studio-web:latest
+      studio-web:
+        image: git.roadbeat.net/roadbeat/studio/web:latest
         ports:
           - "4200:80"
         depends_on:
-          - api
+          - studio-api
         restart: unless-stopped
 
       postgres:
-        image: postgres:16-alpine
+        image: postgres:18-alpine
         environment:
           POSTGRES_USER: studio
           POSTGRES_PASSWORD: ${DB_PASSWORD}
-          POSTGRES_DB: studio
+          POSTGRES_DB: roadbeat_studio
         volumes:
           - postgres-data:/var/lib/postgresql/data
         restart: unless-stopped
+        healthcheck:
+          test: ["CMD", "pg_isready", "-U", "studio"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
 
       redis:
         image: redis:7-alpine
         volumes:
           - redis-data:/data
         restart: unless-stopped
+        healthcheck:
+          test: ["CMD", "redis-cli", "ping"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
 
       meilisearch:
-        image: getmeili/meilisearch:v1.6
+        image: getmeili/meilisearch:v1.12
         environment:
           MEILI_MASTER_KEY: ${MEILI_KEY}
         volumes:
           - meili-data:/meili_data
         restart: unless-stopped
+        healthcheck:
+          test: ["CMD", "wget", "-qO-", "http://127.0.0.1:7700/health"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
 
       caddy:
         image: caddy:2-alpine
@@ -93,8 +128,8 @@ roadbeat Studio is designed to be self-hosted. You deploy it on your own servers
           - ./Caddyfile:/etc/caddy/Caddyfile
           - caddy-data:/data
         depends_on:
-          - api
-          - web
+          - studio-api
+          - studio-web
         restart: unless-stopped
 
     volumes:
@@ -111,10 +146,10 @@ roadbeat Studio is designed to be self-hosted. You deploy it on your own servers
     ```
     {$DOMAIN} {
         handle /api/* {
-            reverse_proxy api:3000
+            reverse_proxy studio-api:3000
         }
         handle {
-            reverse_proxy web:80
+            reverse_proxy studio-web:80
         }
     }
     ```
@@ -122,9 +157,9 @@ roadbeat Studio is designed to be self-hosted. You deploy it on your own servers
 
   <Step title="Create .env file">
     ```bash
-    DOMAIN=studio.example.com
+    DOMAIN=studio.yourdomain.com
     DB_PASSWORD=your-secure-database-password
-    JWT_SECRET=your-jwt-secret-at-least-32-characters-long
+    JWT_SECRET=your-jwt-secret-at-least-64-characters-long
     MEILI_KEY=your-meilisearch-master-key
     SCHEMA_REGISTRY_URL=https://registry.roadbeat.net
     ```
@@ -135,7 +170,25 @@ roadbeat Studio is designed to be self-hosted. You deploy it on your own servers
     docker compose up -d
     ```
 
-    Wait for all services to be healthy, then navigate to `https://studio.example.com` to complete the setup wizard.
+    Wait for all services to be healthy:
+
+    ```bash
+    docker compose ps
+    ```
+
+    All 6 containers should show `healthy` or `running`.
+  </Step>
+
+  <Step title="Run database migrations">
+    ```bash
+    docker compose exec studio-api \
+      npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
+    ```
+  </Step>
+
+  <Step title="Access Studio">
+    Navigate to `https://studio.yourdomain.com` to complete the setup wizard.
+    The wizard creates your first admin account and organization.
   </Step>
 </Steps>
 
@@ -154,12 +207,27 @@ graph TB
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| **Caddy** | 80, 443 | Reverse proxy with auto-TLS |
-| **API** | 3000 | NestJS backend |
-| **Web** | 4200 (dev) / 80 (prod) | Angular admin UI |
-| **PostgreSQL** | 5432 | Primary database |
+| **Caddy** | 80, 443 | Reverse proxy with automatic Let's Encrypt TLS |
+| **Studio API** | 3000 | NestJS backend (REST API, Prisma ORM) |
+| **Studio Web** | 80 (prod) | Angular admin UI |
+| **PostgreSQL** | 5432 | Primary database (18-alpine) |
 | **Redis** | 6379 | Cache, sessions, job queues |
-| **MeiliSearch** | 7700 | Full-text search |
+| **MeiliSearch** | 7700 | Full-text search (v1.12) |
+
+## Environment Variables Reference
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `JWT_SECRET` | Yes | — | Secret for JWT signing (min 64 chars) |
+| `REDIS_HOST` | Yes | — | Redis hostname |
+| `REDIS_PORT` | No | `6379` | Redis port |
+| `MEILISEARCH_HOST` | No | — | MeiliSearch URL (search features) |
+| `MEILISEARCH_API_KEY` | No | — | MeiliSearch master key |
+| `SCHEMA_REGISTRY_URL` | No | — | Schema Registry for content type definitions |
+| `CORS_ORIGIN` | No | `*` | Allowed CORS origins |
+| `STORAGE_PROVIDER` | No | `local` | `local` or `s3` |
+| `DOMAIN` | No | — | Domain for Caddy auto-TLS |
 
 ## Storage Configuration
 
@@ -174,14 +242,15 @@ S3_SECRET_KEY=your-secret-key
 S3_REGION=eu-central-1
 ```
 
-Compatible providers: **AWS S3**, **Hetzner Object Storage**, **MinIO**, **Backblaze B2**, **DigitalOcean Spaces**.
+Compatible providers: **AWS S3**, **Hetzner Object Storage**, **MinIO**, **Backblaze B2**, **DigitalOcean Spaces**, **Wasabi**.
 
 ## Database Migrations
 
 After deploying a new version, run migrations:
 
 ```bash
-docker compose exec api npx prisma migrate deploy
+docker compose exec studio-api \
+  npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
 ```
 
 <Callout kind="alert">
@@ -198,7 +267,8 @@ docker compose exec api npx prisma migrate deploy
   </Step>
   <Step title="Run migrations">
     ```bash
-    docker compose exec api npx prisma migrate deploy
+    docker compose exec studio-api \
+      npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
     ```
   </Step>
   <Step title="Restart">
@@ -210,22 +280,36 @@ docker compose exec api npx prisma migrate deploy
 
 ## Health Checks
 
-Monitor your deployment with the health endpoints:
+Monitor your deployment with the built-in health endpoints:
 
 ```bash
 # Basic health
-curl https://studio.example.com/api/v1/health
+curl https://studio.yourdomain.com/api/v1/health
 
-# Detailed health (DB, Redis, MeiliSearch, queues)
-curl https://studio.example.com/api/v1/health/detailed
+# Detailed health (DB, Redis, MeiliSearch)
+curl https://studio.yourdomain.com/api/v1/health/detailed
 ```
+
+<Callout kind="info">
+  Alpine-based containers use `wget` instead of `curl`. All healthchecks in the Docker Compose template use `127.0.0.1` (not `localhost`) to ensure IPv4 connectivity.
+</Callout>
+
+## Migrating from the Free Tier
+
+If you started with the free "Try Publishing" tier on the shared platform and want to migrate to your own instance:
+
+1. **Export your data** from Studio: **Settings → Export → Full Export** (downloads a ZIP archive with content, content types, assets, and publisher keys)
+2. **Set up your self-hosted instance** following the Docker Compose deployment above
+3. **Import the ZIP archive**: **Settings → Import** on your new instance
+4. Your **publisher identity** (Ed25519 signing keys) transfers automatically
+5. Existing **published content remains visible** in the Discovery Network — followers see no disruption
 
 ## Pro Deployment
 
 For Pro, swap the API image and add the license key:
 
 ```yaml
-api:
+studio-api:
   image: registry.roadbeat.dev/studio-pro:latest
   environment:
     ROADBEAT_LICENSE_KEY: ${ROADBEAT_LICENSE_KEY}
@@ -243,7 +327,7 @@ roadbeat recommends **Hetzner Cloud** for European hosting:
 
 | Server | Specs | Monthly Cost | Use Case |
 |--------|-------|-------------|----------|
-| **CX22** | 2 vCPU, 4 GB RAM, 40 GB | ~€4 | Development / small sites |
+| **CX22** | 2 vCPU, 4 GB RAM, 40 GB | ~€5 | Development / small sites |
 | **CX32** | 4 vCPU, 8 GB RAM, 80 GB | ~€7 | Production |
 | **CX42** | 8 vCPU, 16 GB RAM, 160 GB | ~€14 | High-traffic |
 
