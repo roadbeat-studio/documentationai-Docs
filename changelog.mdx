@@ -2,6 +2,20 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-22" description="v0.10.2" tags={["feature"]}>
+  ## `$ref` Section Expansion & Form Schema Standardization
+
+  **SchemaRefResolverService — `layout.sections` support**
+
+  - The `SchemaRefResolverService` now resolves `$ref` entries in `layout.sections` in addition to `layout.tabs` — forms using a sections-based layout (e.g. `quote`, `check-in`) can now reference common form sections via `$ref`
+  - Common expansion logic (`exclude_fields`, `field_overrides`, field merging) extracted into a reusable `expandRef` private method shared by both tab and section resolution
+  - All 50 content type forms now carry the canonical SEO `$ref` (`../common-form-sections/seo-section.schema.json`), ensuring consistent SEO fields across all content types
+
+  **Phase 0 smoke tests extended**
+
+  - `verify-phase-0.mjs` now validates that every form includes the canonical SEO `$ref` and that the resolver is wired to process `layout.sections`
+</Update>
+
 <Update label="2026-04-17" description="v0.10.1" tags={["feature"]}>
   ## Migration Wizard, Export Progress & Import Conflict Resolution
 

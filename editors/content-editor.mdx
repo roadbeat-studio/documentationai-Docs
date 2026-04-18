@@ -84,6 +84,21 @@ The editor renders different input components based on field type:
   </Tab>
 </Tabs>
 
+## Common Form Section Expansion
+
+Form schemas can reference reusable **common form sections** via `$ref` entries in `layout.tabs` or `layout.sections`. When the content editor loads a form schema, the `SchemaRefResolverService` automatically expands these references:
+
+1. Loads the referenced common section file (e.g. `seo-section.schema.json`)
+2. Applies `exclude_fields` to remove unwanted fields
+3. Applies `field_overrides` to customize labels, help text, or validation
+4. Merges the resolved fields into the form's `fields` array
+
+This happens transparently — editors see the expanded fields inline without needing to know about the `$ref` mechanism. The canonical **SEO section** is included via `$ref` in all 50 content types, providing consistent meta title, meta description, slug, and OG image fields.
+
+<Callout kind="info">
+  `$ref` expansion works in both tab-based and section-based form layouts. The resolver processes `layout.tabs` and `layout.sections` identically.
+</Callout>
+
 ## Auto-Save
 
 The editor automatically saves your work:
