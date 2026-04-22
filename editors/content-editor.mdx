@@ -25,7 +25,7 @@ Content types with a **form schema** organize fields into tabs. Common tab layou
 | **Basic Info** | Title, slug, description, category |
 | **Content** | Article body, structured text, main content |
 | **Media** | Hero image, gallery, video attachments |
-| **SEO** | Meta title, meta description, OG image |
+| **SEO** | Meta title, meta description, keywords, OG image, canonical URL |
 | **Settings** | Publication date, access type, language |
 
 Click a tab to switch between sections. Fields in the current tab are validated inline as you type.
@@ -50,7 +50,7 @@ The editor renders different input components based on field type:
     - **Single-line text** — standard input field
     - **Multi-line text** — textarea for longer text
     - **Multilingual text** — locale tabs for each configured language
-    - **Slug** — auto-generated URL-safe identifier from the title
+    - **Slug** — URL-safe identifier; auto-generated from the title for content types with a title field, or rendered as a standalone editable field for content types without one (e.g. quotes, check-ins, jokes)
     - **Enum** — dropdown selector from predefined values
   </Tab>
   <Tab title="Rich Content" icon="file-text">
@@ -93,7 +93,11 @@ Form schemas can reference reusable **common form sections** via `$ref` entries 
 3. Applies `field_overrides` to customize labels, help text, or validation
 4. Merges the resolved fields into the form's `fields` array
 
-This happens transparently — editors see the expanded fields inline without needing to know about the `$ref` mechanism. The canonical **SEO section** is included via `$ref` in all 50 content types, providing consistent meta title, meta description, slug, and OG image fields.
+This happens transparently — editors see the expanded fields inline without needing to know about the `$ref` mechanism. The canonical **SEO section** is included via `$ref` in all 50 content types, providing consistent meta title, meta description, and OG image fields.
+
+<Callout kind="info">
+  The slug field is **not** part of the SEO section. For content types with a primary title field, the slug is auto-generated and displayed inline below the title. For content types without a title field (e.g. `quote`, `check-in`, `joke`), an explicit `identifier.slug` field is defined in the content type's form schema and rendered via the same slug editor component.
+</Callout>
 
 <Callout kind="info">
   `$ref` expansion works in both tab-based and section-based form layouts. The resolver processes `layout.tabs` and `layout.sections` identically.

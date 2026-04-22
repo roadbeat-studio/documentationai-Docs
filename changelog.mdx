@@ -2,6 +2,20 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-22" description="v0.10.4" tags={["bugfix"]}>
+  ## Slug Field Deduplication
+
+  **Removed duplicate slug from SEO tab**
+
+  - The SEO tab previously rendered a plain text input for the slug field (`identifier.slug`) via the common SEO section schema — this field was disconnected from the actual slug state managed by the content editor, meaning edits to it were silently discarded on save
+  - The `identifier.slug` field has been removed from the SEO section; the SEO tab now contains only meta title, meta description, keywords, canonical URL, OG image, and no-index toggle
+
+  **Explicit slug field for no-title content types**
+
+  - Content types without a primary title field (`quote`, `check-in`, `joke`, `social-media-post`, `dating-profile`, `glossary-entry`, `private-user-profile`) now have an explicit `identifier.slug` field in their first form section
+  - The content editor intercepts `identifier.slug` fields in all three layout modes (tabs, sections, flat) and renders them via the `rb-editor-slug-inline` component — the same component used for slug auto-generation below title fields — ensuring the slug is properly connected to the editor's slug state and saved correctly
+</Update>
+
 <Update label="2026-04-22" description="v0.10.3" tags={["bugfix", "feature"]}>
   ## Platform Admin — Org Switching & Creation Fixes
 
