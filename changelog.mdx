@@ -2,6 +2,25 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-22" description="v0.10.3" tags={["bugfix", "feature"]}>
+  ## Platform Admin — Org Switching & Creation Fixes
+
+  **Organization Context Switching (bugfix)**
+
+  - Fixed JWT strategy to honour the `organizationId` embedded in the token payload for super admins — previously every request fell back to the user's home organization, making the sidebar org switcher non-functional
+  - Fixed `GET /api/v1/auth/me` profile endpoint to return the switched organization's name, slug, plan, and logo instead of always returning the home org data
+  - Added `plan` and `logoUrl` to the organization select in the profile query (were missing, causing `undefined` in the sidebar)
+
+  **Organization Creation Redirect (bugfix)**
+
+  - Fixed `createOrganization()` response mapping — the API returns `{ data: { organization, adminUser } }` but the frontend was not unwrapping the nested `organization` object, causing `org.id` to be `undefined` and the Angular router to throw `NG04008`
+
+  **Switch to Org Button (feature)**
+
+  - Added a **Switch to this Org** button on the Organization Detail page header — visible only to super admins when viewing an org that is not their current active context
+  - Clicking the button re-issues the JWT and redirects to the Studio dashboard within the target org's context — convenient immediately after creating a new organization
+</Update>
+
 <Update label="2026-04-18" description="v0.10.2" tags={["feature"]}>
   ## `$ref` Section Expansion & Form Schema Standardization
 

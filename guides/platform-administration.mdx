@@ -99,6 +99,14 @@ The detail page (`/platform/organizations/:id`) has three tabs:
   </Tab>
 </Tabs>
 
+### Switching to an Organization
+
+When viewing an organization that is not your current active context, a **Switch to this Org** button appears in the header next to the Deactivate button. Clicking it re-issues your JWT for the target organization and redirects you to the Studio dashboard within that org's context.
+
+<Callout kind="tip">
+  This is the quickest way to switch context after creating a new organization — you land on the detail page and can switch immediately without locating the sidebar switcher.
+</Callout>
+
 ### Deactivating an Organization
 
 Click the **Deactivate** button on the organization detail page to soft-disable the organization. Deactivated organizations:
@@ -142,15 +150,27 @@ Navigate to **Platform** → **Manage Organizations** → **New Organization**.
 
 Super admins can switch their active organization context to operate within any org without logging out. This is useful for managing content, users, and settings as if you were a local admin of that organization.
 
+There are **two ways** to switch organizations:
+
+<Tabs>
+  <Tab title="Sidebar Switcher" icon="panel-left">
+    Click the **organization name** in the top-left corner of the sidebar to open the org switcher dropdown. All organizations are listed with a checkmark on the currently active one. Click any other organization to switch.
+  </Tab>
+  <Tab title="Detail Page Button" icon="arrow-right-left">
+    On the **Organization Detail** page (`/platform/organizations/:id`), a **Switch to this Org** button appears in the header when the viewed organization is not your current active context. This is especially convenient right after creating a new organization.
+  </Tab>
+</Tabs>
+
 When you switch org context:
 
-1. A new JWT is issued with the target organization's ID
-2. Your access and refresh tokens are replaced in the browser
-3. The page reloads with the new org context
-4. Your super admin status and home organization are preserved
+1. A new JWT is issued with the target organization's ID embedded in the payload
+2. The JWT strategy honours the embedded `organizationId` for super admins
+3. Your access and refresh tokens are replaced in the browser
+4. The page reloads — the sidebar, profile, and all queries reflect the new org context
+5. Your super admin status and home organization are preserved
 
 <Callout kind="info">
-  Use the **organization switcher** in the sidebar to quickly switch between organizations. Your home organization is always available to return to.
+  After switching, the sidebar header shows the target organization's name, slug, and plan. Your home organization is always available in the switcher to return to.
 </Callout>
 
 ## Super Admin Management
