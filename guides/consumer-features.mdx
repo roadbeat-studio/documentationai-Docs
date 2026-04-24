@@ -65,16 +65,6 @@ Configure the Context Directory URL in `.env`:
 CONTEXT_DIRECTORY_URL=http://localhost:3100
 ```
 
-<Callout kind="alert">
-  Consumer features require the `cd_account_links` table in the Studio database. If you see a **500 Internal Server Error** on consumer endpoints like `GET /api/v1/consumer/goals/categories`, verify the table exists:
-
-  ```sql
-  SELECT tablename FROM pg_tables WHERE tablename = 'cd_account_links';
-  ```
-
-  If missing, re-apply the migration: `20260305110000_add_cd_account_links/migration.sql` from the Studio API Prisma migrations directory.
-</Callout>
-
 ## Compass
 
 The **Compass** is the goal management center. Users define personal goals across time horizons, and the system matches content to those goals.
