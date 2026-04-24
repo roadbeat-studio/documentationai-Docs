@@ -2,6 +2,29 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-24" description="v0.10.5" tags={["feature"]}>
+  ## Asset Library — Responsive Wide-Screen Layout
+
+  **Full-width grid**
+
+  - Removed the `max-w-7xl` container cap so the Asset Library now fills the full available content area on wide and 4K monitors
+  - Replaced fixed Tailwind breakpoint column classes with CSS `auto-fill minmax()` grids: large tiles fill from a 180 px minimum, small tiles from 120 px — the browser automatically fits as many columns as the viewport allows
+
+  **Adaptive page sizes**
+
+  - Page limit is now computed from both view mode and viewport width and updates automatically on resize (debounced, reloads only on tier change):
+
+  | Viewport | Large tiles | Small tiles | List |
+  |----------|-------------|-------------|------|
+  | < 1920 px | 24 | 48 | 25 |
+  | 1920 – 2559 px | 48 | 96 | 50 |
+  | ≥ 2560 px (4K+) | 96 | 192 | 100 |
+
+  **API**
+
+  - `GET /api/v1/assets` now accepts `limit` up to **250** (overrides the standard 100-item cap) to support large-screen page sizes
+</Update>
+
 <Update label="2026-05-20" description="v0.11.0" tags={["feature"]}>
   ## Content Pod Auto-Provisioning & Quota Enforcement
 
