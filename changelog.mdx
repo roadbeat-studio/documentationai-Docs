@@ -2,6 +2,24 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-04-24" description="v0.10.6" tags={["bugfix"]}>
+  ## Database Migration & Startup Fixes
+
+  **Consumer features — goals categories 500 error**
+
+  - The `cd_account_links` table was missing from the database — the Prisma migration was recorded as applied in `_prisma_migrations` but the DDL had not actually executed, causing a 500 Internal Server Error on `GET /api/v1/consumer/goals/categories` and all other consumer endpoints that require Context Directory account linking
+  - Re-applied the `20260305110000_add_cd_account_links` migration to create the table, foreign key, and indexes
+
+  **Pro notifications — unread count 500 error**
+
+  - The `pro_notifications`, `pro_notification_channels`, and `pro_notification_preferences` tables were never created — the Studio Pro plugin migration (`001_create_notification_tables.sql`) had not been applied to the database
+  - Applied the migration to create all three tables, five indexes, and two `updated_at` triggers
+
+  <Callout kind="tip">
+    After a fresh database setup or restore, verify that both Prisma migrations and Pro plugin migrations have been applied. See the [Self-Hosting guide](/deployment/self-hosting) for the full migration checklist.
+  </Callout>
+</Update>
+
 <Update label="2026-04-24" description="v0.10.5" tags={["feature"]}>
   ## Asset Library — Responsive Wide-Screen Layout
 
