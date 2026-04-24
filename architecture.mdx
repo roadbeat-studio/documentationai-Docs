@@ -94,6 +94,7 @@ The API is organized into 30+ NestJS modules, each responsible for a specific do
     | Module | Path | Description |
     |--------|------|-------------|
     | **Publishing** | `publishing/` | Ed25519 signing, teaser generation, DN distribution |
+    | **ContentPod** | `content-pod/` | Pod config CRUD, publish/unpublish to pod, quota enforcement, setup service |
     | **DiscoveryNodes** | `discovery-nodes/` | Publishing target management |
     | **Delivery** | `delivery/` | Public read-only API (API key auth) |
     | **SchemaRegistry** | `schema-registry/` | Import content types from Schema Registry |
@@ -172,6 +173,7 @@ erDiagram
     Organization ||--o{ ContentType : has
     Organization ||--o{ Content : has
     Organization ||--o{ Asset : has
+    Organization ||--o| ContentPodConfig : has
     ContentType ||--o{ Content : defines
     Content ||--o{ ContentVersion : tracks
     Content ||--o{ Comment : has

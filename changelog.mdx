@@ -2,6 +2,38 @@
 title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
+<Update label="2026-05-20" description="v0.11.0" tags={["feature"]}>
+  ## Content Pod Auto-Provisioning & Quota Enforcement
+
+  **Free Pod on Org Creation**
+
+  - New organizations created via `POST /platform/organizations` can include `podMode: 'static' | 'dynamic'` to auto-provision a free Content Pod
+  - `ContentPodSetupService` handles provisioning: creates `ContentPodConfig`, sets subdomain to org slug, configures storage paths, deploys dynamic scripts for dynamic pods
+  - Response includes `podSetup` with mode, tier, subdomain, baseUrl, and status
+
+  **ContentPod Module**
+
+  - New `content-pod/` module: `ContentPodConfigService` (CRUD), `ContentPodPublishingService` (publish/unpublish with quota enforcement), `ContentPodSetupService` (free pod provisioning), `ContentPodController` (REST endpoints)
+  - Prisma: `ContentPodConfig` model with `podMode`, `tier`, `dynamicRuntime`, `dynamicConfig` (JSON), `quotaStorageBytes` (BigInt), `quotaItemCount` (Int), `publishedCount`, `totalSizeBytes`, `lastPublishedAt`
+  - Endpoints: `GET/PUT /manage/content-pod/config`, `POST /manage/content-pod/publish/:id`, `POST /manage/content-pod/unpublish/:id`, `GET /manage/content-pod/test`
+
+  **Quota Enforcement**
+
+  - Publishing returns HTTP 403 when item count or storage quota exceeded
+  - Tier-based defaults: free (500 MB / 200), starter (5 GB / 5K), pro (20 GB / 50K), enterprise (unlimited)
+  - Admin override via `PUT /manage/content-pod/config` with custom `quotaItemCount` and `quotaStorageBytes`
+
+  **Onboarding Status**
+
+  - `GET /platform/onboarding/status` now includes `contentPod` section with pod mode, tier, quota limits, and current usage
+
+  **Platform Integration**
+
+  - `PlatformModule` imports `ContentPodModule`
+  - `CreateOrganizationDto` extended with optional `podMode`
+  - `PlatformService` and `OnboardingService` call setup service after org creation
+</Update>
+
 <Update label="2026-04-22" description="v0.10.4" tags={["bugfix"]}>
   ## Slug Field Deduplication
 
