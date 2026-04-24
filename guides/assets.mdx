@@ -110,9 +110,25 @@ The Asset Library includes a unified filter bar above the asset grid with the fo
 
 ### View Modes
 
-- **Small tiles** — 6-column grid with compact file-type icons and minimal labels; loads 48 items per page for higher density
-- **Large tiles** (default) — 4-column grid with drag handles, full filenames, and file sizes; loads 24 items per page
-- **List view** — compact rows with a 40×40px thumbnail, filename, MIME subtype, file size, and upload date; loads 24 items per page
+- **Small tiles** — compact `auto-fill` grid with a minimum tile width of 120 px; fills the full available width so you get more columns on wider screens. Drag handles, file-type icons, and minimal labels. Page size scales with viewport width.
+- **Large tiles** (default) — `auto-fill` grid with a minimum tile width of 180 px; displays drag handles, full filenames, and file sizes. Page size scales with viewport width.
+- **List view** — compact rows with a 40×40 px thumbnail, filename, MIME subtype, file size, and upload date. Page size scales with viewport width.
+
+### Adaptive Page Sizes
+
+The number of assets loaded per page automatically increases as the viewport gets wider so large and 4K monitors are used efficiently:
+
+| Viewport width | Large tiles | Small tiles | List |
+|----------------|-------------|-------------|------|
+| < 1920 px | 24 | 48 | 25 |
+| 1920 – 2559 px (Full HD / QHD) | 48 | 96 | 50 |
+| ≥ 2560 px (4K+) | 96 | 192 | 100 |
+
+Page size is re-evaluated automatically when the browser window is resized (debounced 300 ms). A new API request is made only when the size tier actually changes — not on every pixel of resize.
+
+<Callout kind="info">
+  The Asset Library uses the full available width of the content area with no maximum-width cap, so every column of pixels is used for asset previews on wide monitors.
+</Callout>
 
 ### File-Type Icons
 
@@ -141,8 +157,12 @@ The detail drawer provides native playback for media files:
 ### API Search
 
 ```bash
-GET /api/v1/assets?search=hero&mimeType=image/&sortBy=createdAt&sortOrder=desc&page=1&limit=24
+GET /api/v1/assets?search=hero&mimeType=image/&sortBy=createdAt&sortOrder=desc&page=1&limit=48
 ```
+
+<Callout kind="tip">
+  The `limit` parameter on the assets endpoint accepts values up to **250** (higher than the standard API cap of 100) to support large-screen tile grids.
+</Callout>
 
 ### Facets
 
