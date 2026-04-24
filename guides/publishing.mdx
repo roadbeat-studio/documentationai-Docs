@@ -1,16 +1,17 @@
 ---
 title: Publishing
-description: Publish content to Discovery Nodes with Ed25519 signed teasers and manage the distribution pipeline.
+description: Publish content locally, distribute to Discovery Nodes, and deliver to a Content Pod — all from the Studio editor.
 ---
 
 ## Overview
 
-Publishing in roadbeat Studio is a two-step process:
+Publishing in roadbeat Studio is a three-step process:
 
 1. **Publishing locally** — setting content status to `published`, making it available via the Delivery API
 2. **Distributing to Discovery Nodes** — pushing a cryptographically signed teaser to the search network
+3. **Delivering to Content Pod** — bundling the full content item for self-hosted pod delivery (if configured)
 
-This separation means you can serve content from your own infrastructure (via the Delivery API) while also making it discoverable through the federated roadbeat network.
+Steps 2 and 3 are triggered automatically when you publish from the Content Editor.
 
 ## Publishing Pipeline
 
@@ -202,3 +203,31 @@ POST /api/v1/manage/publishing/republish-all
 ```
 
 This regenerates teasers for all published content and redistributes them to Discovery Nodes.
+
+---
+
+## Content Pod Delivery
+
+In addition to Discovery Node distribution, published content can be delivered to a **Content Pod** — a file-based bundle written to disk and served from a static or dynamic server.
+
+### Automatic Pod Publish
+
+If your organization has an active Content Pod configured, the pod publish runs automatically every time you publish from the Content Editor:
+
+1. Content status is set to `published` in Studio
+2. Studio checks for an active pod configuration
+3. `POST /api/v1/manage/content-pod/publish/:contentId` is called automatically
+4. The bundle (JSON, HTML, embed fragment) is written to the pod filesystem
+5. The pod `manifest.json` is updated atomically
+
+You will see two toast notifications: **"Content published"** and **"Published to Content Pod"**.
+
+<Callout kind="tip">
+  A Content Pod publish failure does not block the Studio publish. The content remains available via the Delivery API. Retry the pod publish manually from **Settings → Content Pod**.
+</Callout>
+
+### Viewing Published Pod Content
+
+Navigate to **Settings → Content Pod → Dashboard → Content tab** to see all items currently in the pod manifest — title, locale, content type, size, and a direct link to each item's pod URL.
+
+For full documentation on pod setup, modes, quotas, and the pod manifest API, see the [Content Pod guide](/guides/content-pod).

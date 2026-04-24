@@ -3,6 +3,27 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-04-24" description="v0.10.7" tags={["feature", "bugfix"]}>
+  ## Content Pod — Auto-Publish & Dashboard Content List
+
+  **Automatic pod publish from the Content Editor**
+
+  - Publishing content from the editor now automatically publishes to the Content Pod if an active pod is configured for the organization — no separate step required
+  - Two toast notifications confirm the operation: "Content published" followed by "Published to Content Pod"
+  - A pod publish failure never blocks the Studio publish — the content remains available via the Delivery API and can be re-pushed manually
+
+  **Pod Dashboard content tab fixed**
+
+  - The Content tab now reads directly from `manifest.json` on the pod filesystem via the new `GET /api/v1/manage/content-pod/items` endpoint
+  - Previously relied on the Pod Hosting proxy (external service at port 3400), which caused "No content published to the pod yet" even when content existed in the pod
+  - Each row now shows: title, locale badge, content type, slug, bundle size, publish date, and a direct "View ↗" link to the pod URL
+  - The Refresh button re-fetches the manifest; the trash icon unpublishes the item from the pod
+
+  **New API endpoint**
+
+  - `GET /api/v1/manage/content-pod/items` — returns all entries from the pod manifest (`id`, `contentType`, `slug`, `locale`, `title`, `sizeBytes`, `publishedAt`, `podUrl`, etc.)
+</Update>
+
 <Update label="2026-04-24" description="v0.10.6" tags={["feature"]}>
   ## Asset Library — Responsive Wide-Screen Layout
 

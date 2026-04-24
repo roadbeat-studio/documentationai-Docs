@@ -1,0 +1,438 @@
+---
+title: Content Pod
+description: Publish content as self-contained bundles to a Content Pod — static or dynamic — with quota management, a live dashboard, and direct pod delivery.
+---
+
+## Overview
+
+A **Content Pod** is a self-contained delivery unit for your published content. Instead of serving content exclusively through the Studio Delivery API, a Content Pod bundles each published item into a portable package — JSON data, rendered HTML, embed fragments, and associated assets — and writes it to a hosting destination accessible via a public URL.
+
+Content Pods are the foundation for:
+
+- **Self-hosted delivery** — serve content from your own static file server or dynamic PHP runtime
+- **Offline-capable consumers** — mobile apps, desktop readers, kiosks
+- **Federation** — other roadbeat nodes can subscribe to your pod manifest and replicate your content
+- **Edge distribution** — pod bundles can be pushed to a CDN with zero backend dependencies
+
+<Callout kind="info">
+  A Content Pod is configured per organization. Each organization has at most one pod configuration, but that pod may host unlimited content items (subject to tier quota).
+</Callout>
+
+---
+
+## Pod Modes
+
+<Columns cols={2}>
+  <Card title="Static Pod" icon="file-text" href="#static-mode">
+    Pure file delivery. Content bundles are written to disk and served by any static web server (Nginx, Apache, CDN). No server-side logic. Maximum performance and portability.
+  </Card>
+  <Card title="Dynamic Pod" icon="server" href="#dynamic-mode">
+    File delivery plus a PHP API layer for interactive features — comments, reactions, newsletter sign-up, and view statistics. Requires a PHP-capable server.
+  </Card>
+</Columns>
+
+### Static Mode
+
+In static mode, `publishToPod()` writes the content bundle to `dev-pods/static/{orgSlug}/` during local development (path configured via `CONTENT_POD_DEV_PODS_PATH`). The structure on disk:
+
+```
+{orgSlug}/
+├── manifest.json              ← Signed index of all published content
+├── content/
+│   └── {contentType}/
+│       └── {slug}/
+│           ├── index.json     ← Full content data
+│           ├── index.html     ← Rendered HTML view
+│           └── embed.html     ← Embeddable fragment
+└── public_key.pem             ← Ed25519 public key (if signing enabled)
+```
+
+### Dynamic Mode
+
+Dynamic mode extends the static layout with a `_dynamic/` directory containing a PHP API and SQLite database for interactive features:
+
+```
+{orgSlug}/
+├── manifest.json
+├── content/...
+└── _dynamic/
+    ├── config.json            ← Pod feature configuration
+    ├── .htaccess              ← Apache routing rules
+    ├── api/
+    │   ├── comments.php
+    │   ├── reactions.php
+    │   └── ...
+    └── data/
+        └── pod.db             ← SQLite storage for dynamic data
+```
+
+The `_dynamic/` directory is scaffolded automatically on the **first publish** in dynamic mode. You can customize `config.json` to enable/disable individual features.
+
+---
+
+## Setup
+
+Navigate to **Settings → Content Pod** in the Studio sidebar to set up your pod.
+
+<Steps>
+  <Step title="Choose a mode" icon="settings">
+    Select **Static** or **Dynamic**. Static is recommended unless you need comments, reactions, or newsletter features.
+  </Step>
+  <Step title="Configure subdomain" icon="globe">
+    Enter a subdomain (defaults to your organization slug). This becomes part of the pod's public base URL:
+    - Static: `http://localhost:3403/{subdomain}/` (dev) or `{STATIC_POD_PUBLIC_URL}/{subdomain}/` (production)
+    - Dynamic: `http://localhost:3404/{subdomain}/` (dev) or `{DYNAMIC_POD_PUBLIC_URL}/{subdomain}/` (production)
+  </Step>
+  <Step title="Test connectivity" icon="wifi">
+    Use the **Test Connectivity** button to verify that the pod server is reachable and returning a valid response.
+  </Step>
+  <Step title="Publish content" icon="send">
+    Publish any content item from the editor. The pod publish runs automatically after the Studio publish succeeds.
+  </Step>
+</Steps>
+
+---
+
+## Test Connectivity
+
+Before relying on pod delivery, verify that your pod server is reachable using the test endpoint:
+
+```bash
+GET /api/v1/manage/content-pod/test
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "reachable": true,
+    "podMode": "static",
+    "baseUrl": "http://localhost:3403/demo-newsroom",
+    "responseTimeMs": 12
+  }
+}
+```
+
+If `reachable` is `false`, the response includes an `error` field explaining why the server could not be reached. Common causes:
+
+<ExpandableGroup>
+  <Expandable title="Pod server not running" default-open="false">
+    Start the static pod server (port 3403) or dynamic pod server (port 3404) in the `content-pod` repo:
+    ```bash
+    # Static pod server
+    pnpm --filter pod-hosting dev
+    ```
+  </Expandable>
+  <Expandable title="Wrong base URL in config" default-open="false">
+    Check your `.env` file for `STATIC_POD_PUBLIC_URL` and `DYNAMIC_POD_PUBLIC_URL`. Ensure they match the running server address.
+  </Expandable>
+  <Expandable title="Pod directory not created yet" default-open="false">
+    The pod directory is created on first publish. Run **Publish All** from the Content Pod settings to initialize the pod.
+  </Expandable>
+</ExpandableGroup>
+
+---
+
+## Publishing to the Pod
+
+### Automatic Publishing from the Editor
+
+When you publish a content item from the **Content Editor** (via the "Save & Publish" button or the "Publish" action), Studio automatically:
+
+1. Sets the content status to `published` in the Studio database
+2. Checks whether the organization has an **active** Content Pod configured
+3. If yes, calls `POST /api/v1/manage/content-pod/publish/:contentId` to generate and write the bundle
+
+Two successive toast notifications confirm success: **"Content published"** followed by **"Published to Content Pod"**.
+
+<Callout kind="tip">
+  If the Content Pod publish fails (e.g., the pod server is unreachable), the Studio publish is still completed — the content is available via the Delivery API. You can retry the pod publish from the Content Pod settings.
+</Callout>
+
+### Manual Publishing (Single Item)
+
+```bash
+POST /api/v1/manage/content-pod/publish/:contentId
+```
+
+Returns a `PublishResult`:
+
+```json
+{
+  "data": {
+    "success": true,
+    "contentId": "uuid",
+    "podUrl": "http://localhost:3403/demo-newsroom/content/news/breaking-story/",
+    "canonicalUrl": "http://localhost:3403/demo-newsroom/content/news/breaking-story/",
+    "embedUrl": "http://localhost:3403/demo-newsroom/content/news/breaking-story/embed.html",
+    "checksum": "sha256:...",
+    "sizeBytes": 18432,
+    "filesCount": 3
+  }
+}
+```
+
+### Unpublishing (Single Item)
+
+Removes the content bundle from the pod and updates the manifest:
+
+```bash
+POST /api/v1/manage/content-pod/unpublish/:contentId
+```
+
+### Bulk Publish
+
+Publish all content items that are currently in `published` status:
+
+```bash
+POST /api/v1/manage/content-pod/publish-all
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "total": 42,
+    "succeeded": 41,
+    "failed": 1,
+    "results": [
+      { "id": "uuid", "slug": "breaking-story", "status": "ok" },
+      { "id": "uuid", "slug": "old-draft", "status": "error", "error": "Content not found" }
+    ]
+  }
+}
+```
+
+### Bundle Preview (Dry Run)
+
+Preview the bundle files that would be generated for a content item without actually writing to disk:
+
+```bash
+GET /api/v1/manage/content-pod/preview/:contentId
+```
+
+```json
+{
+  "data": {
+    "contentId": "uuid",
+    "contentType": "news",
+    "slug": "breaking-story",
+    "locale": "en",
+    "filesCount": 3,
+    "checksum": "sha256:...",
+    "files": [
+      { "path": "content/news/breaking-story/index.json", "contentType": "application/json", "sizeBytes": 14200 },
+      { "path": "content/news/breaking-story/index.html", "contentType": "text/html", "sizeBytes": 3900 },
+      { "path": "content/news/breaking-story/embed.html", "contentType": "text/html", "sizeBytes": 332 }
+    ]
+  }
+}
+```
+
+---
+
+## Pod Status
+
+Get the current pod state for your organization — manifest item count, config, and quota usage:
+
+```bash
+GET /api/v1/manage/content-pod/status
+```
+
+```json
+{
+  "data": {
+    "configured": true,
+    "podMode": "static",
+    "tier": "free",
+    "subdomain": "demo-newsroom",
+    "baseUrl": "http://localhost:3403/demo-newsroom",
+    "status": "active",
+    "dynamicRuntime": null,
+    "publishedCount": 17,
+    "totalSizeBytes": 312400,
+    "lastPublishedAt": "2026-04-24T10:15:00Z",
+    "manifestEntries": 17
+  }
+}
+```
+
+| Field | Description |
+|---|---|
+| `configured` | Whether a Content Pod has been set up for this org |
+| `podMode` | `"static"` or `"dynamic"` |
+| `tier` | `"free"`, `"starter"`, `"pro"`, or `"enterprise"` |
+| `status` | `"active"`, `"disabled"`, or `"provisioning"` |
+| `publishedCount` | Total items ever published (from DB config) |
+| `manifestEntries` | Current items in `manifest.json` |
+| `totalSizeBytes` | Cumulative bytes written (used for quota) |
+
+---
+
+## Pod Dashboard
+
+The **Pod Dashboard** (`Settings → Content Pod → Dashboard`) provides a live view of your pod's health and published content.
+
+### Overview Tab
+
+Shows pod configuration, hosting reachability, storage usage, dynamic features (if applicable), and quick links to visit the pod, change settings, or browse published items.
+
+### Content Tab
+
+Lists every content item currently in the pod manifest, read directly from `manifest.json` on the pod filesystem. For each item:
+
+| Column | Description |
+|---|---|
+| **Title** | Content headline / slug as fallback |
+| **Locale badge** | Language code (`en`, `de`, etc.) |
+| **Content Type** | The content type identifier |
+| **Slug** | The URL-safe identifier |
+| **Size** | Bundle size on disk |
+| **Published At** | When the item was added to the pod |
+| **View ↗** | Direct link to the pod URL for that item |
+
+The **Refresh** button re-reads the manifest. The trash icon **unpublishes** an item — removes its bundle files and manifest entry.
+
+<Callout kind="info">
+  The Content tab reads the pod manifest directly via `GET /api/v1/manage/content-pod/items` and does not depend on the Pod Hosting service being reachable.
+</Callout>
+
+### Custom Domain Tab
+
+Shows whether a custom domain is configured and verified for this pod. Custom domains are available from the Starter tier upward.
+
+---
+
+## Pod Manifest
+
+The `manifest.json` at the pod root is the authoritative content index. It lists all published items and is updated atomically on every publish/unpublish operation.
+
+```bash
+GET /api/v1/manage/content-pod/items
+```
+
+Returns all manifest entries:
+
+```json
+{
+  "data": [
+    {
+      "id": "content-uuid",
+      "contentType": "news",
+      "slug": "breaking-story",
+      "locale": "en",
+      "title": "Breaking: Major Event Unfolds",
+      "description": "Short summary of the event...",
+      "path": "content/news/breaking-story/",
+      "sizeBytes": 18432,
+      "checksum": "sha256:...",
+      "publishedAt": "2026-04-24T10:15:00Z",
+      "updatedAt": "2026-04-24T10:15:00Z",
+      "tags": ["breaking", "world"],
+      "categories": ["news"],
+      "mediaCount": 2,
+      "podUrl": "http://localhost:3403/demo-newsroom/content/news/breaking-story/"
+    }
+  ]
+}
+```
+
+The manifest is also publicly accessible at `{baseUrl}/manifest.json` for external consumers and Discovery Nodes.
+
+---
+
+## Quota Management
+
+Every Content Pod tier has storage and item count limits:
+
+| Tier | Storage | Max Items |
+|---|---|---|
+| **Free** | 500 MB | 200 |
+| **Starter** | 5 GB | 5,000 |
+| **Pro** | 20 GB | 50,000 |
+| **Enterprise** | Unlimited | Unlimited |
+
+Publishing returns **HTTP 403 Forbidden** when a quota is exceeded:
+
+```json
+{
+  "message": "Content Pod item limit reached (200/200). Upgrade your pod tier or remove existing content to publish more."
+}
+```
+
+Admins can override quotas per-organization via:
+
+```bash
+PUT /api/v1/manage/content-pod/config
+{
+  "quotaItemCount": 500,
+  "quotaStorageBytes": 1073741824
+}
+```
+
+---
+
+## Configuration Reference
+
+```bash
+# Get current config
+GET /api/v1/manage/content-pod/config
+
+# Create config (first-time setup)
+POST /api/v1/manage/content-pod/config
+
+# Update config
+PUT /api/v1/manage/content-pod/config
+
+# Delete config (removes pod from org)
+DELETE /api/v1/manage/content-pod/config
+```
+
+### Setup Shortcuts
+
+```bash
+# Provision a free static or dynamic pod
+POST /api/v1/manage/content-pod/setup/free
+{ "podMode": "static", "subdomain": "my-newsroom" }
+
+# Set up self-hosted pod
+POST /api/v1/manage/content-pod/setup/own
+{ "podMode": "static", "subdomain": "my-newsroom", "customDomain": "content.example.com" }
+
+# Switch between static and dynamic mode
+POST /api/v1/manage/content-pod/setup/switch-mode
+{ "podMode": "dynamic" }
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `CONTENT_POD_DEV_PODS_PATH` | `../../content-pod/dev-pods` | Base path for local pod storage |
+| `CONTENT_POD_DYNAMIC_PHP_PATH` | `../../content-pod/packages/dynamic-features-php` | PHP API source path |
+| `STATIC_POD_PUBLIC_URL` | `http://localhost:3403` | Public base URL for static pods |
+| `DYNAMIC_POD_PUBLIC_URL` | `http://localhost:3404` | Public base URL for dynamic pods |
+
+---
+
+## API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/manage/content-pod/config` | Get pod configuration |
+| `POST` | `/api/v1/manage/content-pod/config` | Create pod configuration |
+| `PUT` | `/api/v1/manage/content-pod/config` | Update pod configuration |
+| `DELETE` | `/api/v1/manage/content-pod/config` | Delete pod configuration |
+| `GET` | `/api/v1/manage/content-pod/status` | Get pod status and manifest stats |
+| `GET` | `/api/v1/manage/content-pod/items` | List all manifest items |
+| `GET` | `/api/v1/manage/content-pod/test` | Test pod server connectivity |
+| `POST` | `/api/v1/manage/content-pod/publish/:contentId` | Publish one item to pod |
+| `POST` | `/api/v1/manage/content-pod/unpublish/:contentId` | Unpublish one item from pod |
+| `POST` | `/api/v1/manage/content-pod/publish-all` | Bulk-publish all published content |
+| `GET` | `/api/v1/manage/content-pod/preview/:contentId` | Preview bundle without writing |
+| `POST` | `/api/v1/manage/content-pod/setup/free` | Provision free pod |
+| `POST` | `/api/v1/manage/content-pod/setup/own` | Set up self-hosted pod |
+| `POST` | `/api/v1/manage/content-pod/setup/switch-mode` | Switch static ↔ dynamic mode |
+| `POST` | `/api/v1/manage/content-pod/setup/deploy-scripts` | Deploy dynamic PHP scripts |

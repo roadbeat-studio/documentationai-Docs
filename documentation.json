@@ -66,6 +66,11 @@
                 "icon": "send"
               },
               {
+                "title": "Content Pod",
+                "path": "guides/content-pod",
+                "icon": "package"
+              },
+              {
                 "title": "Localization",
                 "path": "guides/localization",
                 "icon": "globe"
