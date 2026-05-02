@@ -3,6 +3,45 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-02" description="v0.10.8" tags={["feature", "bugfix"]}>
+  ## Content Editor — Video Picker, Country/Currency Selects, Location Improvements
+
+  **Video Picker component** (`ui.component: "video_picker"`)
+
+  - New dual-mode video field: select a video from the **Asset Library** or paste an external URL (YouTube, Vimeo, or direct video)
+  - YouTube and Vimeo URLs are auto-detected from all common formats (`youtube.com/watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`, `youtube-nocookie.com`, `vimeo.com/<id>`) and rendered as embedded 16:9 iframe players
+  - Direct video URLs (`.mp4`, `.webm`, `.ogg`, `.mov`) render via a native `<video>` element with playback controls
+  - Footer badge indicates the source: **From asset library** (green), **YouTube embed** / **Vimeo embed** / **External URL** (blue)
+  - External URLs can be edited inline without removing and re-adding
+  - Added `video` to the `FieldType` union for form schema field definitions
+
+  **Country Select** (`ui.component: "country_select"`)
+
+  - New dropdown populated from Context Directory via `GET /api/v1/countries` proxy endpoint
+  - Shows country name and ISO 3166-1 alpha-2 code
+  - Automatically selected when using Location Search (based on the country code returned by OpenStreetMap)
+
+  **Currency Select** (`ui.component: "currency_select"`)
+
+  - New dropdown populated from Context Directory via `GET /api/v1/currencies` proxy endpoint
+  - Shows ISO 4217 code, name, and symbol
+
+  **Context Directory proxy endpoints**
+
+  - `GET /api/v1/currencies` — proxies Context Directory `/api/v1/currencies` with 1-hour cache and built-in fallback list
+  - `GET /api/v1/countries` — proxies Context Directory `/api/v1/countries` with 1-hour cache and built-in fallback list (EU + US countries)
+
+  **Location Search improvements**
+
+  - Search component now always appears **above** the address fields to match the natural address-entry flow
+  - Country Select dropdown is auto-filled when a location is selected from search results
+  - `LocationSelectedEvent` extended with `streetName`, `streetNumber`, and `countryName` fields
+
+  **Dynamic enum resolution**
+
+  - Editor field renderer now resolves enum options from the content type's metadata schema when an `i18n_key` is specified on the field — eliminates the need for hardcoded option lists in the frontend
+</Update>
+
 <Update label="2026-04-24" description="v0.10.7" tags={["feature", "bugfix"]}>
   ## Content Pod — Auto-Publish & Dashboard Content List
 

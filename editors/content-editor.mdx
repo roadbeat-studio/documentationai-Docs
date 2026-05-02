@@ -67,7 +67,7 @@ The editor renders different input components based on field type:
   <Tab title="Media & References" icon="image">
     - **Image / Media** — thumbnail preview with hover overlay for **Replace** / **Remove**; click the dashed placeholder to open the Asset Picker modal
     - **Image Gallery / Media Gallery** — grid of thumbnails with per-item remove buttons and an **Add Images** / **Add Videos** button; the button label and modal filter adapt automatically based on the field name (e.g. a "Videos" field opens the picker filtered to `video/*`)
-    - **Video** — gallery items with a video MIME type render as inline `<video>` players with controls
+    - **Video Picker** — dual-mode video field: pick a video from the **Asset Library** or paste an external URL (YouTube, Vimeo, or direct `.mp4`/`.webm`). YouTube and Vimeo URLs are auto-detected and rendered as embedded players; library videos use a native `<video>` element. See [Video Picker](#video-picker) below.
     - **File** — compact row showing filename and URL with **Replace** / **Remove** on hover
     - **Reference** — link to another content item (with type filtering)
     - **Multi-reference** — link to multiple content items
@@ -78,6 +78,8 @@ The editor renders different input components based on field type:
     - **Location** — search-as-you-type location finder with map preview and automatic address fill (see [Location Search](#location-search) below)
     - **SEO** — combined meta title, description, and OG image fields
     - **Object Array (Subform)** — structured list of objects rendered as collapsible item cards with an inline add form; each item shows a title, optional type badge, and headliner indicator. Configured via `item_fields` in the form schema's `settings`.
+    - **Currency Select** — dropdown populated from the Context Directory's `/api/v1/currencies` endpoint via a Studio API proxy (`GET /api/v1/currencies`), showing ISO 4217 code, name, and symbol. Cached for 1 hour with a built-in fallback list.
+    - **Country Select** — dropdown populated from the Context Directory's `/api/v1/countries` endpoint via a Studio API proxy (`GET /api/v1/countries`), showing country name and ISO 3166-1 alpha-2 code. Auto-selected when using Location Search.
     - **Timezone** — searchable select populated from the browser's `Intl.supportedValuesOf('timeZone')` API — always up-to-date with the full IANA timezone database
     - **Object Subform** — a single object field rendered as a structured inline card with labelled inputs for each sub-field; no add/remove controls
     - **Repeater Subform** — an array of objects rendered as a vertical stack of cards with a dashed **Add** button; each card shows a summary header and a **Remove** button
@@ -238,16 +240,53 @@ Content types with location fields (coordinates, addresses) get an integrated **
     - **City** — city, town, or village
     - **Region / State** — state or county
     - **Postal Code** — postcode
-    - **Country Code** — ISO 2-letter country code (e.g., DE, AT, CH)
+    - **Country** — if a **Country Select** dropdown exists in the same section, the correct country is automatically selected based on the ISO 3166-1 alpha-2 code returned by OpenStreetMap
     - **Coordinates** — latitude and longitude
   </Step>
 </Steps>
 
-The latitude and longitude fields remain manually editable below the map for fine-tuning. The search supports two common schema patterns — nested address fields (`location.address.street`) and flat fields (`location.street_address`).
+The search component always appears **above** the individual address fields to match the natural address-entry flow: search first, then review and fine-tune. The latitude and longitude fields remain manually editable below the map. The search supports two common schema patterns — nested address fields (`location.address.street`) and flat fields (`location.street_address`).
 
 <Callout kind="tip">
   The location search uses the free OpenStreetMap Nominatim API — no API key or external service configuration is required.
 </Callout>
+
+## Video Picker
+
+The **video picker** component (`ui.component: "video_picker"`) provides two entry modes for video fields:
+
+<Tabs>
+  <Tab title="Asset Library" icon="film">
+    Click **Select video from asset library** to open the Asset Picker modal filtered to `video/*` MIME types. After selecting a video, a native `<video>` player renders inline with playback controls.
+
+    The footer shows a green **From asset library** badge and offers **Replace from library** and **Remove** actions.
+  </Tab>
+  <Tab title="External URL" icon="link">
+    Paste a YouTube, Vimeo, or direct video URL into the **External video URL** input.
+
+    - **YouTube** — all common URL formats are auto-detected (`youtube.com/watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`, `youtube-nocookie.com`). Renders as an embedded YouTube player (16:9 iframe).
+    - **Vimeo** — `vimeo.com/<id>` URLs are detected. Renders as an embedded Vimeo player.
+    - **Direct URLs** — `.mp4`, `.webm`, `.ogg`, `.mov` URLs render via a native `<video>` element.
+    - **Other URLs** — displayed as a clickable link card.
+
+    The footer shows a blue badge indicating the provider (**YouTube embed**, **Vimeo embed**, or **External URL**). The URL can be edited inline without removing and re-adding the video.
+  </Tab>
+</Tabs>
+
+<Callout kind="info">
+  YouTube and Vimeo iframe URLs are sanitized via Angular's `DomSanitizer` and cached per URL to prevent unnecessary re-sanitization on change detection cycles.
+</Callout>
+
+## Context Directory Proxies
+
+The Studio API proxies two commonly used Context Directory endpoints so that the editor frontend does not need direct access to the Context Directory service:
+
+| Studio Endpoint | Proxied From | Cache | Used By |
+|----------------|-------------|-------|---------|
+| `GET /api/v1/currencies` | Context Directory `/api/v1/currencies` | 1 hour | Currency Select dropdown |
+| `GET /api/v1/countries` | Context Directory `/api/v1/countries` | 1 hour | Country Select dropdown, Location Search auto-fill |
+
+Both endpoints include a built-in fallback list (major currencies / EU + US countries) that is returned if the Context Directory is unreachable, so the editor remains functional even without the external service.
 
 ## Layout Preview
 
