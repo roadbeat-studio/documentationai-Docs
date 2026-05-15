@@ -342,7 +342,7 @@ The drawer displays:
 
   - **Adjust location settings** — navigates to Profile Settings (`/consumer/profile/settings`)
 
-  - **Hide content from this publisher** — publisher-level content filtering
+  - **Hide content from this publisher** — mutes the publisher, hiding all their content from Discover (see [Muting](#muting))
 
 #### Goal Matching Logic
 
@@ -397,6 +397,56 @@ DELETE /api/v1/consumer/follows/:publisherId
 PUT /api/v1/consumer/follows
 { "publisherIds": ["id-1", "id-2"] }
 ```
+
+### Muting
+
+Muting is the inverse of following — it permanently hides all content from a specific publisher across all Discover views (goal-driven, search, "all", "random").
+
+```bash
+# Get muted publishers
+GET /api/v1/consumer/follows/muted
+
+# Sync full muted list
+PUT /api/v1/consumer/follows/muted
+{ "publisherIds": ["id-1", "id-2"] }
+
+# Mute a publisher
+POST /api/v1/consumer/follows/muted/:publisherId
+
+# Unmute a publisher
+DELETE /api/v1/consumer/follows/muted/:publisherId
+```
+
+<Callout kind="info" collapsed="false">
+  Following and muting are **mutually exclusive** — muting a followed publisher automatically unfollows them, and following a muted publisher automatically unmutes them.
+</Callout>
+
+#### Mute Entry Points
+
+- **Publisher card** — kebab menu (⋮) → "Mute" action
+- **Publisher detail page** — Mute button next to Follow button
+- **"Why am I seeing this?" drawer** — "Hide content from this publisher" link
+- **Publisher list → Muted tab** — view and manage all muted publishers
+
+#### How Muting Works
+
+<Steps>
+  <Step title="User mutes a publisher" icon="volume-x" title-type="p">
+    The publisher ID is added to the local muted set and persisted to `localStorage` under key `rb_muted_publishers`. If the publisher was followed, it is automatically unfollowed.
+  </Step>
+
+  <Step title="Debounced server sync" icon="cloud" title-type="p">
+    After a 5-second debounce, the full muted list is synced to the Studio database (`cd_account_links.muted_publisher_ids` column) via `PUT /follows/muted`.
+  </Step>
+
+  <Step title="Content exclusion" icon="filter" title-type="p">
+    On every Discover search, `excludePublisherIds` is injected into the query filters. The backend translates this to a `publisher.id_exclude` filter on Discovery Nodes, ensuring muted content never appears in results.
+  </Step>
+</Steps>
+
+<Callout kind="tip" collapsed="false">
+  Muting does not remove existing bookmarks from muted publishers — users retain access to previously saved content.
+</Callout>
 
 ### Trust Badges
 

@@ -3,6 +3,24 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-15" description="v0.10.9" tags={["feature"]}>
+  ## Publisher Muting
+
+  Users can now **mute publishers** to permanently hide their content from all Discover views — including goal-driven results, search, "all", and "random" modes.
+
+  **New capabilities:**
+  - Mute/unmute publishers from the publisher card kebab menu (⋮), publisher detail page, or "Why am I seeing this?" transparency drawer
+  - Muted publishers tab in the publisher directory with count badge
+  - Muted badge indicator on publisher cards
+  - Mutual exclusivity: muting a followed publisher automatically unfollows them (and vice versa)
+
+  **Technical:**
+  - `localStorage` persistence (`rb_muted_publishers`) with 5-second debounced server sync
+  - Backend: `muted_publisher_ids` column on `cd_account_links` table with full CRUD endpoints at `/consumer/follows/muted`
+  - Discovery Node exclusion via `publisher.id_exclude` filter on all federated searches
+  - Bookmarks from muted publishers remain accessible
+</Update>
+
 <Update label="2026-05-02" description="v0.10.8" tags={["feature", "bugfix"]}>
   ## Content Editor — Video Picker, Country/Currency Selects, Location Improvements
 
