@@ -100,6 +100,17 @@ Redis is used for caching, session storage, and BullMQ job queues.
 | `CDN_SIGNING_KEY` | — | HMAC key for signed URLs |
 | `CDN_DEFAULT_TTL` | `86400` | Default cache TTL in seconds |
 
+## Federation (Optional)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FEDERATION_GATEWAY_URL` | — | Base URL of the Federation Gateway service (e.g. `https://federation.roadbeat.net`). When not set, the Federation tab in Platform Admin shows a configuration hint and all federation features are disabled. |
+| `FED_ADMIN_TOKEN` | — | Shared secret for authenticated communication between Studio and the Federation Gateway. Must match the `ADMIN_TOKEN` configured on the gateway. Use a long random string (min 64 chars). |
+
+<Callout kind="info">
+  Federation is entirely optional. Studio works normally without these variables — the Federation tab simply shows that the gateway is not configured. See the [Federation guide](/guides/federation) for setup instructions.
+</Callout>
+
 ## Pro / Plugins
 
 | Variable | Default | Description |
@@ -181,6 +192,10 @@ DISCOVERY_NODE_URLS=http://localhost:3300
 # Consumer
 CONTEXT_DIRECTORY_URL=http://localhost:3100
 
+# Federation (optional — enables ActivityPub)
+# FEDERATION_GATEWAY_URL=http://localhost:3500
+# FED_ADMIN_TOKEN=change-this-to-a-long-random-token-at-least-64-chars
+
 # Server
 PORT=3000
 CORS_ORIGIN=http://localhost:4200
@@ -205,3 +220,5 @@ LOG_PRETTY=true
 - [ ] Database backups are scheduled
 - [ ] Redis persistence is enabled (`appendonly yes`)
 - [ ] MeiliSearch master key is set
+- [ ] `FEDERATION_GATEWAY_URL` points to a secured gateway (HTTPS, not publicly reachable without auth)
+- [ ] `FED_ADMIN_TOKEN` is a unique, random string (min 64 chars)
