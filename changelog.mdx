@@ -3,6 +3,38 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-21" description="v0.11.0" tags={["feature"]}>
+  ## ActivityPub Federation
+
+  Organizations can now **federate via ActivityPub**. When enabled, each organization gets a Fediverse handle that users on Mastodon, Lemmy, Pleroma, and other compatible servers can follow. Published content is automatically delivered to remote followers.
+
+  **Publisher lifecycle:**
+  - Provision a publisher actor from the Platform Admin → Organization Detail → Federation tab
+  - Enable/disable outbound federation with a single toggle
+  - Fediverse handle, IRI, and delivery counters displayed on the Identity sub-tab
+
+  **Inbound interactions (6 sub-panels in the Federation tab):**
+  - **Followers** — paginated follower list with accept/reject/remove actions and status filtering
+  - **Discussion** — inbound replies with status tabs (pending, approved, rejected, dropped) and per-reply approve/reject moderation
+  - **Reactions** — like and boost analytics with totals, top-objects table, and paginated activity stream (analytics-only, never on consumer cards)
+  - **Moderation** — block and flag event queue with kind × status filters, resolve/dismiss with notes, and colour-coded cards
+  - **Policy** — configurable follow policy (auto-accept / manual approve) and reply policy (auto-approve / manual approve / drop) with radio card UI
+
+  **Security:**
+  - HTTP Signatures (Cavage draft-12) for all outbound/inbound verification
+  - AES-256-GCM encrypted key storage with optional Vault Transit backend
+  - Redis-backed replay cache for duplicate activity rejection
+  - Server-side HTML sanitisation of inbound reply content
+
+  **API endpoints:**
+  - Publisher lifecycle: `GET/POST/PUT /platform/organizations/:orgId/federation`
+  - Followers: `GET /…/followers`, `POST /…/followers/:id/accept`, `POST /…/followers/:id/reject`
+  - Replies: `GET /…/replies`, `POST /…/replies/:id/approve`, `POST /…/replies/:id/reject`
+  - Reactions: `GET /…/reactions/analytics`, `GET /…/reactions`
+  - Moderation: `GET /…/moderation`, `POST /…/moderation/:id/resolve`, `POST /…/moderation/:id/dismiss`
+  - Policy: `PATCH /…/policy`
+</Update>
+
 <Update label="2026-05-15" description="v0.10.9" tags={["feature"]}>
   ## Publisher Muting
 

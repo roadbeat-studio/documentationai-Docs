@@ -31,11 +31,14 @@ graph TB
         SR[Schema Registry]
         DN[Discovery Nodes]
         CD[Context Directory]
+        FGW[Federation Gateway]
     end
 
     API -->|Import schemas| SR
     API -->|Publish teasers| DN
     API -->|Consumer BFF| CD
+    API -->|Admin proxy| FGW
+    FGW -->|Deliver activities| Fediverse[Mastodon / Lemmy / Pleroma]
 ```
 
 ## Technology Stack
@@ -99,6 +102,7 @@ The API is organized into 30+ NestJS modules, each responsible for a specific do
     | **Delivery** | `delivery/` | Public read-only API (API key auth) |
     | **SchemaRegistry** | `schema-registry/` | Import content types from Schema Registry |
     | **Export** | `export/` | Backup/restore and content pod export |
+    | **Federation** | `federation/` | Admin proxy to Federation Gateway — publisher lifecycle, followers, replies, reactions, moderation, policy |
   </Tab>
   <Tab title="Infrastructure" icon="settings">
     | Module | Path | Description |
@@ -179,6 +183,11 @@ erDiagram
     Content ||--o{ Comment : has
     Content }o--o{ Asset : references
     User ||--o{ Content : creates
+    Organization ||--o| FedActor : federates
+    FedActor ||--o{ FedFollower : has
+    FedActor ||--o{ FedInboundReply : receives
+    FedActor ||--o{ FedInboundReaction : receives
+    FedActor ||--o{ FedModerationEvent : receives
 ```
 
 ## Event System

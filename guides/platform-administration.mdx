@@ -85,7 +85,7 @@ Click any row to open the **Organization Detail** page.
 
 ## Organization Detail
 
-The detail page (`/platform/organizations/:id`) has three tabs:
+The detail page (`/platform/organizations/:id`) has four tabs:
 
 <Tabs>
   <Tab title="Overview" icon="bar-chart-3">
@@ -96,6 +96,9 @@ The detail page (`/platform/organizations/:id`) has three tabs:
   </Tab>
   <Tab title="Settings" icon="settings">
     Edit the organization's name, slug, plan, user limit, storage limit, domain, and description. Changes are saved via `PUT /api/v1/platform/organizations/:id`.
+  </Tab>
+  <Tab title="Federation" icon="globe">
+    Manage this organization's ActivityPub federation. Sub-tabs include **Identity** (handle, toggle, counters), **Followers** (accept/reject), **Discussion** (inbound replies), **Reactions** (like/boost analytics), **Moderation** (block/flag events), and **Policy** (follow + reply policies). See the [Federation guide](/guides/federation) for full details.
   </Tab>
 </Tabs>
 

@@ -66,6 +66,12 @@
                 "icon": "send"
               },
               {
+                "title": "Federation (ActivityPub)",
+                "path": "guides/federation",
+                "icon": "globe",
+                "badge": "New"
+              },
+              {
                 "title": "Content Pod",
                 "path": "guides/content-pod",
                 "icon": "package"

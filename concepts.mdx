@@ -98,6 +98,32 @@ The publishing pipeline:
   </Step>
 </Steps>
 
+## Federation (ActivityPub)
+
+Studio supports **ActivityPub federation**, enabling each organization to act as a publisher on the Fediverse. When federation is enabled:
+
+- A **publisher actor** is provisioned with a handle like `@my-newsroom@studio.roadbeat.net`
+- Published content is delivered to remote followers on Mastodon, Lemmy, Pleroma, and other compatible servers as standard ActivityPub `Create` activities
+- **Inbound interactions** — follows, replies, likes, boosts, blocks, and flags — are received and managed from the Studio admin UI
+
+```mermaid
+sequenceDiagram
+    participant S as Studio
+    participant GW as Federation Gateway
+    participant M as Mastodon
+
+    S->>GW: content.published (NATS)
+    GW->>M: Create (Article) via HTTP Signatures
+    M->>GW: Follow / Reply / Like
+    GW->>S: Stored & visible in admin UI
+```
+
+Federation is managed per organization from the **Platform Admin** → **Organization Detail** → **Federation** tab, which provides sub-panels for identity, followers, discussion, reactions, moderation, and policy configuration.
+
+<Callout kind="tip">
+  See the [Federation guide](/guides/federation) for detailed setup instructions and the full feature reference.
+</Callout>
+
 ## APIs
 
 Studio provides two distinct APIs:
