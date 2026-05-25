@@ -209,6 +209,34 @@ The Policy sub-tab lets you configure how the organization handles inbound inter
 
 Changes take effect immediately. The panel shows a dirty-state indicator when unsaved changes exist, with **Save** and **Reset** buttons.
 
+## Content Type Mapping (ActivityPub Tab)
+
+Each content type has a dedicated **ActivityPub mapping** that defines how its fields are represented as ActivityStreams 2.0 objects. You can view this mapping in the Content Type Builder.
+
+<Steps>
+  <Step title="Open the Content Type Builder" icon="file-text">
+    Navigate to **Content Types** in the sidebar, then click on any content type to open the builder.
+  </Step>
+  <Step title="Click the ActivityPub tab" icon="globe">
+    If a mapping exists for this content type, an **ActivityPub** tab appears in the tab bar (indigo-themed). Click it to view the federation mapping.
+  </Step>
+  <Step title="Review the mapping" icon="eye">
+    The read-only JSON viewer shows the AS2 type, field mappings, transforms, audience defaults, and compatible Fediverse clients.
+  </Step>
+</Steps>
+
+<Callout kind="info">
+  The ActivityPub tab only appears when the Schema Registry has a mapping file for the content type. All 50 standard content types include mappings. Custom content types will show the tab once a mapping is added to the schemas repository.
+</Callout>
+
+The mapping controls:
+- **Which AS2 type** is used (Article, Event, Note, Video, Audio, Image, Place, etc.)
+- **How fields translate** — e.g. `$.title` → `name` with `lang_map` transform
+- **Audience defaults** — public vs. followers-only
+- **Federation default** — whether new content is federated automatically
+
+For full details on the mapping format, see the [Schema Registry: ActivityPub Mappings](https://docs.roadbeat.net/schema-registry/activitypub-mappings) documentation.
+
 ## Outbound Publishing
 
 When outbound federation is enabled and a content item is published with the **Share on Fediverse** toggle active, the following pipeline executes:

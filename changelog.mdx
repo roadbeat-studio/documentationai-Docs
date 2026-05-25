@@ -3,6 +3,28 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-25" description="v0.11.1" tags={["feature"]}>
+  ## Content Type Builder — ActivityPub Mapping Tab
+
+  The Content Type Builder now includes an **ActivityPub** tab that displays the federation mapping for each content type. This read-only view shows how content fields map to ActivityStreams 2.0 properties when federated to the Fediverse.
+
+  **What's shown:**
+
+  - AS2 type assignment (Article, Event, Note, Video, Audio, Image, Place, etc.)
+  - Schema.org type enrichment
+  - Field mapping table: source JSON path → target AS2 property, with transforms
+  - Audience defaults (public, unlisted, followers-only)
+  - Compatible client information (Mastodon, Lemmy, PeerTube, Pixelfed, etc.)
+  - Federation default policy (opt-in, off)
+
+  **Technical:**
+
+  - Tab only appears when the Schema Registry has an ActivityPub mapping for the content type
+  - Data is loaded from the Schema Registry via `GET /manage/schema-registry/types/:typeId/activitypub`
+  - Indigo-themed read-only JSON viewer matching the style of the Metadata and Form Schema tabs
+  - No edits are possible from Studio — mappings are managed in the schemas repository and synced via Git
+</Update>
+
 <Update label="2026-05-21" description="v0.11.0" tags={["feature"]}>
   ## ActivityPub Federation
 
