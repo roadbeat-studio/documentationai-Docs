@@ -3,6 +3,35 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-26" description="v0.11.2" tags={["feature"]}>
+  ## Content Pod Federation (P6 Complete)
+
+  Content Pods now have their own **ActivityPub identity** and can federate independently from the organization-level publisher actor. Users on Mastodon, Lemmy, and other ActivityPub servers can follow individual pods.
+
+  **M6.1 — Managed Pod Actor Provisioning:**
+  - Every Content Pod automatically gets a dedicated ActivityPub actor on the Federation Gateway
+  - Key pair is gateway-held and encrypted, but exportable for self-hosted migration
+  - Actor localId follows `{subdomain}-pod` convention (e.g. `demo-newsroom-pod`)
+
+  **M6.2 — Static Pod Outbox + Webhook Push:**
+  - Webhook-driven outbox: content publish/unpublish events trigger immediate delivery to followers
+  - `_activitypub` block injected into `manifest.json` with actor IRI, handle, outbox, and followers URL
+  - Outbox serves proper ActivityStreams `OrderedCollection` with pagination
+
+  **M6.3 — Dynamic Pod Inbox Sidecar + Reply Mirroring:**
+  - Dynamic pods receive federated replies and reactions via PHP inbox sidecar (`activitypub-inbox.php`)
+  - Gateway forwards inbound activities using HMAC-authenticated HTTP
+  - Static pods use "reply mirroring" — gateway stores interactions locally, readable via admin API
+  - New endpoints: `GET /admin/pods/:actorId/replies`, `GET /admin/pods/:actorId/reactions`
+
+  **M6.4 — Pod Migration (Move):**
+  - Pods can migrate between hosts using the ActivityPub `Move` activity
+  - Bidirectional `alsoKnownAs` verification required before Move is accepted
+  - 365-day overlap period keeps old actor live as a redirect
+  - Full admin API: `POST migrate`, `GET migration-status`, `POST also-known-as`, `POST finalize-migration`
+  - Documented runbook for self-hosted pod operators
+</Update>
+
 <Update label="2026-05-25" description="v0.11.1" tags={["feature"]}>
   ## Content Type Builder — ActivityPub Mapping Tab
 

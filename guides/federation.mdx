@@ -320,3 +320,78 @@ All federation endpoints are proxied through the Studio Management API under the
 | Method | Path | Description |
 |--------|------|-------------|
 | `PATCH` | `/platform/organizations/:orgId/federation/policy` | Update follow and/or reply policy |
+
+---
+
+## Content Pod Federation
+
+<Callout kind="info">
+  Content Pod Federation was introduced in v0.11.2 (P6). It allows each Content Pod to have its own ActivityPub identity, separate from the organization-level publisher actor.
+</Callout>
+
+When a Content Pod is provisioned (free or paid tier), the Federation Gateway automatically creates a dedicated **pod actor**. This pod actor has its own Fediverse handle, key pair, and outbox — allowing individual content pods to be followed independently.
+
+### Pod Actor Provisioning
+
+Pod actors are auto-provisioned during Content Pod setup. The actor's `localId` follows the convention `{subdomain}-pod` (e.g. `demo-newsroom-pod`). The key pair is stored in the gateway's encrypted store and is exportable for self-hosted migrations.
+
+### Static Pod Outbox
+
+For static pods, the outbox is derived from the pod's `manifest.json`. When content is published or unpublished, a webhook notifies the gateway, which converts the entry into an ActivityStreams `Create` or `Delete` activity and delivers it to followers.
+
+The pod's `manifest.json` receives an `_activitypub` block containing the pod's federation identity:
+
+```json
+{
+  "_activitypub": {
+    "actorIri": "https://federation.roadbeat.net/ap/users/demo-newsroom-pod",
+    "handle": "@demo-newsroom-pod@federation.roadbeat.net",
+    "outboxUrl": "https://federation.roadbeat.net/ap/users/demo-newsroom-pod/outbox",
+    "followersUrl": "https://federation.roadbeat.net/ap/users/demo-newsroom-pod/followers"
+  }
+}
+```
+
+### Dynamic Pod Inbox
+
+Dynamic pods (pods with server-side features enabled) can receive inbound interactions directly. The federation gateway forwards activities to the pod's PHP/Node **inbox sidecar** (`/_dynamic/api/activitypub-inbox.php`), which stores replies and reactions in the pod's local SQLite database.
+
+For static pods (or when the sidecar is unreachable), the gateway stores inbound interactions locally — this is called **reply mirroring**. Studio and mobile can read mirrored replies via the admin API.
+
+### Pod Migration
+
+Pods can migrate between hosts (e.g. from managed to self-hosted) using the ActivityPub `Move` activity:
+
+<Steps>
+  <Step title="Provision new actor" icon="plus">
+    Create the pod actor on the new host and set `alsoKnownAs` pointing to the old actor IRI.
+  </Step>
+  <Step title="Initiate Move" icon="arrow-right">
+    Call the migration endpoint on the old gateway. This sets `alsoKnownAs` on the old actor and fans out a `Move` activity to all followers.
+  </Step>
+  <Step title="Overlap period" icon="clock">
+    Both actors remain live for 365 days. Remote servers update their records; followers who miss the Move can still reach the old actor.
+  </Step>
+  <Step title="Finalize" icon="check-circle">
+    After the overlap expires, disable federation on the old actor.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  For full step-by-step instructions, see the [Pod Migration Runbook](https://github.com/roadbeat/docs/blob/main/activitypub/POD_MIGRATION_RUNBOOK.md).
+</Callout>
+
+### Pod Federation API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/admin/pods` | Provision a pod actor |
+| `GET` | `/admin/pods/:podConfigId` | Get pod actor state |
+| `GET` | `/admin/pods/:podConfigId/outbox` | Get pod outbox entries |
+| `POST` | `/admin/pods/:podConfigId/webhook` | Push content change webhook |
+| `GET` | `/admin/pods/:actorId/replies` | Get mirrored replies (static pods) |
+| `GET` | `/admin/pods/:actorId/reactions` | Get mirrored reactions (static pods) |
+| `POST` | `/admin/pods/:actorId/migrate` | Initiate pod migration (Move) |
+| `GET` | `/admin/pods/:actorId/migration-status` | Check migration status |
+| `POST` | `/admin/pods/:actorId/also-known-as` | Set alsoKnownAs URIs |
+| `POST` | `/admin/pods/:actorId/finalize-migration` | Finalize migration after overlap |
