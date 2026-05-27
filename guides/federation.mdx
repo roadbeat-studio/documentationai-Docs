@@ -87,6 +87,10 @@ Once provisioned, the Federation tab displays six sub-tabs:
   </Card>
 </Columns>
 
+<Callout kind="tip">
+  For instance-level moderation (blocklists, defederation, GDPR), see the [Instance Moderation & Governance](#instance-moderation--governance) section below.
+</Callout>
+
 ## Identity
 
 The Identity sub-tab shows the core federation state:
@@ -320,6 +324,118 @@ All federation endpoints are proxied through the Studio Management API under the
 | Method | Path | Description |
 |--------|------|-------------|
 | `PATCH` | `/platform/organizations/:orgId/federation/policy` | Update follow and/or reply policy |
+
+---
+
+## Instance Moderation & Governance
+
+The Federation Gateway includes a comprehensive moderation and governance system that operates at the **instance level** — separate from per-organization moderation (Block/Flag events above). These features are managed by platform super-admins.
+
+### Host Blocklist
+
+The gateway maintains a host-level blocklist. Blocked hosts are rejected at the inbox layer before signature verification, ensuring zero processing of unwanted traffic.
+
+<Steps>
+  <Step title="Default blocklist" icon="shield">
+    On first boot, the gateway subscribes to the [unified tier-0 blocklist](https://codeberg.org/oliphant/blocklists) from the German e.V. community. Known bad actors are blocked immediately.
+  </Step>
+  <Step title="Custom blocks" icon="plus">
+    Admins can manually block individual hosts via the API or subscribe to additional providers (FediSeer, Bad Space, Fediblock, or any CSV URL).
+  </Step>
+  <Step title="Purge" icon="trash">
+    When a host is blocked, all stored data from that host (followers, activities, reactions, replies) can be purged with a single API call.
+  </Step>
+</Steps>
+
+<Callout kind="info">
+  Blocklist subscriptions sync automatically every 6 hours. New entries are auto-blocked and logged in the immutable audit log.
+</Callout>
+
+### Defederation Workflow
+
+For high-impact defederation decisions, the gateway supports a **proposal-based workflow** with an objection window:
+
+<Steps>
+  <Step title="Propose" icon="file-text">
+    An admin proposes defederating a host with a written reason.
+  </Step>
+  <Step title="48-hour objection window" icon="clock">
+    Other admins have 48 hours to review and optionally object (with a reason). If objected, the proposal is rejected.
+  </Step>
+  <Step title="Auto-apply" icon="check-circle">
+    If no objection is raised within 48 hours, the defederation is automatically applied — the host is blocked and all its data is purged.
+  </Step>
+  <Step title="Public log" icon="eye">
+    All defederation decisions (applied and rejected) appear in the public moderation log for transparency.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  Admins can override the objection window and apply immediately for urgent cases (e.g. active spam/abuse campaigns).
+</Callout>
+
+### Outbound Reports (FEP-8fcf)
+
+Admins can send **moderation reports** to remote instances when their users or content violate your community standards. Reports are delivered as ActivityPub `Flag` activities per the [FEP-8fcf](https://codeberg.org/fediverse/fep/src/branch/main/fep/8fcf/fep-8fcf.md) specification.
+
+Reports include:
+- Target IRIs (the problematic actor or content)
+- A free-text reason describing the issue
+- Sent from the instance actor to the remote instance's shared inbox
+
+### GDPR Delete Pipeline
+
+The gateway implements a complete **GDPR-compliant deletion pipeline**:
+
+| Step | What happens |
+|------|--------------|
+| User requests deletion | All actor data is purged from the local database |
+| Tombstone created | A `Tombstone` record is stored with a 365-day retention period |
+| Fan-out | A `Delete{Tombstone}` activity is delivered to all known followers |
+| 410 Gone | Any request to the deleted actor's IRI returns `410 Gone` with an ActivityStreams `Tombstone` object |
+| Purge after 365 days | The tombstone is automatically removed by a daily cron job |
+
+<Callout kind="alert">
+  Deletion is irreversible. Once initiated, the actor handle cannot be reclaimed and all federated content from that actor is permanently removed.
+</Callout>
+
+### Public Moderation Log
+
+The gateway exposes a **public moderation log** at `/api/v1/moderation-log`. This unauthenticated endpoint provides transparency into defederation decisions — showing which hosts have been blocked or had proposals rejected, along with the stated reasons.
+
+### Audit Log
+
+Every moderation action is recorded in an **immutable audit log**:
+
+- Host blocked / unblocked / purged
+- Blocklist subscription synced
+- Defederation proposed / objected / applied / withdrawn
+- GDPR delete initiated
+- Outbound report (Flag) sent
+- Tombstone created / purged
+
+The audit log is append-only and cannot be modified or deleted. Admins can query it by action type, target, or time range.
+
+### Moderation Admin API
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/moderation/blocklist` | List all blocked hosts |
+| `POST` | `/api/v1/moderation/blocklist` | Block a host |
+| `DELETE` | `/api/v1/moderation/blocklist/:host` | Unblock a host |
+| `POST` | `/api/v1/moderation/blocklist/:host/purge` | Purge all data from a host |
+| `GET` | `/api/v1/moderation/subscriptions` | List blocklist subscriptions |
+| `POST` | `/api/v1/moderation/subscriptions` | Add a subscription |
+| `POST` | `/api/v1/moderation/subscriptions/:id/sync` | Trigger manual sync |
+| `POST` | `/api/v1/moderation/flag` | Send a Flag report to a remote instance |
+| `GET` | `/api/v1/moderation/defederation` | List defederation proposals |
+| `POST` | `/api/v1/moderation/defederation` | Propose a new defederation |
+| `POST` | `/api/v1/moderation/defederation/:id/object` | Object to a proposal |
+| `POST` | `/api/v1/moderation/defederation/:id/apply` | Apply immediately (override) |
+| `POST` | `/api/v1/moderation/defederation/:id/withdraw` | Withdraw a proposal |
+| `GET` | `/api/v1/moderation/audit-log` | Query the audit log |
+| `POST` | `/api/v1/moderation/gdpr/delete-actor` | Delete an actor (GDPR) |
+| `GET` | `/api/v1/moderation-log` | Public moderation log (unauthenticated) |
 
 ---
 

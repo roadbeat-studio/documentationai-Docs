@@ -3,6 +3,39 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-27" description="v0.12.0" tags={["feature", "security"]}>
+  ## Moderation, Governance & GDPR Compliance (P8)
+
+  The Federation Gateway now includes a full **moderation, governance, and GDPR compliance** layer. This covers instance-level blocklists, automated defederation workflows, moderation reporting (FEP-8fcf), and a complete GDPR delete pipeline.
+
+  **M8.1 — Instance Blocklist & Audit Log:**
+  - Default e.V. blocklist pre-loaded (unified tier-0 from Oliphant/Codeberg)
+  - Admin API for managing blocked hosts: block, unblock, purge, bulk import
+  - Subscription-based sync from external blocklist providers (FediSeer, Bad Space, Fediblock, custom CSV URLs)
+  - Automatic sync every 6 hours with auto-block on match
+  - Immutable audit log for all moderation actions
+  - Inbound activities from blocked hosts are rejected at the inbox layer
+
+  **M8.2 — GDPR Delete Pipeline:**
+  - User deletion triggers `Delete{Tombstone}` fan-out to all known followers
+  - Account closure triggers `Delete{actor_uri}` broadcast
+  - 365-day Tombstone retention: deleted actors return `410 Gone` with an ActivityStreams `Tombstone` object
+  - Scheduled daily purge of expired tombstones (after 365 days)
+
+  **M8.3 — FEP-8fcf Moderation Reports (Flag):**
+  - Inbound `Flag` activities are persisted to the moderation queue with target IRI resolution
+  - Outbound `Flag` support: admins can send reports to remote instances about problematic content/actors
+  - Reports are delivered to the remote instance's shared inbox per FEP-8fcf specification
+
+  **M8.4 — Defederation Workflow:**
+  - Admin proposes defederation with a reason → 48-hour objection window opens
+  - Other admins can object (with reason) → proposal is rejected
+  - If no objection after 48h → auto-applied (host blocked + all data purged)
+  - Admin can override and apply immediately (skipping objection window)
+  - Proposals can be withdrawn by the proposer
+  - **Public moderation log** at `GET /api/v1/moderation-log` — transparency endpoint showing all defederation decisions (applied and rejected)
+</Update>
+
 <Update label="2026-05-26" description="v0.11.2" tags={["feature"]}>
   ## Content Pod Federation (P6 Complete)
 
