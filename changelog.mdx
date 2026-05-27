@@ -3,42 +3,6 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
-<Update label="2026-05-27" description="v0.13.0" tags={["feature"]}>
-  ## Pro Plugin: pro-activitypub (P10)
-
-  The **pro-activitypub** plugin adds enterprise-grade federation capabilities for high-volume publishers. Requires the Pro license tier.
-
-  **M10.1 — Multi-Actor Publishing:**
-  - Publish one piece of content to multiple AP outboxes (org + author + topic actors) in a single call
-  - Automatic follower deduplication across actors
-  - Full delivery tracking per actor
-
-  **M10.2 — Scheduled Federation:**
-  - Decouple ActivityPub delivery from CMS publish time
-  - Schedule federation for specific dates/times
-  - Batch deliveries during optimal engagement windows
-  - Cancel, reschedule, or execute jobs manually
-  - Minute-level cron precision
-
-  **M10.3 — Federation Analytics:**
-  - Per-host delivery success rates, failure analysis, average attempt counts
-  - Follower geographic distribution by TLD → ISO country mapping
-  - Boost lineage: top-boosted content, per-host spread, unique host counts
-
-  **M10.4 — Advanced Content Filters:**
-  - Rule-based inbound content filtering (regex, keyword, glob, domain, actor pattern, language, AI toxicity)
-  - Actions: reject, quarantine, flag, log
-  - Per-rule hit counters, test endpoint for dry-run evaluation
-  - Auto-reload rules every 5 minutes
-
-  **M10.4 — External Cross-Posting:**
-  - Import from Mastodon RSS feeds or ActivityPub outbox collections
-  - Configurable per-source poll interval
-  - Deduplication by original URI
-  - Draft review workflow: pending → approve/reject
-  - Manual poll trigger for immediate import
-</Update>
-
 <Update label="2026-05-27" description="v0.12.0" tags={["feature", "security"]}>
   ## Moderation, Governance & GDPR Compliance (P8)
 
