@@ -45,7 +45,7 @@ roadbeat Studio provides role-based access control (RBAC) to manage who can do w
 | **Email** | Unique login identifier |
 | **Name** | Display name |
 | **Role** | One of: `admin`, `editor`, `viewer` |
-| **Status** | `active` or `inactive` |
+| **Status** | `active`, `inactive`, `suspended`, or `locked` |
 | **Avatar URL** | Optional profile image |
 | **Last Login** | Timestamp of most recent login |
 
@@ -139,14 +139,33 @@ POST /api/v1/auth/setup
 }
 ```
 
+### Password Policy
+
+All passwords must meet the following requirements:
+
+- At least **8 characters**
+- At least **one uppercase letter** (A–Z)
+- At least **one lowercase letter** (a–z)
+- At least **one digit** (0–9)
+
+This policy is enforced on initial setup, password change, password reset, and user creation.
+
 ### Password Management
 
 - **Change password** (requires current password): `POST /api/v1/auth/change-password`
-- **Forgot password**: `POST /api/v1/auth/password/forgot` — sends a reset token (logged in dev mode)
+- **Forgot password**: `POST /api/v1/auth/password/forgot` — sends a password reset email
 - **Reset password**: `POST /api/v1/auth/password/reset` — validates token and sets new password
 
 <Callout kind="info">
-  Password reset tokens are single-use and expire after 1 hour. The forgot-password endpoint always returns success to prevent email enumeration attacks.
+  Password reset tokens are single-use and expire after 1 hour. The forgot-password endpoint always returns success to prevent email enumeration attacks. In development mode (`MAIL_TRANSPORT=log`), the reset link is printed to the server console.
+</Callout>
+
+### Account Lockout
+
+After **10 consecutive failed login attempts** within 15 minutes, the user account is automatically locked (`status = 'locked'`). An administrator must unlock the account by setting the status back to `active` via the API or database.
+
+<Callout kind="alert">
+  Login attempts are tracked in the `login_attempts` table. This includes the email, IP address, success/failure, and timestamp for each attempt.
 </Callout>
 
 ## Profile Management

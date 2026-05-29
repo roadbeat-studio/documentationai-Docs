@@ -51,6 +51,26 @@ Redis is used for caching, session storage, and BullMQ job queues.
 | `JWT_EXPIRATION` | `24h` | Access token lifetime |
 | `JWT_REFRESH_EXPIRATION` | `7d` | Refresh token lifetime |
 
+## Mail
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MAIL_TRANSPORT` | `log` | Mail transport: `smtp` or `log` (dev-only, prints to console) |
+| `MAIL_FROM` | `noreply@localhost` | Sender address for outbound emails |
+| `MAIL_BASE_URL` | `http://localhost:4200` | Base URL for links in email templates (e.g. password reset) |
+| `SMTP_HOST` | — | SMTP server hostname (required when `MAIL_TRANSPORT=smtp`) |
+| `SMTP_PORT` | `587` | SMTP server port |
+| `SMTP_USER` | — | SMTP username |
+| `SMTP_PASS` | — | SMTP password |
+
+<Callout kind="info">
+  When `MAIL_TRANSPORT=log` (the default), emails are printed to the server console instead of being sent. This is useful for local development — you can see password reset links in the logs without configuring an SMTP server.
+</Callout>
+
+<Callout kind="tip">
+  For production, set `MAIL_TRANSPORT=smtp` and configure your SMTP credentials. Services like Postmark, SendGrid, Mailgun, or Amazon SES all work with standard SMTP settings.
+</Callout>
+
 ## Search
 
 | Variable | Default | Description |
@@ -196,6 +216,15 @@ CONTEXT_DIRECTORY_URL=http://localhost:3100
 # FEDERATION_GATEWAY_URL=http://localhost:3500
 # FED_ADMIN_TOKEN=change-this-to-a-long-random-token-at-least-64-chars
 
+# Mail
+MAIL_TRANSPORT=log
+MAIL_FROM=noreply@localhost
+MAIL_BASE_URL=http://localhost:4200
+# SMTP_HOST=smtp.example.com
+# SMTP_PORT=587
+# SMTP_USER=your-smtp-user
+# SMTP_PASS=your-smtp-password
+
 # Server
 PORT=3000
 CORS_ORIGIN=http://localhost:4200
@@ -220,5 +249,8 @@ LOG_PRETTY=true
 - [ ] Database backups are scheduled
 - [ ] Redis persistence is enabled (`appendonly yes`)
 - [ ] MeiliSearch master key is set
+- [ ] `MAIL_TRANSPORT=smtp` with valid SMTP credentials
+- [ ] `MAIL_FROM` uses your domain (e.g. `noreply@yourdomain.com`)
+- [ ] `MAIL_BASE_URL` matches your public Studio URL
 - [ ] `FEDERATION_GATEWAY_URL` points to a secured gateway (HTTPS, not publicly reachable without auth)
 - [ ] `FED_ADMIN_TOKEN` is a unique, random string (min 64 chars)

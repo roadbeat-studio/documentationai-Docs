@@ -3,6 +3,41 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-29" description="v0.12.1" tags={["feature", "security"]}>
+  ## Mailer Service, Password Policy & Login Security Hardening
+
+  **Mail Service (`mail/` module):**
+  - New `MailService` with two transports: **SMTP** (nodemailer) and **Log** (dev-only, prints to console)
+  - Configured via `MAIL_TRANSPORT`, `MAIL_FROM`, `MAIL_BASE_URL`, `SMTP_HOST/PORT/USER/PASS`
+  - 4 email templates: password reset, user invitation, content published, webhook failure summary
+  - HTML escaping for all user-provided values in templates (XSS prevention)
+  - `isHealthy()` method for health checks
+  - Password reset flow now sends actual emails instead of logging a TODO
+
+  **Password Policy Enforcement:**
+  - Passwords must be at least 8 characters with one uppercase, one lowercase, and one digit
+  - Policy enforced on all 4 entry points: initial setup, password change, password reset, and user creation
+  - Shared `validatePasswordPolicy()` utility in `common/utils/password-policy.ts`
+  - Returns `400 Bad Request` with `WEAK_PASSWORD` error code and specific violation list
+
+  **Login Security Hardening:**
+  - **Account lockout** — after 10 failed login attempts in 15 minutes, account status is set to `locked`
+  - **Login attempt tracking** — new `login_attempts` table records email, IP, success/failure, and timestamp
+  - **Constant-time login** — dummy `bcrypt.compare()` on non-match paths to prevent timing-based user enumeration
+  - **bcrypt fan-out cap** — user matching loop capped at 5 to prevent DoS via multi-org email matches
+  - `user.login.failed` event emitted for audit plugins
+  - Rate limiting already in place: login 5/min, forgot-password 3/min, reset-password 5/min
+
+  **Configuration:**
+  - New environment variables in `.env.example`: `MAIL_TRANSPORT`, `MAIL_FROM`, `MAIL_BASE_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
+  - Mail config block added to `configuration.ts`
+
+  **Tests:**
+  - 8 mail service tests (transport dispatch, template rendering, HTML escaping)
+  - 8 password policy tests (valid, strong, short, no-upper, no-lower, no-digit, all-lowercase, empty)
+  - 19 auth service tests (all pass including lockout and constant-time paths)
+</Update>
+
 <Update label="2026-05-27" description="v0.12.0" tags={["feature", "security"]}>
   ## Moderation, Governance & GDPR Compliance (P8)
 

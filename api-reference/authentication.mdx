@@ -49,6 +49,18 @@ Content-Type: application/json
   The login endpoint is rate-limited to **5 requests per minute** per IP to prevent brute-force attacks.
 </Callout>
 
+### Account Lockout
+
+Studio automatically locks a user account after **10 consecutive failed login attempts** within a 15-minute window. When an account is locked:
+
+- Login returns `401 Unauthorized` with the message "Account is locked. Contact an administrator."
+- The user's status is set to `locked` in the database
+- An administrator must manually unlock the account by changing the status back to `active`
+
+<Callout kind="alert">
+  Account lockout is per-user, not per-IP. Even if the attacker switches IPs, the account remains locked after 10 failures. This prevents credential stuffing attacks.
+</Callout>
+
 ### Using the Access Token
 
 Include the JWT in the `Authorization` header for all Management API requests:
@@ -124,6 +136,25 @@ POST /api/v1/auth/setup
   The setup endpoint only works when no organizations exist in the database. After the first admin is created, it returns `409 Conflict`.
 </Callout>
 
+### Password Policy
+
+All password entry points enforce the same policy. Passwords must meet **all** of the following requirements:
+
+| Requirement | Description |
+|-------------|-------------|
+| **Minimum length** | At least 8 characters |
+| **Uppercase letter** | At least one uppercase letter (A–Z) |
+| **Lowercase letter** | At least one lowercase letter (a–z) |
+| **Digit** | At least one number (0–9) |
+
+If the password does not meet the policy, the API returns `400 Bad Request` with error code `WEAK_PASSWORD` and a list of the specific violations.
+
+This policy is enforced on:
+- Initial setup (`POST /auth/setup`)
+- Password change (`POST /auth/change-password`)
+- Password reset (`POST /auth/password/reset`)
+- User creation by admin (`POST /manage/users`)
+
 ### Password Management
 
 ```bash
@@ -135,17 +166,21 @@ Authorization: Bearer YOUR_TOKEN
   "newPassword": "newSecurePassword123!"
 }
 
-# Request password reset (always returns success)
+# Request password reset (sends email with reset link)
 POST /api/v1/auth/password/forgot
 { "email": "user@example.com" }
 
-# Reset password with token
+# Reset password with token (from email link)
 POST /api/v1/auth/password/reset
 {
   "token": "reset-token-from-email",
-  "password": "newSecurePassword123!"
+  "newPassword": "newSecurePassword123!"
 }
 ```
+
+<Callout kind="info">
+  Password reset emails are sent via the configured mail transport. In development (`MAIL_TRANSPORT=log`), the reset link is printed to the server console. In production, configure SMTP — see [Configuration](/deployment/configuration).
+</Callout>
 
 ### Get Current User
 
@@ -254,6 +289,8 @@ DELETE /api/v1/manage/api-keys/:id
 - **Rotate API keys** periodically and when team members leave
 - **Use scoped permissions** — only grant the minimum permissions needed
 - **Monitor for 401 errors** — may indicate compromised credentials
+- **Configure SMTP** for production so password reset emails are delivered (not just logged)
+- **Review login attempts** — failed login attempts are recorded in the `login_attempts` table for auditing
 
 ## Common Authentication Errors
 
@@ -269,8 +306,21 @@ DELETE /api/v1/manage/api-keys/:id
   - Admin-only endpoints return 403 for editor/viewer roles
 </Expandable>
 
+<Expandable title="401 Unauthorized — Account is locked" default-open="false">
+  - The account was locked after 10 consecutive failed login attempts within 15 minutes
+  - Contact an administrator to unlock the account (set status back to `active`)
+  - The lockout protects against brute-force and credential stuffing attacks
+</Expandable>
+
+<Expandable title="400 Bad Request — Weak password (WEAK_PASSWORD)" default-open="false">
+  - The password does not meet the password policy requirements
+  - Check the `message` field for a list of specific violations
+  - Password must be at least 8 characters with uppercase, lowercase, and a digit
+</Expandable>
+
 <Expandable title="429 Too Many Requests — Rate limit exceeded" default-open="false">
   - Wait for the rate limit window to reset (check `X-RateLimit-Reset` header)
   - The login endpoint has a stricter limit of 5 requests/minute
+  - The forgot-password endpoint is limited to 3 requests/minute
   - Consider implementing exponential backoff in your client
 </Expandable>
