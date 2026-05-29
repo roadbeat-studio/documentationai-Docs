@@ -182,6 +182,180 @@ POST /api/v1/auth/password/reset
   Password reset emails are sent via the configured mail transport. In development (`MAIL_TRANSPORT=log`), the reset link is printed to the server console. In production, configure SMTP — see [Configuration](/deployment/configuration).
 </Callout>
 
+### Logout
+
+Revoke the current refresh token:
+
+```bash
+POST /api/v1/auth/logout
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+### Session Management
+
+View and manage active sessions (refresh tokens) for the current user:
+
+```bash
+# List active sessions
+GET /api/v1/auth/sessions
+Authorization: Bearer YOUR_TOKEN
+
+# Revoke a specific session
+DELETE /api/v1/auth/sessions/:id
+Authorization: Bearer YOUR_TOKEN
+
+# Revoke all sessions (logout everywhere)
+DELETE /api/v1/auth/sessions
+Authorization: Bearer YOUR_TOKEN
+```
+
+Each session includes `ip`, `userAgent`, `createdAt`, and `lastUsedAt` for transparency.
+
+<Callout kind="alert">
+  Refresh tokens are now persisted server-side and are single-use. If a previously consumed refresh token is replayed (token reuse detection), all sessions for the user are immediately revoked as a security precaution.
+</Callout>
+
+---
+
+## Two-Factor Authentication (MFA)
+
+Studio supports TOTP-based two-factor authentication, compatible with Google Authenticator, Authy, 1Password, and other TOTP apps.
+
+### Check MFA Status
+
+```bash
+GET /api/v1/auth/mfa/status
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response:**
+
+```json
+{ "data": { "enabled": false } }
+```
+
+### Enroll in MFA
+
+<Steps>
+  <Step title="Start enrollment">
+    ```bash
+    POST /api/v1/auth/mfa/enroll
+    Authorization: Bearer YOUR_TOKEN
+    ```
+
+    **Response:**
+
+    ```json
+    {
+      "data": {
+        "secret": "JBSWY3DPEHPK3PXP",
+        "otpauthUrl": "otpauth://totp/roadbeat:user@example.com?secret=...",
+        "qrCodeDataUrl": "data:image/png;base64,iVBOR..."
+      }
+    }
+    ```
+  </Step>
+  <Step title="Scan QR code">
+    Scan the QR code (or manually enter the secret) in your authenticator app.
+  </Step>
+  <Step title="Verify enrollment">
+    Submit a code from your authenticator to complete enrollment:
+
+    ```bash
+    POST /api/v1/auth/mfa/verify
+    Authorization: Bearer YOUR_TOKEN
+    Content-Type: application/json
+
+    { "code": "123456" }
+    ```
+
+    **Response:**
+
+    ```json
+    {
+      "data": {
+        "enabled": true,
+        "recoveryCodes": [
+          "A1B2-C3D4-E5F6",
+          "G7H8-I9J0-K1L2",
+          "..."
+        ]
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+<Callout kind="danger">
+  Save your recovery codes in a secure location. Each code can only be used **once**, and they are the only way to regain access if you lose your authenticator device.
+</Callout>
+
+### Login with MFA
+
+When MFA is enabled, login requires a two-step flow:
+
+```bash
+# Step 1: Login with credentials (no mfaCode)
+POST /api/v1/auth/login
+{ "email": "user@example.com", "password": "yourPassword" }
+
+# Response: MFA challenge
+{
+  "data": {
+    "mfaRequired": true,
+    "mfaToken": "eyJhbG...",
+    "accessToken": null,
+    "refreshToken": null
+  }
+}
+```
+
+```bash
+# Step 2: Login again with credentials + mfaCode
+POST /api/v1/auth/login
+{
+  "email": "user@example.com",
+  "password": "yourPassword",
+  "mfaCode": "123456"
+}
+```
+
+The `mfaCode` field accepts either a 6-digit TOTP code or a recovery code in `XXXX-XXXX-XXXX` format.
+
+### Disable MFA
+
+```bash
+POST /api/v1/auth/mfa/disable
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+
+{
+  "code": "123456",
+  "password": "yourPassword"
+}
+```
+
+### Regenerate Recovery Codes
+
+```bash
+POST /api/v1/auth/mfa/recovery-codes
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+
+{ "code": "123456" }
+```
+
+<Callout kind="info">
+  Regenerating recovery codes invalidates all previous codes. A valid TOTP code (not a recovery code) is required.
+</Callout>
+
+---
+
 ### Get Current User
 
 ```bash
@@ -288,9 +462,12 @@ DELETE /api/v1/manage/api-keys/:id
 - **Use HTTPS** in production to encrypt tokens in transit
 - **Rotate API keys** periodically and when team members leave
 - **Use scoped permissions** — only grant the minimum permissions needed
+- **Enable MFA** for all admin accounts — TOTP adds a strong second factor against credential theft
+- **Store recovery codes securely** — treat them like passwords; they bypass TOTP
 - **Monitor for 401 errors** — may indicate compromised credentials
 - **Configure SMTP** for production so password reset emails are delivered (not just logged)
 - **Review login attempts** — failed login attempts are recorded in the `login_attempts` table for auditing
+- **Use session management** — periodically review active sessions via `GET /auth/sessions` and revoke unfamiliar ones
 
 ## Common Authentication Errors
 
@@ -316,6 +493,12 @@ DELETE /api/v1/manage/api-keys/:id
   - The password does not meet the password policy requirements
   - Check the `message` field for a list of specific violations
   - Password must be at least 8 characters with uppercase, lowercase, and a digit
+</Expandable>
+
+<Expandable title="401 Unauthorized — Invalid MFA code" default-open="false">
+  - The TOTP code is incorrect or has expired (codes rotate every 30 seconds)
+  - If using a recovery code, check that it hasn't already been used — each recovery code is single-use
+  - Ensure your authenticator app's clock is synced (TOTP depends on accurate time)
 </Expandable>
 
 <Expandable title="429 Too Many Requests — Rate limit exceeded" default-open="false">

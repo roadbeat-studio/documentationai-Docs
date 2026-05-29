@@ -47,9 +47,20 @@ Redis is used for caching, session storage, and BullMQ job queues.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `JWT_SECRET` | — | Secret for signing JWT access tokens |
+| `JWT_SECRET_CURRENT` | — | **Primary** secret for signing new JWT tokens |
+| `JWT_SECRET_PREVIOUS` | — | **Previous** secret — tokens signed with this key are still accepted (for zero-downtime rotation) |
+| `JWT_SECRET` | — | Legacy single-secret fallback (used if `JWT_SECRET_CURRENT` is not set) |
 | `JWT_EXPIRATION` | `24h` | Access token lifetime |
 | `JWT_REFRESH_EXPIRATION` | `7d` | Refresh token lifetime |
+
+<Callout kind="tip">
+  **Key rotation procedure:** To rotate JWT secrets without logging out all users:
+  1. Copy the current `JWT_SECRET_CURRENT` value to `JWT_SECRET_PREVIOUS`
+  2. Set `JWT_SECRET_CURRENT` to a new random string
+  3. Restart the API — existing tokens are verified against both secrets
+  4. After the access token lifetime (default 24h), all active tokens will use the new secret
+  5. Remove `JWT_SECRET_PREVIOUS` on the next rotation cycle
+</Callout>
 
 ## Mail
 
@@ -195,7 +206,8 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 
 # Auth
-JWT_SECRET=change-this-to-a-long-random-string-at-least-32-chars
+JWT_SECRET_CURRENT=change-this-to-a-long-random-string-at-least-64-chars
+# JWT_SECRET_PREVIOUS=old-secret-during-key-rotation
 JWT_EXPIRATION=24h
 
 # Search (optional)
@@ -239,7 +251,8 @@ LOG_PRETTY=true
   Before deploying to production, ensure these items are addressed:
 </Callout>
 
-- [ ] `JWT_SECRET` is a unique, random string (not the example value)
+- [ ] `JWT_SECRET_CURRENT` is a unique, random string (min 64 chars)
+- [ ] Enable MFA for all admin accounts (TOTP via authenticator app)
 - [ ] `DATABASE_URL` uses a strong password
 - [ ] `NODE_ENV=production` is set
 - [ ] `LOG_PRETTY=false` for structured JSON logs

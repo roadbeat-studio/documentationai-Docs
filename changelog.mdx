@@ -3,6 +3,72 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-05-29" description="v0.12.3" tags={["security"]}>
+  ## Tenant Query Audit & Organization Status Migration
+
+  **Tenant-Scoped Prisma Query Audit (3.3):**
+  - New AST-based audit script (`scripts/audit-tenant-scope.ts`) scans all service files for `findUnique`/`findFirst` calls on 14 tenant-scoped models missing `organizationId` in the `where` clause
+  - Scanned 89 call sites across 26 files — identified 16 genuine gaps and 12 triaged-safe false positives
+  - Fixed all 16 gaps across 7 service files: `content-relations.service.ts`, `backup.service.ts`, `content-variant.service.ts`, `machine-translation.service.ts`, `publishing.service.ts`, `content-pod-publishing.service.ts`, `search-indexer.service.ts`
+  - Fixes include threading `organizationId` through method signatures, converting `findUnique` to `findFirst` where needed, and updating controllers and event listeners
+  - Known-safe allow-list for triaged false positives (e.g., user lookups by JWT `sub`, platform admin operations, public delivery APIs)
+  - CI lint gate: `pnpm audit:tenant-scope` exits non-zero on any unscoped query — prevents regressions
+
+  **Deprecate `Organization.isActive` → `status` (3.4):**
+  - Migrated all 55 `Organization.isActive` reads across 9 files to use the `status` field instead
+  - Auth flow (`auth.service.ts`, `jwt.strategy.ts`, `sso.service.ts`): org active checks now use `status !== 'active'`
+  - Platform admin (`platform.service.ts`, `onboarding.service.ts`): list filters, create, update, deactivate, and archive operations all use `status`
+  - Background services (`org-limits-loader.service.ts`, `org-cleanup.service.ts`): active org filters use `status: 'active'`
+  - DTOs marked `deprecated: true` in Swagger for backward compatibility
+  - Write operations (`deactivateOrganization`, `archiveOrganization`) still set `isActive: false` alongside the `status` update during the transition period — the column will be dropped in a future migration after one release cycle
+  - `ContentTypeLayout.isActive` (different model) is NOT deprecated and was intentionally left unchanged
+
+  **Tests:**
+  - 21 tenant-scoping tests pass
+  - 29 auth service tests pass (updated mock data)
+  - 17 platform service tests pass (fixed pre-existing `EventEmitter2` mock issue)
+</Update>
+
+<Update label="2026-05-29" description="v0.12.2" tags={["feature", "security"]}>
+  ## JWT Rotation, 2FA/MFA, Security Headers & Org Cache
+
+  **JWT Key Rotation & Refresh Token Storage (2.5):**
+  - Dual JWT secret support (`JWT_SECRET_CURRENT` / `JWT_SECRET_PREVIOUS`) for zero-downtime key rotation
+  - Refresh tokens now persisted in `refresh_tokens` table — hash-only storage, single-use with automatic rotation
+  - Token reuse detection: replaying a consumed refresh token revokes all sessions for the user
+  - Session management endpoints: `GET /auth/sessions`, `DELETE /auth/sessions/:id`, `DELETE /auth/sessions` (revoke all)
+  - `POST /auth/logout` revokes the current refresh token
+  - IP and user-agent tracked per session
+
+  **Two-Factor Authentication — TOTP (2.6):**
+  - TOTP-based 2FA with `otpauth` library — compatible with Google Authenticator, Authy, 1Password, etc.
+  - `POST /auth/mfa/enroll` — generates secret, returns otpauth URI + QR code (PNG data URL)
+  - `POST /auth/mfa/verify` — confirms enrollment with first TOTP code, returns 10 single-use recovery codes (`XXXX-XXXX-XXXX` format)
+  - `GET /auth/mfa/status` — check if MFA is currently enabled
+  - `POST /auth/mfa/disable` — requires current password + valid code
+  - `POST /auth/mfa/recovery-codes` — regenerate recovery codes (requires valid TOTP code)
+  - Login flow returns `{ mfaRequired: true, mfaToken }` when MFA is enabled and no code provided
+  - Recovery codes SHA-256 hashed for storage; single-use (consumed on verification)
+  - `UserMfaSecret` Prisma model — migration `20260529240000`
+
+  **Security Headers (2.7):**
+  - Helmet configured with explicit Content Security Policy: `script-src 'self'`, `style-src` allows Google Fonts, `connect-src` allows Mapbox APIs + CDN, `img-src` allows `data:` / `blob:` / CDN
+  - `Permissions-Policy` header restricts unused browser features: camera, microphone, payment, USB, sensors disabled; geolocation limited to same-origin
+  - `permittedCrossDomainPolicies: 'none'`
+
+  **Multi-Tenancy — Org Slug Cache Service (3.1):**
+  - Replaced boot-time inline `Map` in `main.ts` with `OrgSlugCacheService`
+  - Loads all org slugs on `onModuleInit`, updates via `OrganizationEvents` (create/update/delete), full reload every 5 minutes as defence-in-depth
+  - New `OrganizationEvents` enum added to `@roadbeat/plugin-sdk`
+  - `PlatformService` now emits `OrganizationEvents.AFTER_CREATE` / `AFTER_UPDATE` when orgs are created or modified
+  - Organizations created after API startup are immediately available for asset serving without restart
+
+  **Tests:**
+  - 17 MFA service tests (enrollment, verification, recovery codes, disable)
+  - 8 org slug cache tests (init, event handlers, periodic reload, error handling)
+  - Auth service tests updated with MFA mock provider
+</Update>
+
 <Update label="2026-05-29" description="v0.12.1" tags={["feature", "security"]}>
   ## Mailer Service, Password Policy & Login Security Hardening
 

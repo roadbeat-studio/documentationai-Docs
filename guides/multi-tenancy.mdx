@@ -142,6 +142,56 @@ All platform endpoints require super admin authentication and are prefixed with 
   For a full walkthrough of the Platform Admin dashboard UI, see the [Platform Administration](/guides/platform-administration) guide.
 </Callout>
 
+## Tenant-Aware Prisma Layer
+
+Studio includes a **`TenantPrismaService`** that automatically scopes Prisma queries to the current organization using `AsyncLocalStorage`.
+
+### How It Works
+
+<Steps>
+  <Step title="Request arrives" icon="arrow-right">
+    The `TenantMiddleware` decodes the JWT and stores the `organizationId` in `AsyncLocalStorage`.
+  </Step>
+  <Step title="Service uses TenantPrismaService" icon="database">
+    Auto-scoped operations (`findFirst`, `findMany`, `count`, `aggregate`, `groupBy`, `create`, `createMany`, `updateMany`, `deleteMany`) automatically inject `organizationId` into the `where` clause.
+  </Step>
+  <Step title="Escape hatch for platform ops" icon="shield">
+    Platform admin operations that span organizations use `this.tenantPrisma.platform` to bypass auto-scoping.
+  </Step>
+</Steps>
+
+<Callout kind="info">
+  `findUnique`, `update`, `delete`, and `upsert` are NOT auto-scoped because they require unique constraints in the `where` clause. These rely on an upstream read guard (the initial lookup that scopes by org).
+</Callout>
+
+### CI Lint Gate
+
+An AST-based audit script detects `findUnique`/`findFirst` calls on tenant-scoped models that are missing `organizationId` in the `where` clause:
+
+```bash
+pnpm audit:tenant-scope
+```
+
+The script scans all `*.service.ts` files, classifies each call site as **OK**, **RISK**, or **KNOWN_SAFE** (allow-listed), and exits with code `1` if any unscoped risks are found. This runs as part of the CI pipeline to prevent regressions.
+
+## Organization Status
+
+Organizations have a `status` field that controls access:
+
+| Status | Description |
+|--------|-------------|
+| `active` | Normal operation — users can log in, APIs work |
+| `onboarding` | New org going through setup wizard |
+| `suspended` | Deactivated by a platform admin — all access denied |
+| `archived` | Soft-deleted — data retained but org is inaccessible |
+| `pending` | Awaiting approval or configuration |
+
+<Callout kind="tip">
+  The legacy `isActive` boolean field is deprecated. All org active checks now use `status !== 'active'`. The column will be removed in a future migration after one release cycle.
+</Callout>
+
+Deactivating an organization (`DELETE /platform/organizations/:id`) sets `status` to `suspended` and automatically revokes all active API keys. Archiving goes further by setting `status` to `archived`.
+
 ## Data Isolation Details
 
 ### Content Types — Composite Primary Key
