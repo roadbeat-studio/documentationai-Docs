@@ -12,7 +12,7 @@ roadbeat Studio is available in two editions:
 | **Community Edition (CE)** | AGPL 3.0 (open source) | `studio` (public) |
 | **Pro Edition** | Commercial plugins (proprietary) | `studio-pro` (private) |
 
-CE is a fully functional headless CMS. Pro adds enterprise features like workflows, SSO, audit logging, and advanced permissions via loadable plugins.
+CE is a fully functional headless CMS. Pro adds enterprise features like AI assistance, workflows, SSO, audit logging, and advanced permissions via loadable plugins.
 
 ## Feature Comparison
 
@@ -66,6 +66,22 @@ CE is a fully functional headless CMS. Pro adds enterprise features like workflo
 
 <Callout kind="info">
   Localization is a CE feature — it was designed as essential for the European market and is not gated behind Pro.
+</Callout>
+
+### Artificial Intelligence
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Any AI inference | — | ✅ `pro-ai` |
+| AI provider gateway (local + EU/non-EU cloud) | — | ✅ `pro-ai` |
+| Editor AI assistant + per-field actions | — | ✅ `pro-ai` |
+| AI translation, writing, summarization | — | ✅ `pro-ai` |
+| Embeddings, vision (alt text), classification | — | ✅ `pro-ai` |
+| Schema-grounded generation | — | ✅ `pro-ai` |
+| AI governance (residency, redaction, budgets, audit) | — | ✅ `pro-ai` |
+
+<Callout kind="info">
+  CE has **no built-in AI**. The only CE-adjacent hook is auto-translate, which activates if `pro-ai` is installed. See the [AI Assistant guide](/guides/ai-assistant).
 </Callout>
 
 ### Users & Authentication

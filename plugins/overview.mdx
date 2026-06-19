@@ -12,6 +12,7 @@ graph TD
     CE["Studio CE (AGPL 3.0)"]
     SDK["plugin-sdk"]
     CE -->|exports| SDK
+    SDK -->|imports| AI["pro-ai"]
     SDK -->|imports| WF["pro-workflows"]
     SDK -->|imports| AU["pro-audit"]
     SDK -->|imports| SC["pro-scheduling"]
@@ -24,6 +25,7 @@ graph TD
     SDK -->|imports| MD["pro-media"]
     SDK -->|imports| LK["pro-locking"]
     SDK -->|imports| AR["pro-advanced-roles"]
+    CE -.->|loads at runtime| AI
     CE -.->|loads at runtime| WF
     CE -.->|loads at runtime| AU
     CE -.->|loads at runtime| SC
@@ -80,20 +82,33 @@ Plugins can extend Studio in several ways:
 
 ## Available Pro Plugins
 
+Pro plugins are documented in the [Studio Pro documentation](https://studio-pro-docs.roadbeat.net/introduction).
+
 | Plugin | Description |
 |--------|-------------|
+| **pro-ai** | AI Assistant & Provider Gateway — governed local + cloud AI (chat, translation, writing, embeddings, vision, schema-grounded generation) |
 | **pro-workflows** | Editorial workflows with multi-stage approval, tasks |
 | **pro-scheduling** | Scheduled publish/unpublish, releases |
-| **pro-audit** | Full audit trail, compliance reports, retention policies |
-| **pro-advanced-roles** | Per-content-type permissions, custom roles |
 | **pro-locking** | Pessimistic content locking with heartbeat |
-| **pro-graphql** | Auto-generated GraphQL API from content types |
-| **pro-export** | Advanced CSV/JSON export with templates and transforms |
+| **pro-preview** | Secure preview tokens and shareable, password-protected URLs |
 | **pro-import** | CSV/JSON import with field mapping and transforms |
+| **pro-export** | Advanced CSV/JSON export with templates and transforms |
 | **pro-versioning** | Side-by-side version comparison with field-level diffs |
-| **pro-environments** | Dev/staging/production environments with content promotion |
-| **pro-media** | Video processing, transcoding, thumbnail generation |
+| **pro-layouts** | Custom layout builder with versioning, import/export, Git sync |
+| **pro-saved-views** | Save and share filtered content views with custom columns |
+| **pro-advanced-roles** | Per-content-type permissions, custom roles |
+| **pro-sso** | SSO via SAML 2.0, OAuth 2.0/OIDC, SCIM provisioning |
+| **pro-audit** | Full audit trail, compliance reports, retention policies |
+| **pro-graphql** | Auto-generated GraphQL API from content types |
 | **pro-realtime** | WebSocket real-time updates, presence, collaborative cursors |
+| **pro-webhooks** | Advanced webhooks: retry/backoff, dead-letter queue, incoming webhooks |
+| **pro-notifications** | In-app + Slack/Teams/Discord notifications, preferences, digests |
+| **pro-environments** | Dev/staging/production environments with content promotion |
+| **pro-bulk-ops** | Bulk move, delete, tag, and download assets |
+| **pro-media** | Video processing, transcoding, thumbnail generation |
+| **pro-whitelabel** | Custom branding, color themes, accessibility settings |
+| **pro-api-explorer** | Interactive API endpoint catalog, request execution, history |
+| **pro-activitypub** | ActivityPub federation — multi-actor publishing, scheduled federation, analytics |
 
 ## License System
 
