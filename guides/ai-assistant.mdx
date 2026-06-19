@@ -1,0 +1,100 @@
+---
+title: AI Assistant
+description: Use AI in the Studio editor — the assistant sidebar, per-field actions, one-click translation, and alt-text suggestions, with every suggestion shown as an accept/reject diff.
+---
+
+## Overview
+
+When the **AI Assistant & Provider Gateway** (`pro-ai`) is installed, Studio gains AI help right where you write: an assistant sidebar, per-field ✨ actions, one-click translation, and automatic alt-text suggestions. Every suggestion is presented as a **diff you accept or reject** — nothing is ever written to your content automatically.
+
+<Callout kind="info">
+  AI features are provided by the **`pro-ai`** Pro plugin. If you don't see them, ask your administrator to install and configure it. Setup, providers, and governance are part of [Studio Pro](https://studio.roadbeat.dev).
+</Callout>
+
+<Callout kind="success">
+  **Privacy by design.** The gateway routes to your organization's configured models, redacts sensitive data before any cloud call, and respects data-residency rules — so EU-only setups keep content within the EU. Your admin controls exactly which models can be used.
+</Callout>
+
+## The AI Assistant Panel
+
+The **AI Assistant** sidebar is scoped to the content item you're editing. It offers quick actions and a streaming chat.
+
+### Quick actions
+
+Paste or type text into the composer, then click a quick action:
+
+| Action | Result |
+|---|---|
+| **Summarize** | A concise summary of the text |
+| **5 headlines** | Five headline options to choose from |
+| **Translate → FR** | A French translation |
+| **Improve** | A cleaner, tighter rewrite |
+
+Each result appears as a **card**. Actionable suggestions render as a diff (original vs suggestion); list actions like headlines render as selectable options.
+
+### Chat
+
+Type a question or instruction and press Enter. The assistant streams its reply and keeps the conversation in context for the open content item. Use **Stop** to cancel a streaming response.
+
+### Accepting a suggestion
+
+<Steps>
+  <Step title="Review the diff" icon="git-compare">
+    Each suggestion shows the original text struck through above the proposed text.
+  </Step>
+  <Step title="Accept or reject" icon="check">
+    Click **Accept** to use a suggestion or **Reject** to dismiss it. For option lists, click **Use** on the one you want.
+  </Step>
+  <Step title="Paste into your field" icon="clipboard">
+    Accepting copies the text to your clipboard and signals the editor — you stay in control of where it lands.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  Suggestions are **never applied automatically**. The assistant proposes; you decide.
+</Callout>
+
+## Per-Field AI Actions
+
+Text and rich-text fields show a ✨ button. Click it for a menu of writing actions scoped to that field:
+
+- **Improve** — clearer, tighter writing
+- **Fix grammar & spelling**
+- **Shorten** / **Expand**
+- **Change tone** — neutral, formal, casual, or marketing
+- **Translate** — into English, German, French, Spanish, or Italian
+
+Every action opens a **diff preview** with **Apply** / **Cancel**. Applying updates the field (and copies the value to your clipboard); rich-text fields keep their formatting and structure intact.
+
+<Callout kind="info">
+  If your field is empty or no AI provider is configured, the menu tells you — and links straight to the AI settings so an admin can finish setup.
+</Callout>
+
+## One-Click Translation
+
+Beyond per-field translation, you can translate an entire content item at once. The translation is **glossary-aware** and **tone-preserving**, and for rich text it only translates the text — links, marks, and structure are preserved.
+
+For content-wide translation, the gateway runs the work as a background job and creates locale drafts flagged for review, so large items don't block the editor. See [Localization](/guides/localization) for how translations fit into locale management and translation tasks.
+
+## Alt Text on Upload
+
+When you upload an image, the gateway can suggest **alt text** in the content's locale using a vision-capable model. You review and confirm the suggestion — accessible content by default, without extra work.
+
+<Callout kind="tip">
+  Alt-text suggestions, captions, OCR, and tag extraction all run through the same governed gateway, so they respect your residency and redaction rules just like text.
+</Callout>
+
+## Structured Drafting
+
+For schema-backed content types, the assistant can draft a **complete, schema-valid** content item from a prompt. The draft is validated against the content type's JSON Schema before you see it, so you never start from invalid data — you review and refine, then save.
+
+## Transparency & Control
+
+- **Nothing is silent** — every AI suggestion is a diff you accept or reject.
+- **Your models, your rules** — admins choose which providers are allowed and the data-residency policy; non-EU models require explicit opt-in.
+- **Sensitive data is protected** — PII is redacted before any cloud call, and the org keeps an audit trail of AI usage.
+- **Cost is bounded** — usage is metered against budgets your admin configures.
+
+<Card title="Admin setup & governance" icon="settings" href="https://studio.roadbeat.dev" horizontal={true} cta="Learn about Studio Pro">
+  Providers, routing, residency, consent, redaction, budgets, and licensing are configured in Studio Pro by an administrator.
+</Card>

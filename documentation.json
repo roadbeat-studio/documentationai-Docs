@@ -82,6 +82,12 @@
                 "icon": "globe"
               },
               {
+                "title": "AI Assistant",
+                "path": "guides/ai-assistant",
+                "icon": "sparkles",
+                "badge": "New"
+              },
+              {
                 "title": "Users & Roles",
                 "path": "guides/users-and-roles",
                 "icon": "users"
