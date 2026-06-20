@@ -118,6 +118,23 @@ CE is a fully functional headless CMS. Pro adds enterprise features like AI assi
 | Scheduled publishing | — | ✅ `pro-scheduling` |
 | Releases (grouped publishing) | — | ✅ `pro-scheduling` |
 
+### Automation and Integrations
+
+| Feature | CE | Pro |
+|---------|-----|-----|
+| Outgoing webhooks | ✅ (3 endpoints) | ✅ (unlimited) `pro-webhooks` |
+| External connectors (3,000+ tools, OpenAPI/MCP import) | — | ✅ `pro-integrations` |
+| Visual multi-step Flows + versioning | — | ✅ `pro-integrations` |
+| Inbound webhook triggers (HMAC-verified) | — | ✅ `pro-integrations` |
+| Encrypted credential vault (AES-256-GCM, per-org DEK) | — | ✅ `pro-integrations` |
+| Egress policy, consent ledger, append-only audit | — | ✅ `pro-integrations` |
+| AI Studio Agent (NL → multi-tool jobs, HITL) | — | ✅ `pro-integrations` + `pro-ai` |
+| AI flow authoring (describe → flow) | — | ✅ `pro-integrations` + `pro-ai` |
+
+<Callout kind="info">
+  The **Integration Hub** (`pro-integrations`) generalises CE's outgoing webhooks (3-endpoint baseline) into a full automation platform. Connectors and Flows are **Team**; the Studio Agent and AI flow authoring are **Business** and require `pro-ai`. Full docs live in the [Studio Pro documentation](https://studio-pro-docs.roadbeat.net/plugins/integrations).
+</Callout>
+
 ### Publishing
 
 | Feature | CE | Pro |

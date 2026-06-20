@@ -3,6 +3,22 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-06-20" description="Integration Hub" tags={["feature"]}>
+  ## Automation, connectors & the Studio Agent
+
+  When the `pro-integrations` Pro plugin is installed, Studio gains a full automation platform — connect external tools, automate whole jobs, and ask an AI agent to do work for you:
+
+  - **Connectors** — browse a catalog of external tools (Slack, Notion, HubSpot, Google, and any OpenAPI or MCP server) and connect them with OAuth or an API key; credentials are sealed in an encrypted vault and never shown again
+  - **Flows** — build reusable, versioned automations on a phase-laned canvas (Input → Check → Decide → Act → Report), triggered by content events, schedules, inbound webhooks, or a Run button — content writes are schema-validated like everything else in Studio
+  - **Studio Agent** — describe a goal in plain language ("translate the 5 newest event drafts and post a summary to Slack") and the Agent plans and runs it, pausing for your confirmation before anything destructive or external happens (requires `pro-ai`)
+  - **Runs** — a full run history with a step timeline, hashed (never raw) payloads, and retry / cancel / confirm
+  - **Publish guards** — a Flow can block a publish (e.g. low SEO score or missing legal approval) with a clear reason
+  - **European governance** — per-org egress rules, explicit consent for anything leaving the EU, field-level redaction, and an exportable audit log
+  - **Localized UI** — the whole Integration Hub appears in your language across the core EU locales
+
+  This is a Pro feature; full documentation lives in the [Studio Pro docs](https://studio-pro-docs.roadbeat.net/plugins/integrations). See also [CE vs Pro](/plugins/ce-vs-pro#automation-and-integrations).
+</Update>
+
 <Update label="2026-06-19" description="AI Assistant" tags={["feature"]}>
   ## AI in the editor
 
