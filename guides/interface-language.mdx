@@ -1,0 +1,81 @@
+---
+title: Interface Language
+description: Switch the roadbeat Studio admin interface between English and German, with a foundation for all 24 EU languages.
+---
+
+## Overview
+
+The roadbeat Studio **admin interface** is fully translated. Every button, menu, label, and message in the admin UI can be shown in your language. Studio ships with **English** and **German**, and the system is built to grow to all 24 official EU languages.
+
+<Callout kind="info">
+  **Interface language ≠ content localization.** This page is about the language of the **Studio admin UI itself** (the chrome you click through). Translating the **content** you publish — locales, fallback chains, content variants, machine translation — is a separate feature covered in [Localization](/guides/localization).
+</Callout>
+
+## Switching your language
+
+The language switcher lives in the **top header bar**, next to the theme (light/dark) toggle.
+
+<Steps>
+  <Step title="Open the language menu" icon="languages">
+    Click the **globe / language icon** in the header. It shows the active language code (e.g. `EN`).
+  </Step>
+  <Step title="Pick a language" icon="check">
+    Choose **English** or **Deutsch**. The interface updates immediately — no page reload required.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  Your choice is saved in your browser and reused on every visit. It is a **per-browser** preference, so each user (and each device) can use Studio in a different language.
+</Callout>
+
+## How the language is chosen
+
+On first load, Studio resolves the interface language in this order:
+
+1. **Your saved choice** — the language you last selected (stored locally in your browser).
+2. **Your browser language** — if you have never chosen one, Studio matches your browser's preferred language when it is supported (e.g. a German browser opens Studio in German).
+3. **English** — the default fallback.
+
+The selected language is also applied to the page's `lang` attribute, which helps screen readers and built-in browser translation behave correctly.
+
+## Available languages
+
+| Code | Language | Status |
+|------|----------|--------|
+| `en` | English | ✅ Shipped (default) |
+| `de` | Deutsch (German) | ✅ Shipped |
+
+<Callout kind="info">
+  More EU locales are planned. The translation framework already covers all 24 EU languages used for [content localization](/guides/localization#supported-locales) — the admin UI translations are rolled out language by language.
+</Callout>
+
+## Adding a language (self-hosters)
+
+Because Studio is open source and self-hostable, operators can add an interface language without waiting for a release. Translations are plain JSON files keyed by module (e.g. `common`, `nav`, `content`, `settings`).
+
+<Steps>
+  <Step title="Copy the English catalog" icon="copy">
+    Duplicate `apps/web/src/assets/i18n/en.json` to `apps/web/src/assets/i18n/<code>.json`, where `<code>` is the locale (e.g. `fr.json`).
+  </Step>
+  <Step title="Translate the values" icon="languages">
+    Translate each string value, keeping the **keys identical** to the English file. Leave brand names (roadbeat, Studio, Pro) and code/format placeholders untranslated.
+  </Step>
+  <Step title="Register the language" icon="check">
+    Add the new locale to the `available` list in `apps/web/src/app/core/services/language.service.ts` (its `code`, `label`, and short code). The header switcher and loader pick it up automatically.
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+  Keep the key structure of every language file identical to `en.json`. Missing keys fall back to the default language, and Studio's build validates that every translation key referenced in the UI exists.
+</Callout>
+
+## Related
+
+<Columns cols={2}>
+  <Card title="Localization" icon="globe" href="/guides/localization">
+    Translate your published content across 24 EU locales with workflows and machine translation.
+  </Card>
+  <Card title="Users & Roles" icon="users" href="/guides/users-and-roles">
+    Manage who can access Studio and what they can do.
+  </Card>
+</Columns>

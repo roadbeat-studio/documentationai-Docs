@@ -82,6 +82,12 @@
                 "icon": "globe"
               },
               {
+                "title": "Interface Language",
+                "path": "guides/interface-language",
+                "icon": "languages",
+                "badge": "New"
+              },
+              {
                 "title": "AI Assistant",
                 "path": "guides/ai-assistant",
                 "icon": "sparkles",
