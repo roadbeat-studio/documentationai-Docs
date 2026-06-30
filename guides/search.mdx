@@ -99,13 +99,17 @@ MEILISEARCH_API_KEY=your-master-key
 
 ### Indexing
 
-Studio automatically indexes content and assets in MeiliSearch when they are created, updated, or deleted. The following indexes are maintained:
+Studio automatically indexes content and assets in MeiliSearch when they are created, updated, archived, or deleted. The following indexes are maintained:
 
 | Index | Contents | Updated On |
 |-------|----------|------------|
-| `content` | All content items (title, body, fields, metadata) | Create, update, delete |
+| `content` | All content items (title, body, fields, metadata) | Create, update, publish/unpublish, archive, delete |
 | `assets` | All assets (filename, title, tags, metadata) | Upload, update, delete |
 | `users` | All users (name, email) | Create, update, delete |
+
+<Callout kind="info">
+  **Indexing runs in the background and never blocks a save.** Index updates are dispatched to a queue and applied by a worker with automatic retries, so a slow or temporarily-unavailable MeiliSearch server can't delay or fail a content write. A periodic **reconciliation** sweep re-indexes recently changed content, so the index self-heals after an outage without a manual reindex.
+</Callout>
 
 ### Re-indexing
 
@@ -137,10 +141,13 @@ Returns:
       "content": { "numberOfDocuments": 234, "isIndexing": false },
       "assets": { "numberOfDocuments": 1502, "isIndexing": false },
       "users": { "numberOfDocuments": 5, "isIndexing": false }
-    }
+    },
+    "indexQueue": { "waiting": 0, "active": 0, "completed": 1843, "failed": 0 }
   }
 }
 ```
+
+The `indexQueue` block reports the background indexing backlog — `waiting`/`active` jobs and `completed`/`failed` totals — so you can spot drift or a stalled worker at a glance.
 
 ### Search Scopes
 

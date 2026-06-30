@@ -44,52 +44,83 @@ The builder uses a 3-panel layout:
 
 ### Available Field Types
 
+The builder offers **35 field types** from a single declarative registry, grouped in the field palette:
+
 <Tabs>
-  <Tab title="Basic" icon="type">
+  <Tab title="Text" icon="type">
     | Type | Description |
     |------|-------------|
     | **Text** | Single-line string |
-    | **Number** | Integer or decimal |
-    | **Boolean** | True/false toggle |
-    | **Date** | Date or datetime picker |
-    | **Enum** | Dropdown selection from predefined values |
-  </Tab>
-  <Tab title="Rich" icon="file-text">
-    | Type | Description |
-    |------|-------------|
+    | **Text Area** | Multi-line plain text |
     | **Rich Text** | WYSIWYG editor with formatting |
     | **Markdown** | Markdown with preview |
     | **Structured Text** | Block-based structured content |
-    | **Multilingual Text** | Text with per-locale variants |
+    | **Slug** | URL-safe identifier (auto-generated) |
+    | **Email** | Email address with validation |
+    | **URL** | Web address with validation |
+    | **Phone** | Phone number |
+  </Tab>
+  <Tab title="Numbers & choice" icon="hash">
+    | Type | Description |
+    |------|-------------|
+    | **Number** | Integer or decimal |
+    | **Integer** | Whole number |
+    | **Range** | Numeric slider |
+    | **Rating** | Star/score rating |
+    | **Price** | Monetary amount |
+    | **Boolean** | True/false toggle |
+    | **Select** | Dropdown selection from predefined values |
+    | **Multi-select** | Pick several predefined values |
+    | **Tags** | Free-form tag list |
+  </Tab>
+  <Tab title="Date & time" icon="calendar">
+    | Type | Description |
+    |------|-------------|
+    | **Date** | Date picker |
+    | **Date & Time** | Date + time picker |
+    | **Time** | Time of day |
+    | **Timezone** | IANA timezone selector |
   </Tab>
   <Tab title="Media" icon="image">
     | Type | Description |
     |------|-------------|
-    | **Image** | Image picker from Asset Library |
+    | **Image** | Image picker from the Asset Library |
+    | **Gallery** | Multiple images |
+    | **Video** | Video from the library or an external URL |
+    | **Media** | Mixed media reference |
     | **File** | Generic file attachment |
-    | **Video** | Video reference |
+    | **Color** | Color picker (hex) |
   </Tab>
-  <Tab title="Advanced" icon="settings">
+  <Tab title="Structured" icon="layers">
     | Type | Description |
     |------|-------------|
-    | **JSON** | Free-form JSON data |
-    | **Color** | Color picker (hex) |
     | **Location** | Latitude/longitude with optional address |
-    | **Slug** | URL-safe identifier (auto-generated) |
+    | **Address** | Structured postal address |
     | **Reference** | Link to another content item |
-    | **SEO** | Meta title, description, OG image |
+    | **References** | Linked list of content items |
+    | **Blocks** | Modular block field (repeatable typed blocks) |
+    | **List** | Repeatable list of values |
+    | **JSON** | Free-form JSON data |
   </Tab>
 </Tabs>
 
 ### Field Validation
 
-Each field supports validation rules:
+Each field supports validation rules, enforced **on the server** against the content type's JSON Schema (2020-12) — not just in the browser:
 
 - **Required** — field must have a value
 - **Min/Max Length** — for text fields
 - **Min/Max Value** — for number fields
 - **Pattern** — regex validation for text
 - **Unique** — value must be unique across all content of this type
+- **Cross-field rules** — e.g. an end date must come after a start date (`after_field`)
+- **Modular blocks** — block count limits and required inner fields for **Blocks** fields
+
+Invalid **drafts** are tolerated where the content type allows it, but **publishing is always strict** — invalid content can never go live. The content type definition itself is also validated when you save it: an uncompilable schema, an invalid version, or a form/teaser mapping that points at a missing property is rejected with a clear error.
+
+<Callout kind="tip">
+  **Inheritance & composition.** A content type can `extends` one or more abstract base types and apply reusable `mixins`, so shared field bundles (SEO, publishable metadata, geolocation) live in one place. The effective schema is computed by merging bases → mixins → own fields → overrides; circular graphs are rejected and abstract types can't hold content.
+</Callout>
 
 ## Schema Structure
 
