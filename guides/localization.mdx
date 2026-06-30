@@ -141,17 +141,44 @@ Studio includes a **provider-agnostic** machine translation interface. Configure
 
 ### Supported Providers
 
-| Provider | Env Variable | Status |
-|----------|-------------|--------|
-| **DeepL** | `DEEPL_API_KEY` | Ready |
-| **Google Translate** | `GOOGLE_TRANSLATE_KEY` | Ready |
-| **Azure Translator** | `AZURE_TRANSLATOR_KEY` | Ready |
-| **None (Noop)** | — | Default (no auto-translation) |
+Providers are ordered by EU data sovereignty. Machine translation sends draft content to the selected provider, so prefer an EU-sovereign option.
+
+| Provider | Configuration | Sovereignty |
+|----------|---------------|-------------|
+| **LibreTranslate** | `LIBRETRANSLATE_URL` (+ optional `LIBRETRANSLATE_API_KEY`) | Self-hostable — content never leaves your infrastructure |
+| **Mistral** | `MISTRAL_API_URL`, `MISTRAL_API_KEY`, `MISTRAL_TRANSLATION_MODEL` | EU-hosted via the platform AI gateway |
+| **DeepL** | `DEEPL_API_KEY` (per-org) | EU (German provider) |
+| **None (Noop)** | — | Default — no auto-translation, nothing leaves your org |
+
+<Callout kind="info">
+  **Google Translate and Azure Translator are not implemented.** Selecting them now returns a clear error rather than silently doing nothing. Choose an EU-sovereign provider (LibreTranslate, Mistral, or DeepL) instead.
+</Callout>
+
+### Consent gate (privacy by design)
+
+Because machine translation sends content to an external processor — potentially outside the EU — an organization admin must **record consent once** before any external translation, language detection, or per-field translation will run. Until consent is recorded, every dispatch is rejected with a clear error.
+
+```bash
+# Record data-processing consent (admin) — required before external dispatch
+POST /api/v1/manage/machine-translation/consent
+
+# Settings expose whether consent is required/given
+GET /api/v1/manage/machine-translation/settings
+# → { provider, consentRequired, consentGiven, ... }   (API keys are always masked)
+```
+
+Self-hosted providers that keep content on your own infrastructure (LibreTranslate), and the default `none` provider, do not require consent.
+
+<Callout kind="tip">
+  **Exclude sensitive fields.** Mark a content-type field with `noMachineTranslate: true` in its form schema and it will never be sent to a translation provider — skipped during full-item translation and rejected for single-field translation. Use it for PII, embargoed, or legal fields.
+</Callout>
+
+Every external dispatch emits a **text-free audit event** (`translation.dispatched`) recording the org, content id, provider, target locale, and character count — never the content itself.
 
 ### Using Machine Translation
 
 ```bash
-# Detect language of text
+# Detect language of text (requires consent for external providers)
 POST /api/v1/manage/machine-translation/detect
 { "text": "Bundeskanzler kündigt neue Klimapolitik an" }
 # Returns: { "language": "de", "confidence": 0.98 }

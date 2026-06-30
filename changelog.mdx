@@ -3,6 +3,54 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-06-30" description="Authoring, reliability & EU-sovereign translation" tags={["feature", "security"]}>
+  ## Stronger authoring, safer editing, EU-sovereign translation
+
+  A broad hardening release across content authoring, the editing lifecycle, search reliability, and privacy — plus a wave of platform/operator improvements.
+
+  ### Content types & the builder
+
+  - **Server-side content validation** — content is now validated against its content type's JSON Schema (2020-12) on the API, including cross-field rules (e.g. an end date must come after a start date) and modular "blocks" fields. Invalid drafts are tolerated where the type allows; publishing is always strict.
+  - **Definitions are validated on save** — saving a content type now rejects an uncompilable schema, a bad version, or a form field / teaser mapping that points at a property the schema doesn't have, with a clear error instead of failing later.
+  - **Builder field-type coverage** — the visual builder grew from 13 to **35 field types** from a single declarative registry.
+  - **Content type inheritance & composition** — types can `extends` abstract bases and apply `mixins`, with a resolver that produces the effective schema and rejects circular graphs; abstract types can't hold content.
+  - **Non-destructive editing of imported types** — editing a registry-imported content type in the visual builder no longer drops `$defs`, extension keys, or nested properties, and only emits `additionalProperties:false` when it's safe.
+  - **Teaser mappings** — Studio-authored types can define which fields feed a teaser's headline / description / hero image; mappings persist and are validated.
+  - **Conformance report** — a new endpoint reports which existing content still matches a type's current schema after a change.
+
+  ### Editing & content lifecycle
+
+  - **No more silent overwrites** — the editor now uses optimistic concurrency: if someone else changed an item since you opened it, your save is rejected and a banner offers **Reload** or **Overwrite**.
+  - **Archive is real** — content can be **Archived** and **Unarchived** from the editor (and in bulk). Archived items leave active lists and are withdrawn from discovery, but stay restorable.
+  - **Version change notes** — add a note when you save; restores are automatically labelled "Restored from vN". Notes show in the version history panel.
+  - **Friendlier slugs** — auto-generated slugs deduplicate (`my-title`, `my-title-2`, …) instead of erroring, honour a configurable source field, are locale-aware, and there's a slug-preview endpoint. Duplicate explicit slugs return a clear conflict, never a 500.
+  - **Referential integrity on delete** — force-deleting a referenced item now scrubs the dangling reference from the items that pointed at it (and records a version note), so no broken pointers are left behind.
+
+  ### In-app notifications (Community Edition)
+
+  - Durable, org-scoped **in-app notifications** — you're notified when someone replies to your comment or publishes your content. New endpoints list notifications, return the unread count, and mark them read. Notification payloads are stripped of sensitive data.
+
+  ### Search reliability
+
+  - **Indexing no longer blocks writes** — search indexing moved onto a background queue with retries, so a slow or unavailable search server can't delay or fail a content save. A periodic reconciliation re-indexes recently changed content to self-heal after an outage, and search stats expose the index backlog.
+
+  ### Privacy & sovereignty
+
+  - **Machine-translation consent gate** — translating content now requires a recorded admin consent before anything is sent to an external provider, every dispatch is audited (without the text), and content-type fields can be flagged `noMachineTranslate` to never be sent. See [Localization](/guides/localization#machine-translation).
+  - **EU-sovereign translation providers** — added **LibreTranslate** (fully self-hostable) and **Mistral** (EU-hosted via the platform AI gateway). Selecting an unimplemented provider (Google/Azure) now fails with a clear error instead of silently doing nothing. API keys are always masked in settings responses.
+  - **Signed schema imports** — schema imports from the registry can be cryptographically verified (Ed25519) before they're persisted; opt-in per deployment.
+  - **Comment isolation fix** — closed a multi-tenant gap where comment edit/delete/count weren't org-scoped. All comment operations are now strictly scoped to your organization.
+
+  ### Platform & operators (self-hosting)
+
+  - **Redis** — authenticated/TLS connections supported, with cache and queue traffic separated into different keyspaces and indefinite reconnect.
+  - **Background jobs** — the job queue gained graceful shutdown, collision-free job ids, and dead-letter events on terminal failure; a dead, unused retry queue was removed.
+  - **Configuration** — production config now fails closed on missing critical settings, and JWT secret environment variables were reconciled (with rotation support).
+  - **Performance** — fixed an N+1 in discovery-node lookups during publishing, added single-flight cache-stampede protection, and made BigInt values serialize precisely in JSON.
+  - **Diagnostics** — opt-in slow-query sampling (with parameters redacted), centralized raw SQL behind an audit gate, and explicit license status/diagnostics with a build-injectable public key.
+  - **Plugins** — loader hardening: a semantic-version compatibility gate, initialize-before-active ordering, teardown, and health reporting.
+</Update>
+
 <Update label="2026-06-23" description="24 EU languages" tags={["feature"]}>
   ## Full 24-language interface coverage
 
