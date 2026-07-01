@@ -1,0 +1,123 @@
+---
+title: API & Integrations
+description: Authenticate, paginate, cache, and evolve safely against the roadbeat Studio API — rate limits, conditional requests, and the versioning & deprecation policy.
+---
+
+## Overview
+
+Studio exposes two API surfaces:
+
+- **Management API** (`/api/v1/manage/...`) — authenticated with a user **JWT**
+  (`Authorization: Bearer <token>`), used by the admin UI and operators.
+- **Delivery API** (`/api/v1/delivery/...`) — the public, read-heavy, CDN-fronted
+  surface for published content, authenticated with an **API key**.
+
+Interactive docs are at `/api/docs`, and the machine-readable spec at
+`/api/docs-json` (OpenAPI 3.0+). The spec drives the generated TypeScript client
+used by first-party UIs, so documented shapes match the real responses.
+
+## Authentication
+
+<Tabs>
+  <Tab title="API key (Delivery)" icon="key">
+    Send the key via either header:
+
+    ```bash
+    curl https://studio.example.com/api/v1/delivery/content \
+      -H "X-Api-Key: rbk_..."
+    # or
+    curl ... -H "Authorization: Bearer rbk_..."
+    ```
+
+    Manage keys under **Settings → API Keys** (`/api/v1/manage/api-keys`). CE
+    allows a small number of keys per org; each key has scoped permissions.
+  </Tab>
+  <Tab title="JWT (Management)" icon="lock">
+    Obtain tokens from `/api/v1/auth/login`, then:
+
+    ```bash
+    curl https://studio.example.com/api/v1/manage/content \
+      -H "Authorization: Bearer <access-token>"
+    ```
+
+    Access tokens are short-lived; refresh with `/api/v1/auth/refresh`.
+  </Tab>
+</Tabs>
+
+## Rate Limiting
+
+The Delivery API is rate-limited **per API key** — two keys behind the same
+CDN/edge IP get independent budgets. Responses carry standard headers:
+
+| Header | Meaning |
+|--------|---------|
+| `X-RateLimit-Limit` | Requests allowed in the window |
+| `X-RateLimit-Remaining` | Requests left |
+| `X-RateLimit-Reset` | Seconds until the window resets |
+| `Retry-After` | On `429`, seconds to wait |
+
+The per-key limit derives from the org's plan (Pro tiers raise it). Unauthenticated
+traffic falls back to a per-IP budget.
+
+## Conditional Requests (ETag / 304)
+
+Delivery responses include an `ETag` (and `Last-Modified` for single items).
+Send it back to skip re-downloading unchanged content:
+
+```bash
+# First request
+curl -i https://studio.example.com/api/v1/delivery/content/123
+# → 200 OK, ETag: W/"<hash>"
+
+# Revalidate — returns 304 with an empty body if unchanged
+curl -i https://studio.example.com/api/v1/delivery/content/123 \
+  -H 'If-None-Match: W/"<hash>"'
+# → 304 Not Modified
+```
+
+This pairs with `Cache-Control: stale-while-revalidate`, so CDNs and SSG
+front-ends revalidate cheaply.
+
+## Pagination & Sorting
+
+List endpoints return a consistent envelope:
+
+```json
+{
+  "data": [ /* items */ ],
+  "meta": { "total": 42, "page": 1, "limit": 20, "totalPages": 3 }
+}
+```
+
+<ParamField query="page" param-type="integer">Page number (1-indexed).</ParamField>
+<ParamField query="limit" param-type="integer">Items per page (max 250).</ParamField>
+<ParamField query="sortBy" param-type="string">Field to sort by — restricted to a per-resource allow-list; an unknown field returns **400**.</ParamField>
+<ParamField query="sortOrder" param-type="string">`asc` or `desc`.</ParamField>
+
+Large collections (content) also support **cursor pagination** via `cursor`,
+returning `meta.nextCursor` / `meta.hasMore`.
+
+## Versioning & Deprecation
+
+The API uses **URI versioning** (`/api/v1`). Breaking changes ship under a new
+major (`/api/v2`); additive changes (new endpoints/fields) ship within the
+current major — clients must ignore unknown response fields.
+
+When an endpoint is slated for removal it emits IETF deprecation signalling, so
+you can detect it programmatically well before it goes away:
+
+```
+HTTP/1.1 200 OK
+Deprecation: true
+Sunset: Fri, 01 Jan 2027 00:00:00 GMT
+Link: </api/v2/content>; rel="successor-version"
+```
+
+A deprecated endpoint is supported for **at least 6 months** after the
+`Deprecation` header first appears, and never removed before its `Sunset` date.
+Watch for the `Deprecation` header and migrate to the `successor-version` before
+the sunset.
+
+<Callout kind="tip">
+  Automated clients should alert on any response carrying `Deprecation: true`.
+</Callout>

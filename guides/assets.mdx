@@ -31,13 +31,50 @@ The **Asset Library** is Studio's central media management system. It handles im
   </Tab>
 </Tabs>
 
-### Automatic Metadata Extraction
+### Privacy: EXIF/GPS stripping
 
-When you upload an image, Studio automatically extracts:
+<Callout kind="success">
+  **Privacy by default.** Uploaded images are re-encoded on upload to strip all
+  embedded metadata — **EXIF, GPS location, XMP, IPTC** (camera model, serial,
+  timestamps, coordinates). The stored file carries none of it, and GPS is never
+  persisted to the asset record unless you explicitly opt in
+  (`ASSET_RETAIN_GPS=true`). Controlled by `ASSET_STRIP_EXIF` (default on).
+</Callout>
 
-- **Dimensions** — width and height in pixels
-- **EXIF data** — camera model, exposure, GPS coordinates, etc.
+When you upload an image, Studio records only:
+
+- **Dimensions** — width and height in pixels (read from the sanitized image)
 - **File info** — MIME type, file size, original filename
+- **Checksum** — a SHA-256 of the stored bytes, used for deduplication
+
+### Upload safety
+
+Every upload is validated before anything is stored:
+
+- **MIME allowlist** — exact types or `type/*` wildcards (`ASSET_ALLOWED_MIME`).
+- **Magic-byte sniffing** — the real file signature must match the declared type,
+  so a renamed `.exe` posing as `.jpg` is rejected (`415`).
+- **Executables refused**, and **SVG rejected by default** (XSS risk) unless
+  `ASSET_ALLOW_SVG=true`.
+
+### Responsive image variants
+
+Image uploads generate a WebP **variant ladder** (thumbnail 320 / small 640 /
+medium 1024 / large 1920) for `srcset` delivery — upscales are skipped. Variants
+are recorded on the asset and served alongside the original.
+
+### Deduplication
+
+Re-uploading a byte-identical file within an organization returns the **existing**
+asset (response carries `deduplicated: true`) instead of storing a second copy —
+saving storage against the quota.
+
+### Video posters (Community Edition)
+
+When the system `ffmpeg`/`ffprobe` binaries are available and `VIDEO_PROBE=true`,
+video uploads get a **poster frame** and basic metadata (duration, dimensions,
+codec). Without ffmpeg the upload still succeeds. Transcoding and adaptive
+streaming remain Pro (`pro-media`).
 
 ## Organizing with Folders
 
@@ -194,6 +231,34 @@ PUT /api/v1/assets/:id/metadata
 }
 ```
 
+## Bulk Operations & Batch Upload
+
+Manage many assets in one request:
+
+```bash
+# Bulk move / delete / add-tags / remove-tags (up to 200 ids) — per-item results
+POST /api/v1/assets/bulk
+{ "assetIds": ["a1", "a2"], "action": "move", "folderId": "folder-uuid" }
+
+# Upload up to 50 files in one request — per-file { ok, error?, deduplicated? }
+POST /api/v1/assets/upload/batch    # multipart form field: files
+```
+
+Bulk delete honours the usage-safety gate (a referenced asset is skipped unless
+`force: true`); one file's failure never aborts the batch.
+
+## Accessibility: Alt Text
+
+Alt text is editable per asset (see [Asset Metadata](#asset-metadata)) and flows
+into delivered responsive-image objects. Find images that still need it:
+
+```bash
+GET /api/v1/assets/search?missingAlt=true
+```
+
+When `ASSET_WARN_MISSING_ALT=true`, publishing content that references images
+without alt text returns a non-blocking warning (publishing still succeeds).
+
 ## Usage Tracking
 
 Studio tracks which content items reference each asset. This helps you:
@@ -229,20 +294,51 @@ GET /api/v1/assets/storage
 
 ## Storage Providers
 
-Studio uses an **S3-compatible storage** interface. Configure your storage provider in `.env`:
+Studio ships with a local-disk provider (CE default) and an **S3-compatible**
+provider targeting **European** object storage. Select it with
+`STORAGE_PROVIDER`:
 
 ```bash
-STORAGE_PROVIDER=local    # Options: local, s3
-S3_ENDPOINT=https://s3.eu-central-1.amazonaws.com
-S3_BUCKET=studio-assets
-S3_ACCESS_KEY=your-access-key
-S3_SECRET_KEY=your-secret-key
-S3_REGION=eu-central-1
+STORAGE_PROVIDER=s3
+STORAGE_S3_FLAVOR=hetzner        # generic | hetzner (fsn1/nbg1/hel1) | contabo
+STORAGE_S3_REGION=fsn1
+STORAGE_S3_BUCKET=studio-assets
+STORAGE_S3_ACCESS_KEY_ID=...
+STORAGE_S3_SECRET_ACCESS_KEY=...
+# STORAGE_S3_ENDPOINT=https://eu2.contabostorage.com   # required for generic/contabo
 ```
 
+Supports multipart upload for large files, presigned URLs, and a local→S3
+migration script (`pnpm migrate:assets:s3`).
+
 <Callout kind="tip">
-  For development, the `local` storage provider stores files on disk. For production, use S3-compatible storage (AWS S3, Hetzner Object Storage, MinIO, etc.).
+  EU-first: the four sovereignty tiers (local, Hetzner/Contabo, self-hosted
+  MinIO/Ceph/Garage, legacy AWS/R2) and full configuration are covered in the
+  self-hoster `STORAGE.md` reference. `STORAGE_S3_*` names are canonical (legacy
+  `S3_*` names still work as fallbacks).
 </Callout>
+
+### Signed local delivery
+
+By default the local `/uploads` route is org-guarded. For private assets you can
+require **time-limited signed URLs** — without a valid signature, `/uploads/<key>`
+returns `403`:
+
+```bash
+ASSET_SIGNED_URLS=true
+ASSET_URL_SECRET=<random-secret>
+ASSET_URL_TTL=3600
+```
+
+GET responses then return signed URLs that work in a plain `<img>` and expire
+after the TTL.
+
+### Storage reconciliation
+
+A daily job (and an on-demand `POST /api/v1/assets/reconcile`) reconciles storage
+against the database per org: orphaned files older than `ASSET_ORPHAN_TTL_DAYS`
+(default 30) are quarantined, and DB rows whose backing file is missing are
+flagged for the UI.
 
 ## API Reference
 
@@ -255,6 +351,9 @@ S3_REGION=eu-central-1
 | `GET` | `/api/v1/assets/unused` | Find unreferenced assets |
 | `GET` | `/api/v1/assets/storage` | Storage usage stats |
 | `POST` | `/api/v1/assets/upload` | Upload a file |
+| `POST` | `/api/v1/assets/upload/batch` | Upload up to 50 files (per-file results) |
+| `POST` | `/api/v1/assets/bulk` | Bulk move / delete / tag |
+| `POST` | `/api/v1/assets/reconcile` | Reconcile storage vs. DB (admin) |
 | `GET` | `/api/v1/assets/:id` | Get asset by ID |
 | `PATCH` | `/api/v1/assets/:id` | Update asset (rename, move) |
 | `DELETE` | `/api/v1/assets/:id` | Delete asset and file |

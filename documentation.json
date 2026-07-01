@@ -114,6 +114,12 @@
                 "icon": "webhook"
               },
               {
+                "title": "API & Integrations",
+                "path": "guides/api-and-integrations",
+                "icon": "plug",
+                "badge": "New"
+              },
+              {
                 "title": "Search",
                 "path": "guides/search",
                 "icon": "search"

@@ -87,8 +87,17 @@ Each user is assigned exactly one role. The role determines which API endpoints 
 
 Roles are enforced at two levels:
 
-1. **API level** — the `RolesGuard` checks the `@Roles()` decorator on each controller method
+1. **API level** — a guard checks the required role/permission on each controller method
 2. **UI level** — the Angular frontend conditionally shows/hides elements based on the user's role
+
+#### Permission model
+
+Under the hood, authorization is moving from coarse role checks to a
+`resource:action` **permission registry** (e.g. `content:publish`, `asset:write`,
+`user:unlock`, `audit:read`). The three CE roles map to sensible permission sets —
+**admin** holds everything, **editor** can author and publish content and manage
+assets (but not delete content or manage users), **viewer** is read-only. This is
+the foundation the Pro `pro-advanced-roles` plugin builds custom roles on.
 
 ## Authentication
 
@@ -143,12 +152,15 @@ POST /api/v1/auth/setup
 
 All passwords must meet the following requirements:
 
-- At least **8 characters**
+- At least **8 characters** (configurable — `PASSWORD_MIN_LENGTH`)
 - At least **one uppercase letter** (A–Z)
 - At least **one lowercase letter** (a–z)
 - At least **one digit** (0–9)
+- Optionally **one symbol** — enable with `PASSWORD_REQUIRE_SYMBOL=true`
 
-This policy is enforced on initial setup, password change, password reset, and user creation.
+The policy is enforced declaratively at every entry point (initial setup, user
+creation, password change, password reset). Raising the minimum length or
+requiring a symbol takes effect without any code changes.
 
 ### Password Management
 
@@ -160,12 +172,27 @@ This policy is enforced on initial setup, password change, password reset, and u
   Password reset tokens are single-use and expire after 1 hour. The forgot-password endpoint always returns success to prevent email enumeration attacks. In development mode (`MAIL_TRANSPORT=log`), the reset link is printed to the server console.
 </Callout>
 
-### Account Lockout
+### Account Lockout, Unlock & Captcha
 
-After **10 consecutive failed login attempts** within 15 minutes, the user account is automatically locked (`status = 'locked'`). An administrator must unlock the account by setting the status back to `active` via the API or database.
+After **10 consecutive failed login attempts** within 15 minutes, the account is
+automatically locked (`status = 'locked'`). Recover it without touching the
+database:
+
+```bash
+# Admin unlocks a locked user (org-scoped) — resets status + clears failed attempts
+POST /api/v1/manage/users/:id/unlock
+```
+
+- **Auto-unlock** — set `LOCKOUT_AUTO_UNLOCK_MS` so a lock older than the window
+  clears itself on the next login attempt.
+- **Captcha** — set `CAPTCHA_PROVIDER` (`turnstile` or `hcaptcha`) + `CAPTCHA_SECRET`
+  to require a captcha on login and password-reset. No-op when unset; verification
+  fails closed if the captcha service is unreachable.
 
 <Callout kind="alert">
-  Login attempts are tracked in the `login_attempts` table. This includes the email, IP address, success/failure, and timestamp for each attempt.
+  Login attempts are tracked in the `login_attempts` table (email, IP,
+  success/failure, timestamp). Unlock is strictly org-scoped — an admin of one
+  organization cannot unlock a user in another.
 </Callout>
 
 ## Profile Management
@@ -180,6 +207,55 @@ GET /api/v1/auth/me
 PATCH /api/v1/auth/me
 { "name": "New Name", "avatarUrl": "https://..." }
 ```
+
+## GDPR — Export & Erase a User's Data
+
+Org admins can honour data-subject requests in-product, strictly org-scoped:
+
+```bash
+# Art. 15 — export a portable JSON bundle of the user's personal data
+GET /api/v1/manage/users/:id/export
+
+# Art. 17 — erase (anonymize) the user; deletes auth artifacts + user-generated PII
+POST /api/v1/manage/users/:id/erase
+```
+
+<Callout kind="info">
+  **Retention policy — anonymize, not delete.** Erasure anonymizes the user row
+  (strips email/name/password/avatar, `status = deleted`) so authored content
+  keeps referential integrity, while auth artifacts and user-generated data
+  (sessions, MFA secret, login attempts, password resets, SSO tokens,
+  notifications, comments) are hard-deleted. The last active admin cannot be
+  erased. Both operations emit audit events.
+</Callout>
+
+## Audit Log (Community Edition)
+
+A self-hostable, **append-only** who-changed-what-when trail records
+security-relevant events (user create/update/delete, login, unlock, erase, org
+changes). Secrets are redacted before storage.
+
+```bash
+# Org-scoped, paginated, filterable by action / actor / resource / date
+GET /api/v1/manage/audit?action=user.updated&limit=50
+```
+
+Retention is unlimited by default; set `CE_AUDIT_RETENTION_DAYS` to prune older
+entries. Pro `pro-audit` remains the richer, immutable-storage superset.
+
+## Per-Org Quotas & Usage
+
+Every quota-bearing resource (users, webhooks, API keys, locales, discovery
+nodes, storage) is enforced against the organization's **effective limit**
+(org override → license → CE default). Inspect current usage:
+
+```bash
+GET /api/v1/manage/usage
+# → per-resource { used, limit } (limit -1 = unlimited)
+```
+
+Super admins set per-org limits from the Platform Admin dashboard; `-1` means
+unlimited (Pro tiers).
 
 ## Super Admin & Platform Administration
 
@@ -246,6 +322,11 @@ With the `pro-sso` plugin, you get:
 | `POST` | `/api/v1/manage/users` | Create user (admin) |
 | `PUT` | `/api/v1/manage/users/:id` | Update user (admin) |
 | `DELETE` | `/api/v1/manage/users/:id` | Delete user (admin) |
+| `POST` | `/api/v1/manage/users/:id/unlock` | Unlock a locked user (admin) |
+| `GET` | `/api/v1/manage/users/:id/export` | GDPR export (admin) |
+| `POST` | `/api/v1/manage/users/:id/erase` | GDPR erase/anonymize (admin) |
+| `GET` | `/api/v1/manage/audit` | CE audit log feed (admin) |
+| `GET` | `/api/v1/manage/usage` | Per-org resource usage vs. limits (admin) |
 | `POST` | `/api/v1/auth/login` | Login |
 | `POST` | `/api/v1/auth/refresh` | Refresh tokens |
 | `GET` | `/api/v1/auth/me` | Get own profile |

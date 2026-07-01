@@ -3,6 +3,81 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-07-01" description="Assets & storage, access & compliance, API hardening" tags={["feature", "security", "api"]}>
+  ## Privacy-first assets, EU storage, compliance tooling & a hardened API
+
+  A large release across three areas: the asset subsystem, identity/access &
+  compliance, and the API & integrations surface.
+
+  ### Assets & media
+
+  - **Privacy by default** — uploaded images are re-encoded on upload to strip
+    embedded **EXIF/GPS/XMP/IPTC** metadata (camera model, serial, location).
+    GPS is never retained unless you explicitly opt in (`ASSET_RETAIN_GPS`).
+  - **Upload safety** — a MIME allowlist plus **magic-byte sniffing** reject
+    files whose real type doesn't match the declared one; executables and
+    (by default) SVG are refused.
+  - **Responsive image variants** — uploads generate a WebP variant ladder
+    (thumbnail/small/medium/large) for `srcset` delivery.
+  - **Content-addressable deduplication** — re-uploading the same file in an
+    org reuses the existing asset instead of storing a second copy.
+  - **S3-compatible EU storage** — point Studio at Hetzner, Contabo, MinIO/Ceph,
+    or any S3-compatible endpoint (`STORAGE_PROVIDER=s3`), with multipart upload,
+    presigned URLs, and a local→S3 migration script. See the new
+    [Storage guide](/guides/assets).
+  - **Signed local delivery** — optionally require time-limited signed URLs on
+    `/uploads`, closing the "guessable storage key" gap for private assets.
+  - **Bulk operations, batch upload, video posters & alt text** — move/delete/tag
+    many assets at once, upload up to 50 files per request, extract a poster
+    frame + duration for video (when `ffmpeg` is available), and filter/flag
+    images missing alt text for accessibility.
+  - **Storage reconciliation** — a scheduled job quarantines orphaned files and
+    flags DB rows whose backing file is missing.
+
+  ### Access, security & compliance
+
+  - **Account unlock & captcha** — admins can unlock a locked user via the API
+    (`POST /manage/users/:id/unlock`); optional auto-unlock after a cooldown; an
+    env-gated Turnstile/hCaptcha hook on login & password-reset.
+  - **Configurable password policy** — a declarative `@StrongPassword` rule with
+    env-tunable minimum length and required-symbol.
+  - **GDPR data-subject tooling** — org admins can **export** (Art. 15) and
+    **erase/anonymize** (Art. 17) a user's data, strictly org-scoped. See
+    [Users & roles](/guides/users-and-roles).
+  - **CE audit log** — a self-hostable, append-only who-changed-what-when trail
+    (`GET /manage/audit`), fed by lifecycle events with secret redaction.
+  - **Permission registry** — authorization moves toward `resource:action`
+    permissions (`@RequirePermission`), with the three CE roles mapped to
+    sensible permission sets.
+  - **Per-org quotas & usage** — a single admission point enforces per-org limits
+    consistently, with `GET /manage/usage` showing usage vs. effective limits.
+  - **Hardened SSO bridge** — internal SSO tokens are stored hashed and issue
+    tracked, revocable sessions like a password login.
+
+  ### API & integrations
+
+  - **Webhooks are HMAC-signed** — deliveries now carry
+    `X-Webhook-Signature: sha256=…` over `<timestamp>.<body>` plus
+    `X-Webhook-Timestamp`; the cleartext secret header is gone. Rotate the
+    secret with `POST /manage/webhooks/:id/rotate-secret` (both secrets verify
+    during the window). See [Webhooks](/guides/webhooks).
+  - **SSRF egress protection** — webhook targets resolving to private/loopback/
+    link-local/metadata ranges are rejected at both registration and delivery.
+  - **Idempotency, failed-deliveries view & replay** — every delivery carries a
+    stable `X-Idempotency-Key`; list failures with
+    `GET /manage/webhooks/:id/deliveries?status=failed` and re-send one with
+    `POST /manage/webhooks/deliveries/:id/replay`.
+  - **Delivery API performance** — per-API-key rate limiting (independent buckets
+    per key), `ETag`/`If-None-Match` → `304 Not Modified` conditional requests,
+    and a cached O(1) API-key validation path.
+  - **Versioning & deprecation policy** — deprecated routes emit
+    `Deprecation`/`Sunset`/`Link: rel="successor-version"` headers; see the new
+    [API versioning policy](/guides/api-and-integrations).
+  - **OpenAPI quality & generated client** — accurate `/api/docs`, an `X-Api-Key`
+    security scheme, and a pipeline that generates a type-safe TypeScript client
+    for first-party UIs from the spec.
+</Update>
+
 <Update label="2026-06-30" description="Authoring, reliability & EU-sovereign translation" tags={["feature", "security"]}>
   ## Stronger authoring, safer editing, EU-sovereign translation
 

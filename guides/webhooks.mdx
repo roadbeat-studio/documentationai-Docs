@@ -66,34 +66,97 @@ Every webhook delivery includes a JSON payload:
 
 ## Signature Verification
 
-Every webhook request includes an `X-Webhook-Signature` header containing an HMAC-SHA256 signature. Verify it in your receiver:
+Every delivery is signed with HMAC-SHA256 and carries these headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-Webhook-Signature` | `sha256=<hex>` — the HMAC over `<timestamp>.<rawBody>`. During a secret rotation this is a comma-separated list of signatures (verify against any). |
+| `X-Webhook-Timestamp` | Unix seconds; included in the signed string so you can reject stale deliveries. |
+| `X-Idempotency-Key` | Stable per-event id, constant across retries and replays — dedupe on it. |
+| `X-Webhook-Event` | The event name. |
+
+<Callout kind="alert">
+  The signing secret is **never** sent in a header. Compute the HMAC over
+  `<timestamp>.<rawBody>` with your stored secret and compare in constant time.
+</Callout>
+
+Verify it in your receiver (recommended timestamp tolerance: ±5 minutes):
 
 <CodeGroup tabs="Node.js,Python">
 ```javascript
 const crypto = require('crypto');
 
-function verifyWebhook(body, signature, secret) {
-  const expected = crypto
+function verifyWebhook(rawBody, headers, secret) {
+  const timestamp = headers['x-webhook-timestamp'];
+  // Reject stale deliveries (replay protection).
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+
+  const expected = 'sha256=' + crypto
     .createHmac('sha256', secret)
-    .update(body)
+    .update(`${timestamp}.${rawBody}`)
     .digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected)
-  );
+
+  // The header may hold several comma-separated signatures during rotation.
+  return (headers['x-webhook-signature'] || '')
+    .split(',')
+    .some((sig) => {
+      const a = Buffer.from(sig.trim());
+      const b = Buffer.from(expected);
+      return a.length === b.length && crypto.timingSafeEqual(a, b);
+    });
 }
 ```
 ```python
-import hmac
-import hashlib
+import hmac, hashlib, time
 
-def verify_webhook(body: bytes, signature: str, secret: str) -> bool:
-    expected = hmac.new(
-        secret.encode(), body, hashlib.sha256
-    ).hexdigest()
-    return hmac.compare_digest(signature, expected)
+def verify_webhook(raw_body: bytes, headers: dict, secret: str) -> bool:
+    timestamp = headers["x-webhook-timestamp"]
+    if abs(time.time() - int(timestamp)) > 300:  # replay window
+        return False
+
+    signed = f"{timestamp}.".encode() + raw_body
+    expected = "sha256=" + hmac.new(secret.encode(), signed, hashlib.sha256).hexdigest()
+
+    # Multiple comma-separated signatures may be present during rotation.
+    return any(
+        hmac.compare_digest(sig.strip(), expected)
+        for sig in headers.get("x-webhook-signature", "").split(",")
+    )
 ```
 </CodeGroup>
+
+<Callout kind="tip">
+  Always verify against the **raw request body bytes**, not a re-serialized JSON
+  object — re-serialization can reorder keys and change the signature.
+</Callout>
+
+## Idempotency
+
+Retries and manual replays reuse the same `X-Idempotency-Key`, so the same
+logical event may arrive more than once. Record processed keys and skip
+duplicates to make your handler safe to re-run.
+
+## Rotating the Signing Secret
+
+Rotate a webhook's secret without downtime — during the rotation window Studio
+**dual-signs** every delivery with both the new and previous secret, so a
+receiver holding either one still verifies:
+
+```bash
+POST /api/v1/manage/webhooks/:id/rotate-secret
+# → { "secret": "<new>", "secretPrevious": "<old>" }
+```
+
+Update your receiver to the new secret; the previous secret keeps verifying
+until the next rotation.
+
+## Allowed Targets (SSRF protection)
+
+Webhook URLs that resolve to private, loopback, link-local, or cloud-metadata
+addresses (e.g. `169.254.169.254`, `localhost`, `10.0.0.0/8`) are **rejected** —
+at registration **and** re-checked at delivery time. Self-hosted deployments
+that genuinely need internal targets can opt in with
+`WEBHOOK_ALLOW_PRIVATE_TARGETS=true`.
 
 ## Testing
 
@@ -113,20 +176,25 @@ Webhook deliveries are processed asynchronously via **BullMQ**. If a delivery fa
 - **Backoff**: Exponential — 1s, 5s, 30s
 - **Timeout**: 10 seconds per attempt
 
-### Delivery Log
+### Delivery Log, Failed Deliveries & Replay
 
-Each webhook keeps a recent delivery log showing:
-- Timestamp
-- HTTP status code
-- Response time
-- Success or failure reason
-
-View the delivery log:
+Each webhook records every delivery (timestamp, HTTP status, response time,
+success/failure). List deliveries — optionally just the failures:
 
 ```bash
-GET /api/v1/manage/webhooks/:id
-# Includes recent deliveries in the response
+# Recent deliveries for a webhook (add ?status=failed to see only failures)
+GET /api/v1/manage/webhooks/:id/deliveries?status=failed
+
+# Re-send a specific delivery — same X-Idempotency-Key, so the receiver
+# still dedupes; a fresh attempt actually re-sends
+POST /api/v1/manage/webhooks/deliveries/:deliveryId/replay
 ```
+
+<Callout kind="info">
+  CE ships this minimal reliability floor (idempotency key, failed-deliveries
+  view, single replay). Pro (`pro-webhooks`) adds a full dead-letter queue with
+  bulk replay and configurable auto-retry.
+</Callout>
 
 ## Managing Webhooks
 
