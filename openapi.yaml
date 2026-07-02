@@ -4861,6 +4861,60 @@ paths:
         - users
       security:
         - bearer: []
+  /api/v1/manage/users/{id}/unlock:
+    post:
+      operationId: UsersController_unlock
+      summary: Unlock a locked user account (org-scoped)
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: User UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User unlocked; status reset to active and failed attempts cleared.
+      tags:
+        - users
+      security:
+        - bearer: []
+  /api/v1/manage/users/{id}/export:
+    get:
+      operationId: UsersController_exportData
+      summary: GDPR Art. 15 — export a user's personal data (org-scoped)
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: User UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Portable JSON bundle of the subject's data (no secrets).
+      tags:
+        - users
+      security:
+        - bearer: []
+  /api/v1/manage/users/{id}/erase:
+    post:
+      operationId: UsersController_erase
+      summary: GDPR Art. 17 — erase (anonymize) a user and delete auth artifacts
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: User UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User anonymized; auth artifacts and user-generated PII deleted.
+      tags:
+        - users
+      security:
+        - bearer: []
   /api/v1/manage/users/{id}:
     get:
       operationId: UsersController_findOne
@@ -5984,6 +6038,72 @@ paths:
         - assets
       security:
         - bearer: []
+  /api/v1/assets/upload/batch:
+    post:
+      operationId: AssetsController_uploadBatch
+      summary: Upload up to 50 files in one request — per-file success/error results
+      parameters: []
+      responses:
+        '200':
+          description: Per-file results { originalName, ok, deduplicated?, error? }.
+      tags:
+        - assets
+      security:
+        - bearer: []
+  /api/v1/assets/bulk:
+    post:
+      operationId: AssetsController_bulk
+      summary: Bulk asset action (move / delete / addTags / removeTags) — per-item results
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assetIds:
+                  type: array
+                  items:
+                    type: string
+                action:
+                  type: string
+                  enum:
+                    - move
+                    - delete
+                    - addTags
+                    - removeTags
+                folderId:
+                  type: string
+                  nullable: true
+                tags:
+                  type: array
+                  items:
+                    type: string
+                force:
+                  type: boolean
+              required:
+                - assetIds
+                - action
+      responses:
+        '200':
+          description: Per-item results { id, ok, error? }.
+      tags:
+        - assets
+      security:
+        - bearer: []
+  /api/v1/assets/reconcile:
+    post:
+      operationId: AssetsController_reconcile
+      summary: Reconcile storage vs. DB for this org — quarantine orphans, flag missing files
+      parameters: []
+      responses:
+        '200':
+          description: Reconciliation report (orphans, quarantined, missing counts).
+      tags:
+        - assets
+      security:
+        - bearer: []
   /api/v1/assets/upload:
     post:
       operationId: AssetsController_upload
@@ -6216,6 +6336,57 @@ paths:
         - comments
       security:
         - bearer: []
+  /api/v1/manage/audit:
+    get:
+      operationId: AuditController_findAll
+      summary: CE audit log — org-scoped, read-only feed of security events
+      parameters:
+        - name: action
+          required: false
+          in: query
+          description: Filter by action (e.g. "user.updated")
+          schema:
+            type: string
+        - name: actorUserId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceType
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: after
+          required: false
+          in: query
+          description: Only events at/after this ISO date
+          schema:
+            type: string
+        - name: before
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated audit events.
+      tags:
+        - audit
+      security:
+        - bearer: []
+  /api/v1/manage/usage:
+    get:
+      operationId: QuotaController_getUsage
+      summary: Per-org resource usage vs. effective limits
+      parameters: []
+      responses:
+        '200':
+          description: Per-resource { used, limit } for users, webhooks, api keys, locales, discovery nodes, storage.
+      tags:
+        - usage
+      security:
+        - bearer: []
   /api/v1/manage/webhooks:
     get:
       operationId: WebhooksController_findAll
@@ -6333,6 +6504,74 @@ paths:
       responses:
         '200':
           description: ''
+      tags:
+        - webhooks
+      security:
+        - bearer: []
+  /api/v1/manage/webhooks/{id}/rotate-secret:
+    post:
+      operationId: WebhooksController_rotateSecret
+      summary: Rotate the webhook signing secret (previous secret stays valid during the window)
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Webhook UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: New signing secret; the previous secret keeps verifying during the rotation window.
+      tags:
+        - webhooks
+      security:
+        - bearer: []
+  /api/v1/manage/webhooks/{id}/deliveries:
+    get:
+      operationId: WebhooksController_listDeliveries
+      summary: List a webhook's deliveries (optionally ?status=failed)
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Webhook UUID
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          description: Filter by outcome
+          schema:
+            type: string
+            enum:
+              - failed
+              - success
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recent deliveries (status, code, duration, deliveryId).
+      tags:
+        - webhooks
+      security:
+        - bearer: []
+  /api/v1/manage/webhooks/deliveries/{deliveryId}/replay:
+    post:
+      operationId: WebhooksController_replayDelivery
+      summary: Replay a past delivery — same X-Idempotency-Key, re-enqueued
+      parameters:
+        - name: deliveryId
+          required: true
+          in: path
+          description: WebhookDelivery UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Delivery re-enqueued with the same idempotency key.
       tags:
         - webhooks
       security:
@@ -9036,6 +9275,12 @@ tags:
     description: Asset upload & management
   - name: webhooks
     description: Webhook configuration
+  - name: api-keys
+    description: API key management (Delivery API auth)
+  - name: audit
+    description: CE audit log
+  - name: usage
+    description: Per-org resource usage & quotas
   - name: plugins
     description: Plugin system & feature gates
   - name: health
@@ -9051,6 +9296,10 @@ components:
       scheme: bearer
       bearerFormat: JWT
       type: http
+    api-key:
+      type: apiKey
+      name: X-Api-Key
+      in: header
   schemas:
     LoginDto:
       type: object
