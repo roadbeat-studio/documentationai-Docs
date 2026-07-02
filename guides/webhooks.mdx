@@ -190,10 +190,29 @@ GET /api/v1/manage/webhooks/:id/deliveries?status=failed
 POST /api/v1/manage/webhooks/deliveries/:deliveryId/replay
 ```
 
+### Dead-Letter Queue
+
+A delivery that exhausts all its retries is parked in a durable **dead-letter
+queue** instead of being silently dropped, so nothing is lost when an endpoint
+is down for an extended window. Operators receive a **batched failure-summary
+email** (one digest, not one mail per failure).
+
+```bash
+# List parked (dead-lettered) deliveries
+GET /api/v1/manage/webhooks/dead-letters
+
+# Replay one once its endpoint is healthy again (reuses the idempotency key)
+POST /api/v1/manage/webhooks/dead-letters/:id/replay
+
+# Dismiss one you don't intend to re-send
+POST /api/v1/manage/webhooks/dead-letters/:id/dismiss
+```
+
 <Callout kind="info">
-  CE ships this minimal reliability floor (idempotency key, failed-deliveries
-  view, single replay). Pro (`pro-webhooks`) adds a full dead-letter queue with
-  bulk replay and configurable auto-retry.
+  CE ships this durable reliability floor: idempotency key, failed-deliveries
+  view, a persistent dead-letter queue with per-item replay/dismiss, and batched
+  failure-summary email. Pro (`pro-webhooks`) adds **bulk** replay and
+  configurable auto-retry policies on top.
 </Callout>
 
 ## Managing Webhooks

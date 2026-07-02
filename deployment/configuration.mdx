@@ -195,6 +195,54 @@ Redis is used for caching, session storage, and BullMQ job queues.
 | `GOOGLE_TRANSLATE_KEY` | — | Google Translate API key |
 | `AZURE_TRANSLATOR_KEY` | — | Azure Translator key |
 
+## Observability (Optional)
+
+See the [Monitoring & Observability](/deployment/monitoring) guide for how these
+fit together. All are inert/off by default.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `METRICS_TOKEN` | — | Bearer token to guard `GET /api/v1/metrics`. Unset = unguarded (dev only) |
+| `OTEL_ENABLED` | `false` | Enable OpenTelemetry/OTLP trace export |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTLP/HTTP collector endpoint (Tempo/Jaeger) |
+| `OTEL_SERVICE_NAME` | `roadbeat-studio-api` | Service name in the trace UI |
+| `ERROR_TRACKING_DSN` | — | Sentry-compatible DSN (self-hosted GlitchTip/Sentry, EU). Empty = disabled |
+| `ERROR_TRACKING_ENVIRONMENT` | `NODE_ENV` | Environment label in the issue stream |
+| `ERROR_TRACKING_RELEASE` | build SHA | Release identifier for regression tracking |
+
+## Backup & Restore (Optional)
+
+See [Backup & Export](/guides/backup-and-export). Offsite S3 credentials fall
+back to the asset `STORAGE_S3_*` credentials when their own are unset.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BACKUP_SCHEDULE_ENABLED` | `false` | Enable the daily scheduled backup of every org |
+| `BACKUP_RETENTION_DAYS` | `30` | Prune backups (local + offsite + row) older than this. `0` = keep forever |
+| `BACKUP_ENCRYPTION_KEY` | — | AES-256-GCM key (hex-64 or base64, 32 bytes). Empty = plaintext at rest |
+| `BACKUP_S3_BUCKET` | — | S3-compatible offsite bucket. Empty = local-only (offsite disabled) |
+| `BACKUP_S3_ENDPOINT` | `STORAGE_S3_ENDPOINT` | Offsite S3 endpoint |
+| `BACKUP_S3_REGION` | `eu-central-1` | Offsite S3 region |
+| `RESTORE_DRILL_ENABLED` | `true` | Weekly read-only restore-verification drill on the latest backup |
+
+## Account Security (Optional)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOCKOUT_AUTO_UNLOCK_MS` | `0` | If `> 0`, auto-unlock a locked account whose last failed attempt is older than this window. `0` = manual admin unlock only |
+| `CAPTCHA_PROVIDER` | — | `turnstile` (Cloudflare) or `hcaptcha` to gate login & password-reset. Empty = disabled |
+| `CAPTCHA_SECRET` | — | Secret for the selected captcha provider |
+| `PASSWORD_MIN_LENGTH` | `8` | Minimum password length enforced on every entry point |
+| `PASSWORD_REQUIRE_SYMBOL` | `false` | Require at least one symbol in passwords |
+| `CE_AUDIT_RETENTION_DAYS` | `0` | Prune CE audit-log rows older than this. `0` = keep forever |
+
+<Callout kind="tip">
+  Secrets can be provided from a file instead of the environment by appending
+  `_FILE` to the variable name (e.g. `METRICS_TOKEN_FILE`,
+  `ERROR_TRACKING_DSN_FILE`, `CAPTCHA_SECRET_FILE`) — the standard pattern for
+  Docker/Kubernetes secrets.
+</Callout>
+
 ## Example .env File
 
 ```bash
@@ -243,6 +291,18 @@ CORS_ORIGIN=http://localhost:4200
 NODE_ENV=development
 LOG_LEVEL=debug
 LOG_PRETTY=true
+
+# Observability (optional)
+# METRICS_TOKEN=change-this-to-a-long-random-token
+# OTEL_ENABLED=true
+# OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318
+# ERROR_TRACKING_DSN=https://<key>@glitchtip.example.eu/1
+
+# Backup (optional)
+# BACKUP_SCHEDULE_ENABLED=true
+# BACKUP_RETENTION_DAYS=30
+# BACKUP_ENCRYPTION_KEY=<hex-64-or-base64-32-byte-key>
+# BACKUP_S3_BUCKET=studio-backups
 ```
 
 ## Production Checklist
@@ -259,7 +319,10 @@ LOG_PRETTY=true
 - [ ] `CORS_ORIGIN` is set to your actual domain
 - [ ] `STORAGE_PROVIDER=s3` with proper credentials
 - [ ] HTTPS is configured (via Caddy, nginx, or load balancer)
-- [ ] Database backups are scheduled
+- [ ] Database backups are scheduled (or `BACKUP_SCHEDULE_ENABLED=true`), with `BACKUP_ENCRYPTION_KEY` and an offsite `BACKUP_S3_BUCKET` set
+- [ ] `METRICS_TOKEN` is set so `/api/v1/metrics` is not publicly scrapable
+- [ ] Health probes (`/api/v1/health/live` + `/ready`) are wired into your orchestrator — see [Monitoring](/deployment/monitoring)
+- [ ] `ERROR_TRACKING_DSN` points at a self-hosted GlitchTip/Sentry (EU), if used
 - [ ] Redis persistence is enabled (`appendonly yes`)
 - [ ] MeiliSearch master key is set
 - [ ] `MAIL_TRANSPORT=smtp` with valid SMTP credentials

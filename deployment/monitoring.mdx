@@ -1,0 +1,137 @@
+---
+title: Monitoring & Observability
+description: Health probes, Prometheus metrics, distributed tracing, and self-hostable error tracking for a production roadbeat Studio deployment.
+---
+
+## Overview
+
+roadbeat Studio ships a full observability surface for self-hosted, production
+deployments — all of it **self-hostable and EU-sovereign**, and all of it
+**off or inert by default** so a fresh install carries no overhead and phones no
+third party home.
+
+<Columns cols={2}>
+  <Card title="Health probes" icon="heart-pulse" href="#health-probes">
+    Liveness & readiness for orchestrators and load balancers.
+  </Card>
+  <Card title="Prometheus metrics" icon="activity" href="#prometheus-metrics">
+    Named counters at a token-guarded `/metrics` endpoint.
+  </Card>
+  <Card title="Distributed tracing" icon="git-branch" href="#distributed-tracing">
+    Opt-in OpenTelemetry/OTLP export to your own collector.
+  </Card>
+  <Card title="Error tracking" icon="bug" href="#error-tracking">
+    Sentry-compatible SDK pointed at self-hosted GlitchTip/Sentry (EU).
+  </Card>
+</Columns>
+
+## Health Probes
+
+Two probes let an orchestrator (Kubernetes, Docker, a load balancer) tell
+whether the process is alive and whether it can actually serve traffic.
+
+| Probe | Endpoint | Checks | Use for |
+|-------|----------|--------|---------|
+| Liveness | `GET /api/v1/health/live` | Process is up and responding | Restart-on-hang |
+| Readiness | `GET /api/v1/health/ready` | PostgreSQL + Redis reachable; Meilisearch when enabled; queue depth under threshold | Route traffic only when ready |
+
+Readiness fails closed: if a required dependency (database, Redis) is down — or
+the background-job queue backs up past its threshold — the endpoint returns a
+non-`200` status so the orchestrator stops sending traffic to that instance.
+Meilisearch is included **only when search is enabled**, and a degraded search
+backend never fails readiness on its own (Studio still serves its own traffic).
+
+```yaml
+# Kubernetes example
+livenessProbe:
+  httpGet: { path: /api/v1/health/live, port: 3000 }
+  periodSeconds: 10
+readinessProbe:
+  httpGet: { path: /api/v1/health/ready, port: 3000 }
+  periodSeconds: 10
+```
+
+<Callout kind="tip">
+  Two related admin-only diagnostics endpoints — `GET /api/v1/health/queues`
+  (queue depths) and `GET /api/v1/health/slow-queries` — surface the same
+  signals for humans. They require authentication.
+</Callout>
+
+## Prometheus Metrics
+
+Studio exposes named counters in Prometheus text format for scraping.
+
+```bash
+GET /api/v1/metrics
+Authorization: Bearer <METRICS_TOKEN>
+```
+
+Set `METRICS_TOKEN` to require a bearer token on the endpoint. If it is unset
+the endpoint is **unguarded** — acceptable on a private network in development,
+but always set a token in production.
+
+Exposed series include publish results, per-discovery-node publish outcomes, and
+a slow-query counter (with query parameters redacted). A minimal Prometheus
+scrape config:
+
+```yaml
+scrape_configs:
+  - job_name: roadbeat-studio
+    metrics_path: /api/v1/metrics
+    authorization:
+      credentials: <METRICS_TOKEN>
+    static_configs:
+      - targets: ["studio-api:3000"]
+```
+
+## Distributed Tracing
+
+Studio can export OpenTelemetry traces over **OTLP/HTTP** to any self-hostable
+collector (Grafana Tempo, Jaeger, or an OpenTelemetry Collector). Tracing is
+**off by default** — enabling it has zero overhead until you turn it on.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OTEL_ENABLED` | `false` | Set `true` to export traces |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTLP/HTTP collector endpoint |
+| `OTEL_SERVICE_NAME` | `roadbeat-studio-api` | Service name shown in the trace UI |
+
+```bash
+OTEL_ENABLED=true
+OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318
+OTEL_SERVICE_NAME=roadbeat-studio-api
+```
+
+## Error Tracking
+
+Studio integrates a **Sentry-compatible** error-tracking SDK. Point it at a
+self-hosted **GlitchTip** or **Sentry (EU)** instance — it never targets
+sentry.io by default. With no DSN the SDK is completely inert.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ERROR_TRACKING_DSN` | — (empty = disabled) | Sentry-compatible DSN of your self-hosted instance |
+| `ERROR_TRACKING_ENVIRONMENT` | `NODE_ENV` | Environment label in the issue stream |
+| `ERROR_TRACKING_RELEASE` | build SHA | Release identifier for regression tracking |
+
+<Callout kind="info">
+  European data sovereignty is a product requirement: keep error, trace, and
+  metric data on infrastructure you control. GlitchTip is a lightweight,
+  self-hostable, Sentry-compatible option that fits this model.
+</Callout>
+
+## Audit Trail
+
+Beyond metrics and traces, Studio keeps an org-scoped, append-only **audit feed**
+of write operations (who changed what, when) that self-hosters can query without
+a paid plugin. Security-relevant events (logins, unlocks, role changes) and a
+general CE mutation feed both land here, with secrets redacted before storage.
+See [Users & Roles](/guides/users-and-roles) for the security-event log.
+
+## Secrets for Observability Config
+
+Every token/DSN above can be supplied from a file instead of an environment
+variable by appending `_FILE` (for example `METRICS_TOKEN_FILE`,
+`ERROR_TRACKING_DSN_FILE`), which is the recommended pattern for Docker/Kubernetes
+secrets. See [Configuration](/deployment/configuration) for the full variable
+reference.

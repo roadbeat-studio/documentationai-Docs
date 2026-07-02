@@ -196,6 +196,12 @@
                 "title": "Configuration",
                 "path": "deployment/configuration",
                 "icon": "settings"
+              },
+              {
+                "title": "Monitoring & Observability",
+                "path": "deployment/monitoring",
+                "icon": "activity",
+                "badge": "New"
               }
             ]
           },

@@ -3,6 +3,86 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-07-02" description="Content lifecycle, observability & operator tooling" tags={["feature", "security", "api"]}>
+  ## Content lifecycle, self-hosting observability & a hardened operator surface
+
+  A broad release focused on the content lifecycle (expiration, collaboration,
+  schema drift), webhook reliability, and — the bulk of it — production
+  observability and operator tooling for self-hosting.
+
+  ### Content authoring & collaboration
+
+  - **Content expiration / auto-unpublish** — set an optional `expiresAt` (and
+    `expirationAction`: `unpublish` or `archive`) on any content item. A sweep
+    takes time-sensitive content (events, jobs, offers) down automatically and
+    withdraws it from discovery nodes, and the author gets a single in-app
+    warning 24 hours before. See [Content Management](/guides/content-management#content-expiration).
+  - **Comment collaboration** — comments can now be **resolved** / reopened
+    (`POST /manage/comments/:id/resolve|unresolve`), and **@mentions** (explicit
+    or inline) notify the mentioned teammates. All comment/reply/mention
+    notifications are created by a single owner, so a reply that also mentions
+    the parent author produces exactly one notification, not two.
+  - **In-app notifications** now also fire on `content.expiring` (to the author),
+    alongside comment replies, @mentions, and publishes. Payloads stay org-scoped
+    and reference-only. See [Notifications](/guides/content-management#notifications).
+  - **Schema-version drift** — published content is stamped with the content
+    type's schema version it was authored against; the conformance report now
+    counts items on an **outdated schema version** so you can see drift after a
+    type changes.
+
+  ### Webhooks & integrations
+
+  - **Durable dead-letter queue (CE)** — a delivery that exhausts its retries is
+    now parked in a durable dead-letter queue instead of being dropped. List it
+    (`GET /manage/webhooks/dead-letters`), **replay** it
+    (`POST /manage/webhooks/dead-letters/:id/replay`), or **dismiss** it — and
+    operators receive a **batched failure-summary email** rather than one mail
+    per failure. See [Webhooks](/guides/webhooks#delivery-log-failed-deliveries--replay).
+
+  ### Observability (self-hosting)
+
+  - **Liveness & readiness probes** — `GET /api/v1/health/live` (process up) and
+    `GET /api/v1/health/ready` (DB + Redis, plus Meilisearch when enabled, and a
+    queue-depth gate) let orchestrators route traffic only when Studio can serve it.
+  - **Prometheus metrics** — `GET /api/v1/metrics` exposes named counters
+    (publish results, slow queries, DN outcomes, …), guarded by a bearer
+    `METRICS_TOKEN`.
+  - **Distributed tracing (OpenTelemetry)** — opt-in OTLP export to a
+    self-hostable collector (Tempo/Jaeger); off by default for zero overhead.
+  - **Self-hostable error tracking** — a Sentry-compatible SDK that points at a
+    self-hosted **GlitchTip / Sentry (EU)** by default, never sentry.io. Empty
+    DSN = inert.
+  - **CE mutation audit feed** — an org-scoped who-changed-what-when trail over
+    write operations, complementing the security-event audit log.
+
+  See the new [Monitoring & Observability](/deployment/monitoring) guide.
+
+  ### Reliability, backups & deployment
+
+  - **Encrypted, offsite, retained backups** — optional AES-256-GCM encryption
+    at rest (`BACKUP_ENCRYPTION_KEY`), S3-compatible **offsite** replication, and
+    time-based **retention** pruning, plus a weekly read-only **restore-drill**
+    that verifies the latest backup actually restores. See
+    [Backup & Export](/guides/backup-and-export#encryption-offsite--retention).
+  - **Discovery-node publish resilience** — a per-node circuit breaker skips a
+    failing node for a cooldown, and rotated publisher keys keep verifying during
+    an overlap window so already-distributed signed teasers don't break.
+  - **Content Pod integrity** — pod manifests are signed and verifiable, with
+    federation readiness checks.
+  - **Safer operations** — zero-downtime, health-gated deploys with rollback;
+    secrets loaded from files/`*_FILE` with production config that **fails closed**
+    on missing critical settings; a single `.env` source of truth; a migration
+    **drift guard** and destructive-change policy; supply-chain scanning
+    (SBOM + Trivy + Renovate); and a slow-query counter with parameters redacted.
+
+  ### Security
+
+  - **Tenant-scope write audit** — the `audit-tenant-scope` CI gate now also
+    covers single-record `update`/`delete`/`upsert`, failing the build on a
+    cross-tenant write that isn't org-scoped (in addition to the existing read
+    checks).
+</Update>
+
 <Update label="2026-07-01" description="Assets & storage, access & compliance, API hardening" tags={["feature", "security", "api"]}>
   ## Privacy-first assets, EU storage, compliance tooling & a hardened API
 

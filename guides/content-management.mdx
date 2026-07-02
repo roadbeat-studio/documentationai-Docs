@@ -90,6 +90,36 @@ POST /api/v1/manage/content/bulk/archive
 { "ids": ["uuid-1", "uuid-2"] }
 ```
 
+### Content Expiration
+
+Time-sensitive content (events, job postings, offers, listings) can take itself
+down automatically. Set an optional **`expiresAt`** timestamp and an
+**`expirationAction`** when creating or updating content:
+
+```bash
+PUT /api/v1/manage/content/:id
+Content-Type: application/json
+
+{
+  "expiresAt": "2026-09-01T00:00:00.000Z",
+  "expirationAction": "unpublish"   // or "archive"
+}
+```
+
+- A background sweep runs periodically and, at expiry, **unpublishes** or
+  **archives** the item (your choice) and **withdraws it from Discovery Nodes** —
+  the same path as a manual unpublish/archive.
+- The creator receives a single in-app **`content.expiring`** notification about
+  24 hours before expiry, so they can extend or renew it in time. Changing the
+  expiry re-arms that warning.
+- Set `expiresAt` to `null` on update to clear a previously scheduled expiry.
+
+<Callout kind="info">
+  Expiration enforcement runs in Community Edition — a CE field that takes effect
+  in CE, no plugin required. The editor date-picker for it is a UI convenience on
+  top of these API fields.
+</Callout>
+
 ## Versioning
 
 Every save creates a new **version** of the content. The version history is available in the content editor.
@@ -233,20 +263,39 @@ The **Map** (OpenStreetMap/Leaflet) and **3D Globe** (Mapbox GL) views display c
 Team members can leave threaded comments on content items to discuss changes, provide feedback, or coordinate work. Comments are strictly scoped to your organization — they can only be read, edited, or deleted within the org that owns the content.
 
 ```bash
-# Add a comment
+# Add a comment (optionally as a reply, optionally @mentioning teammates)
 POST /api/v1/manage/content/:id/comments
 Content-Type: application/json
 
 {
-  "body": "Please review the headline for accuracy."
+  "text": "Please review the headline for accuracy.",
+  "parentId": null,
+  "mentions": ["<user-id>"]
 }
 ```
+
+**@Mentions.** List user ids explicitly in `mentions`, or embed them inline in
+the text as `@[<user-id>]` tokens — both are parsed, deduplicated, and (after
+dropping the author) turned into a `comment.mention` notification for each
+mentioned teammate who belongs to your org.
+
+**Resolve / reopen.** Mark a comment thread resolved once it's handled, and
+reopen it if needed:
+
+```bash
+POST /api/v1/manage/comments/:id/resolve
+POST /api/v1/manage/comments/:id/unresolve
+```
+
+Resolution is tracked (`resolvedAt` / `resolvedById`) so the UI can render
+resolved threads distinctly.
 
 ## Notifications
 
 Studio includes durable, in-app **notifications** (Community Edition) so you don't miss activity on your content:
 
-- You're notified when someone **replies to your comment** or **publishes content you created** (you're never notified about your own actions).
+- You're notified when someone **replies to your comment**, **@mentions you** in a comment, **publishes content you created**, or when **content you created is about to expire** (you're never notified about your own actions).
+- A reply that also @mentions the parent author produces exactly **one** notification, not two.
 - Notifications are **org-scoped** and contain only references (ids, slugs) — never sensitive data.
 - Read state and the unread count persist across sessions.
 

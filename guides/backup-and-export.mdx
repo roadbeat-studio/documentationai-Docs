@@ -201,6 +201,32 @@ With the `pro-export` plugin, you get additional capabilities:
 - **Scheduled exports** — automatic recurring exports
 - **Export job management** — track export progress and download results
 
+## Encryption, Offsite & Retention
+
+Studio's built-in scheduled backups can be encrypted at rest, replicated
+offsite, and pruned on a retention schedule. All are configured via environment
+variables (see [Configuration](/deployment/configuration#backup--restore-optional)):
+
+| Capability | Variable | Behaviour |
+|-----------|----------|-----------|
+| Daily scheduled backup | `BACKUP_SCHEDULE_ENABLED` | Backs up every org once a day when `true` |
+| Encryption at rest | `BACKUP_ENCRYPTION_KEY` | AES-256-GCM (32-byte hex/base64 key). Empty = plaintext |
+| Offsite replication | `BACKUP_S3_BUCKET` (+ `BACKUP_S3_*`) | Copies each backup to an S3-compatible bucket. Falls back to the asset `STORAGE_S3_*` credentials |
+| Retention pruning | `BACKUP_RETENTION_DAYS` | Deletes backups (local + offsite + DB row) older than N days. `0` = keep forever |
+
+<Callout kind="tip">
+  Generate a 32-byte key with `openssl rand -hex 32` and supply it via
+  `BACKUP_ENCRYPTION_KEY` (or `BACKUP_ENCRYPTION_KEY_FILE`). Keep the key
+  **outside** the backups themselves — a lost key means unrecoverable archives.
+</Callout>
+
+### Restore Verification Drill
+
+A backup you can't restore isn't a backup. A weekly, read-only **restore drill**
+(`RESTORE_DRILL_ENABLED`, on by default) picks the most recent completed backup
+and verifies it actually restores — without touching live data — so a silently
+broken backup is caught before you need it.
+
 ## Automated Backups
 
 For production deployments, set up automated backups:
