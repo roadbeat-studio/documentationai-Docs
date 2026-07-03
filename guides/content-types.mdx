@@ -113,10 +113,14 @@ Each field supports validation rules, enforced **on the server** against the con
 - **Min/Max Value** — for number fields
 - **Pattern** — regex validation for text
 - **Unique** — value must be unique across all content of this type
-- **Cross-field rules** — e.g. an end date must come after a start date (`after_field`)
+- **Cross-field ordering** — one field's date/number must be on-or-after another (`after_field`) or on-or-before it (`before_field`) — e.g. an event's `end_date` must be on or after its `start_date`
+- **Conditional required** — a field can be required only when another field meets a condition: `requiredIf` (e.g. `phone` required when `contact_method` is `phone`) or `requiredUnless` (e.g. `price` required unless `is_free` is true)
+- **Referenced-item existence** — a **Media** field must point at an asset that exists in your organization, and a **Reference** field at existing content (of an allowed type when the field restricts it). Dangling ids are rejected so they never reach a published teaser
 - **Modular blocks** — block count limits and required inner fields for **Blocks** fields
 
-Invalid **drafts** are tolerated where the content type allows it, but **publishing is always strict** — invalid content can never go live. The content type definition itself is also validated when you save it: an uncompilable schema, an invalid version, or a form/teaser mapping that points at a missing property is rejected with a clear error.
+Validation failures come back as a single `422 Unprocessable Entity` with a per-field `errors` array (`path`, `message`, `keyword`), whether the problem is structural, a cross-field rule, or a missing reference.
+
+Invalid **drafts** are tolerated where the content type allows it, but **publishing is always strict** — invalid content (including dangling asset/reference ids) can never go live. The content type definition itself is also validated when you save it: an uncompilable schema, an invalid version, or a form/teaser mapping that points at a missing property is rejected with a clear error.
 
 <Callout kind="tip">
   **Inheritance & composition.** A content type can `extends` one or more abstract base types and apply reusable `mixins`, so shared field bundles (SEO, publishable metadata, geolocation) live in one place. The effective schema is computed by merging bases → mixins → own fields → overrides; circular graphs are rejected and abstract types can't hold content.

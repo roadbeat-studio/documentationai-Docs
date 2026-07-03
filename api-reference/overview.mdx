@@ -63,8 +63,23 @@ Errors return an appropriate HTTP status code with a structured error body:
 | `403` | Forbidden — insufficient permissions for this action |
 | `404` | Not Found — resource does not exist |
 | `409` | Conflict — duplicate resource (e.g., email already taken) |
+| `422` | Unprocessable Entity — content failed content-type validation |
 | `429` | Too Many Requests — rate limit exceeded |
 | `500` | Internal Server Error — unexpected server error |
+
+**Content validation errors** (creating/updating/publishing content) return `422` with a per-field `errors` array — one entry per rule that failed, each with a JSON-pointer `path`, a `message`, and the `keyword` that fired (e.g. `required`, `after_field`, `requiredIf`, `asset_exists`, `reference_exists`):
+
+```json
+{
+  "statusCode": 422,
+  "error": "Unprocessable Entity",
+  "message": "Content does not match its content type schema",
+  "errors": [
+    { "path": "/end_date", "message": "must be on or after \"start_date\"", "keyword": "after_field" },
+    { "path": "/cover_image", "message": "Referenced asset \"a1b2\" does not exist", "keyword": "asset_exists" }
+  ]
+}
+```
 
 ## Management API
 
@@ -172,6 +187,20 @@ Response includes pagination metadata:
   }
 }
 ```
+
+## Filtering
+
+List endpoints accept an allow-listed `filter[field]=value` convention. Each endpoint publishes the exact fields (and types) it will filter on; a field that isn't allow-listed is ignored rather than passed to the database, so filtering can never be used to probe unindexed or unintended columns.
+
+```bash
+# Only active API keys
+GET /api/v1/manage/api-keys?filter[isActive]=true
+
+# Discovery nodes in a given region
+GET /api/v1/manage/discovery-nodes?filter[region]=eu-central
+```
+
+Multiple `filter[...]` parameters combine with AND. Filtering composes with `page`/`pageSize` and sorting.
 
 ## Versioning
 

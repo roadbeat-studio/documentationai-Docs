@@ -56,6 +56,10 @@ Every upload is validated before anything is stored:
   so a renamed `.exe` posing as `.jpg` is rejected (`415`).
 - **Executables refused**, and **SVG rejected by default** (XSS risk) unless
   `ASSET_ALLOW_SVG=true`.
+- **Active-document types are served as downloads** — even when allowed (e.g. an
+  enabled SVG, or HTML), these are delivered with `Content-Disposition: attachment`
+  so the browser saves them instead of executing them inline, closing the stored-XSS
+  vector on the serving origin.
 
 ### Responsive image variants
 

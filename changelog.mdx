@@ -3,6 +3,62 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-07-03" description="Content validation depth, zero-leakage tenancy & UI consistency" tags={["feature", "security", "api"]}>
+  ## Richer content validation, completed tenant isolation & a consistent admin UI
+
+  ### Content validation
+
+  Server-side validation now covers the rules a JSON Schema alone can't express,
+  and the checks that keep published content coherent:
+
+  - **Cross-field ordering** — a date/number field can be constrained to be
+    on-or-after (`after_field`) **or on-or-before (`before_field`)** another
+    field (e.g. an event's `end_date` on or after its `start_date`).
+  - **Conditional required** — a field can be required only when another field
+    meets a condition: **`requiredIf`** (e.g. `phone` required when
+    `contact_method` is `phone`) or **`requiredUnless`** (e.g. `price` required
+    unless `is_free` is true).
+  - **Referenced-item existence** — **Media** fields must point at an asset that
+    exists in your organization, and **Reference** fields at existing content (of
+    an allowed type when the field restricts it). Dangling ids are rejected so
+    they can never reach a published teaser or federated object.
+
+  All of these merge into a single `422` with a per-field `errors` array
+  (`path` / `message` / `keyword`). Invalid **drafts** stay tolerated where the
+  content type allows it; **publishing is always strict**. See
+  [Content Types → Field Validation](/guides/content-types#field-validation).
+
+  ### API
+
+  - **Allow-listed filtering** — list endpoints accept a `filter[field]=value`
+    convention (combining with AND, and composing with pagination + sorting).
+    Only fields an endpoint explicitly allow-lists are honored, so filtering
+    can't probe unintended columns. See
+    [API Overview → Filtering](/api-reference/overview#filtering).
+
+  ### Security & platform
+
+  - **Zero-leakage tenancy completed** — the tenant-aware Prisma layer is now
+    rolled out across every module (content, assets, users, locales, publishing,
+    content-pod, comments, and more), so org scoping is applied automatically
+    rather than hand-written per query. In particular, comment reads/writes are
+    now scoped through their parent content's organization — a leaked comment or
+    content id from another tenant resolves to `404`, never another org's data.
+    See [Multi-Tenancy](/guides/multi-tenancy).
+  - **Asset serve hardening** — active-document uploads (an enabled SVG, HTML)
+    are served with `Content-Disposition: attachment` so the browser saves
+    rather than executes them, closing a stored-XSS vector. See
+    [Assets → Upload safety](/guides/assets#upload-safety).
+
+  ### Admin UI
+
+  - **Consistent design-system primitives** — buttons, inputs, selects, badges,
+    cards, and empty states now come from a shared set, so the sign-in/setup
+    flows, settings, profile, and list views share one look, focus/keyboard
+    behavior, and dark-mode treatment. Every list view shows a branded empty
+    state.
+</Update>
+
 <Update label="2026-07-02" description="Content lifecycle, observability & operator tooling" tags={["feature", "security", "api"]}>
   ## Content lifecycle, self-hosting observability & a hardened operator surface
 
