@@ -29,6 +29,9 @@ Paste or type text into the composer, then click a quick action:
 | **5 headlines** | Five headline options to choose from |
 | **Translate → FR** | A French translation |
 | **Improve** | A cleaner, tighter rewrite |
+| **Safety check** | An advisory safety & PII review of the open item (runs locally by default) |
+| **Suggest tags** | Facet suggestions limited to the values your content type's schema allows |
+| **Draft teaser** | A headline + description draft conforming to the type's teaser contract |
 
 Each result appears as a **card**. Actionable suggestions render as a diff (original vs suggestion); list actions like headlines render as selectable options.
 
@@ -45,14 +48,22 @@ Type a question or instruction and press Enter. The assistant streams its reply 
   <Step title="Accept or reject" icon="check">
     Click **Accept** to use a suggestion or **Reject** to dismiss it. For option lists, click **Use** on the one you want.
   </Step>
-  <Step title="Paste into your field" icon="clipboard">
-    Accepting copies the text to your clipboard and signals the editor — you stay in control of where it lands.
+  <Step title="It lands where you chose" icon="clipboard">
+    Accepting a per-field suggestion updates that field directly (and copies the value to your clipboard as a backup); panel-level suggestions copy to the clipboard for you to place.
   </Step>
 </Steps>
 
 <Callout kind="tip">
   Suggestions are **never applied automatically**. The assistant proposes; you decide.
 </Callout>
+
+### Duplicate warnings
+
+When you open a content item, the assistant quietly checks it against your organization's content index (a local vector search — nothing leaves your instance). If it finds likely duplicates, an amber banner lists them with similarity scores; near-verbatim copies are called out explicitly. It's advisory: nothing is merged or removed — you follow the links and decide.
+
+### Where did this run?
+
+Every suggestion carries a small **provenance badge**: **Local — no egress**, **EU cloud**, or **Non-EU cloud**, plus markers when sensitive data was redacted before the call or a fallback provider served it. If an action would use a non-EU provider for the first time, a **consent dialog** blocks it until your organization explicitly agrees — the decision is logged and an admin can revoke it.
 
 ## Per-Field AI Actions
 
