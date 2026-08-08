@@ -14,13 +14,21 @@ description: Release notes and updates for roadbeat Studio.
     areas (Authentication & Users, Content Management, Publishing &
     Distribution, Consumer Features, the Pro plugin areas, …), each generated
     from the API's controller metadata.
-  - **Responses documented everywhere** — every endpoint now documents its
-    response: typed schemas for the `{ "data": ... }` envelope on the
-    management/delivery/consumer APIs, plus the standard error body (`400`
-    validation and `401` authentication errors) on all secured endpoints.
+  - **Responses documented everywhere** — the Responses section used to be
+    empty on every endpoint. All 897 operations now document theirs, and every
+    Community-Edition endpoint that returns a JSON body shows its real field
+    list: content, assets, publishing, the Delivery API, webhooks, the whole
+    consumer surface, platform administration and federation. Pro endpoints
+    document the response envelope but not yet their per-field schemas.
+  - **Standard error responses** — secured endpoints document the `401` their
+    guard returns, and endpoints that accept a body document the `400` from
+    validation, both against one shared error schema.
   - **Error body reference** — [API Overview](/api-reference/overview) now
     shows the exact error format, including the stable `code` and the
     `requestId` correlation ID.
+
+  Endpoints that return a file, a stream, or no content are documented as such
+  rather than being given a body they do not send.
 </Update>
 
 <Update label="2026-07-03" description="Content validation depth, zero-leakage tenancy & UI consistency" tags={["feature", "security", "api"]}>

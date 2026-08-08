@@ -37,7 +37,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The link state. When no link exists only `linked: false` is returned — this is not an error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -47,11 +47,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdAccountStatusResponse"
                     }
                   }
                 }
@@ -70,7 +66,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The established link. Idempotent — an existing link is returned instead of a second account being provisioned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -80,11 +76,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdAccountStatusResponse"
                     }
                   }
                 }
@@ -101,7 +93,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The link was removed. The Context Directory account is not deleted — the user can re-link at any time.",
             "content": {
               "application/json": {
                 "schema": {
@@ -111,11 +103,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdAccountUnlinkedResponse"
                     }
                   }
                 }
@@ -145,7 +133,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of teasers with aggregated facets. Empty result (total 0, no nodes) when no Discovery Node is configured or reachable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -155,11 +143,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerSearchResponseDto"
                     }
                   }
                 }
@@ -214,7 +198,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Same shape as the federated search: the goal content queries are translated into node filters before the fan-out.",
             "content": {
               "application/json": {
                 "schema": {
@@ -224,11 +208,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerSearchResponseDto"
                     }
                   }
                 }
@@ -290,7 +270,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Merged, deduplicated suggestions from all Discovery Nodes.",
             "content": {
               "application/json": {
                 "schema": {
@@ -300,11 +280,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerSuggestionDto"
+                      }
                     }
                   }
                 }
@@ -339,7 +318,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One entry per configured node, probed live; unreachable nodes are reported as offline instead of being dropped.",
             "content": {
               "application/json": {
                 "schema": {
@@ -349,11 +328,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerDiscoveryNodeDto"
+                      }
                     }
                   }
                 }
@@ -397,7 +375,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Facet groups for the content type. Falls back to the built-in default facets (content type, date range, price) when no node answers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -407,11 +385,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerFacetGroupDto"
+                      }
                     }
                   }
                 }
@@ -463,7 +440,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The teaser with its full metadata, including the content-type-specific fields. `data` is null when no Discovery Node knows the slug.",
             "content": {
               "application/json": {
                 "schema": {
@@ -473,11 +450,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerTeaserDetailDto"
                     }
                   }
                 }
@@ -522,7 +495,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Teasers matching the source content type, categories, tags or publisher.",
             "content": {
               "application/json": {
                 "schema": {
@@ -532,11 +505,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerRelatedResponseDto"
                     }
                   }
                 }
@@ -598,7 +567,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The full content item plus the pod capabilities the reader needs. Local Studio content is served from the database; otherwise the teaser is resolved first and the content fetched from its Content Pod.",
             "content": {
               "application/json": {
                 "schema": {
@@ -608,11 +577,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerContentReaderResponseDto"
                     }
                   }
                 }
@@ -657,7 +622,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The JSON body the Content Pod returned, passed through unchanged. The shape is defined by the pod endpoint that was called (comments, reactions, statistics, …), so it is not modelled here.",
             "content": {
               "application/json": {
                 "schema": {
@@ -667,11 +632,9 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "additionalProperties": true,
+                      "description": "Verbatim response body of the pod `/_dynamic/` endpoint"
                     }
                   }
                 }
@@ -716,7 +679,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Whether the 3D globe is available, plus the Mapbox public token when configured.",
             "content": {
               "application/json": {
                 "schema": {
@@ -726,11 +689,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerMapboxConfigDto"
                     }
                   }
                 }
@@ -750,7 +709,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All content types the Schema Registry publishes; an empty array when the registry is unreachable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -760,11 +719,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerContentTypeDto"
+                      }
                     }
                   }
                 }
@@ -799,7 +757,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Content type categories with their members; an empty array when the registry is unreachable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -809,11 +767,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerContentTypeCategoryDto"
+                      }
                     }
                   }
                 }
@@ -848,7 +805,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All countries known to the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -858,11 +815,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerCountryDto"
+                      }
                     }
                   }
                 }
@@ -906,7 +862,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Country names for the requested locale, keyed by alpha-2 code.",
             "content": {
               "application/json": {
                 "schema": {
@@ -916,11 +872,14 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "DE": "Deutschland",
+                        "FR": "Frankreich"
+                      }
                     }
                   }
                 }
@@ -964,7 +923,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All regions of the requested country.",
             "content": {
               "application/json": {
                 "schema": {
@@ -974,11 +933,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerRegionDto"
+                      }
                     }
                   }
                 }
@@ -1022,7 +980,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All districts of the requested country, across all its regions.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1032,11 +990,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerDistrictDto"
+                      }
                     }
                   }
                 }
@@ -1071,7 +1028,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All languages known to the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1081,11 +1038,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerLanguageDto"
+                      }
                     }
                   }
                 }
@@ -1129,7 +1085,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Language names for the requested locale, keyed by ISO 639-1 code.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1139,11 +1095,14 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "de": "Deutsch",
+                        "fr": "Französisch"
+                      }
                     }
                   }
                 }
@@ -1177,7 +1136,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The user's full goal portfolio from the Context Directory, each goal enriched with its resolved `contentQueries`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1187,11 +1146,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerGoalDto"
+                      }
                     }
                   }
                 }
@@ -1208,7 +1166,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created goal as stored in the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1218,11 +1176,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerGoalDto"
                     }
                   }
                 }
@@ -1241,7 +1195,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created goals, in the order they were submitted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1251,11 +1205,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerGoalDto"
+                      }
                     }
                   }
                 }
@@ -1283,7 +1236,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The goal after the update.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1293,11 +1246,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerGoalDto"
                     }
                   }
                 }
@@ -1323,7 +1272,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The goal was deleted from the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1333,11 +1282,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -1356,7 +1301,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All goal trees / categories of the shared catalog (Redis cached, 30 min TTL).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1366,11 +1311,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerGoalCategoryDto"
+                      }
                     }
                   }
                 }
@@ -1398,7 +1342,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Categories with their subcategories for one goal tree (Redis cached, 30 min TTL).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1408,11 +1352,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerGoalTreeCategoryDto"
+                      }
                     }
                   }
                 }
@@ -1440,7 +1383,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The subcategory (filterset) with all its goal definitions (Redis cached, 30 min TTL).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1450,11 +1393,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerSubcategoryGoalsDto"
                     }
                   }
                 }
@@ -1490,7 +1429,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Full-text search results over the goal catalog; not cached.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1500,11 +1439,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerGoalSearchResultDto"
                     }
                   }
                 }
@@ -1556,7 +1491,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of the federated publisher directory. Nodes that fail to answer are skipped rather than failing the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1566,11 +1501,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerPublisherSearchResultDto"
                     }
                   }
                 }
@@ -1598,7 +1529,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The publisher profile from the first responding Discovery Node (Redis cached, 5 min TTL). 404 when no node knows the ID.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1608,11 +1539,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerPublisherDto"
                     }
                   }
                 }
@@ -1656,7 +1583,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of the publisher's most recent teasers from the first responding node; an empty page when none answers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1666,11 +1593,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerPublisherContentResultDto"
                     }
                   }
                 }
@@ -1689,7 +1612,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The user's full follow list as stored in the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1699,11 +1622,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerFollowDto"
+                      }
                     }
                   }
                 }
@@ -1720,7 +1642,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The follow list after the full replacement.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1730,11 +1652,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerFollowDto"
+                      }
                     }
                   }
                 }
@@ -1753,7 +1674,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The publisher IDs the user has muted (Studio-local, not synced).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1763,11 +1684,11 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Muted publisher IDs"
                     }
                   }
                 }
@@ -1784,7 +1705,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The mute list after the full replacement (echoes the request).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1794,11 +1715,11 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Muted publisher IDs"
                     }
                   }
                 }
@@ -1826,7 +1747,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The mute list after adding the publisher.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1836,11 +1757,11 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Muted publisher IDs"
                     }
                   }
                 }
@@ -1866,7 +1787,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The mute list after removing the publisher.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1876,11 +1797,11 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Muted publisher IDs"
                     }
                   }
                 }
@@ -1908,7 +1829,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The full follow list after adding the publisher.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1918,11 +1839,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerFollowDto"
+                      }
                     }
                   }
                 }
@@ -1948,7 +1868,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The full follow list after removing the publisher.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1958,11 +1878,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerFollowDto"
+                      }
                     }
                   }
                 }
@@ -1981,7 +1900,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The full sync package (profile, goals, follows, bookmarks, collections, preferences) aggregated from the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1991,11 +1910,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerSyncPackageDto"
                     }
                   }
                 }
@@ -2014,7 +1929,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A single-use pairing token with the package snapshot already stored behind it, valid for 10 minutes.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2024,11 +1939,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerSyncTokenDto"
                     }
                   }
                 }
@@ -2056,7 +1967,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The package stored for this token. Unauthenticated by design (the mobile app has no Studio session) and single-use: the token is burnt on read, so a repeat call 404s.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2066,11 +1977,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerSyncPackageDto"
                     }
                   }
                 }
@@ -2089,7 +1996,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deep link to render as a QR code; creates a fresh single-use token on every call.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2099,11 +2006,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerSyncQrDataDto"
                     }
                   }
                 }
@@ -2147,7 +2050,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of notifications (newest first) plus the unpaginated total.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2157,11 +2060,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerNotificationListDto"
                     }
                   }
                 }
@@ -2180,7 +2079,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Number of unread notifications — used for the badge in the consumer shell.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2190,11 +2089,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerUnreadCountDto"
                     }
                   }
                 }
@@ -2222,7 +2117,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The notification is marked read (also reported when the ID does not exist).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2232,11 +2127,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2255,7 +2146,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All unread notifications of the user are marked read.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2265,11 +2156,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2288,7 +2175,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The notification preferences; a default row is created on first access so this never 404s.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2298,11 +2185,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerNotificationPreferencesDto"
                     }
                   }
                 }
@@ -2319,7 +2202,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The full preference set after the update. Only supplied fields are written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2329,11 +2212,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerNotificationPreferencesDto"
                     }
                   }
                 }
@@ -2352,7 +2231,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Aggregate health with per-dependency detail. Always answers 200 — read `status` to distinguish healthy from degraded.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2362,11 +2241,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerHealthStatusDto"
                     }
                   }
                 }
@@ -2385,7 +2260,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Readiness probe — answers 200 in both cases; check `status`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2395,11 +2270,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerReadinessDto"
                     }
                   }
                 }
@@ -2418,7 +2289,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Liveness probe — no dependencies are touched.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2428,11 +2299,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerLivenessDto"
                     }
                   }
                 }
@@ -2484,7 +2351,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of bookmarks plus the unpaginated total. Teaser fields are resolved from the Discovery Nodes and omitted when no node answered.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2494,11 +2361,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerBookmarkListDto"
                     }
                   }
                 }
@@ -2515,7 +2378,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored bookmark. Re-bookmarking an existing teaser updates the note and returns the same record; teaser fields are not resolved here.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2525,11 +2388,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerBookmarkDto"
                     }
                   }
                 }
@@ -2557,7 +2416,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The bookmark was removed (also reported when it did not exist).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2567,11 +2426,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2590,7 +2445,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All of the user's bookmark collections with item counts, sorted by name.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2600,11 +2455,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerBookmarkCollectionDto"
+                      }
                     }
                   }
                 }
@@ -2621,7 +2475,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created collection; `itemCount` is always 0.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2631,11 +2485,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerBookmarkCollectionDto"
                     }
                   }
                 }
@@ -2663,7 +2513,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The collection was updated. Only the supplied fields are written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2673,11 +2523,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2703,7 +2549,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The collection and all its memberships were deleted; the bookmarks remain.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2713,11 +2559,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2745,7 +2587,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The bookmark was added to the collection. Also reported when the teaser is not bookmarked, in which case nothing was written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2755,11 +2597,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2795,7 +2633,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The bookmark is no longer part of the collection.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2805,11 +2643,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2837,7 +2671,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new ordering was persisted. Also reported when the collection does not belong to the user, in which case nothing was written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2847,11 +2681,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2870,7 +2700,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The push to the Context Directory was attempted. Always true — a failing CD sync is logged and swallowed so the client is not blocked.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2880,11 +2710,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -2903,7 +2729,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The Studio user profile, enriched with Context Directory data when the account is linked and the CD answers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2913,11 +2739,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerUserProfileDto"
                     }
                   }
                 }
@@ -2934,7 +2756,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The Context Directory profile after the update. When the CD does not support profile writes the current profile is returned unchanged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2944,11 +2766,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerCdProfileDto"
                     }
                   }
                 }
@@ -2967,7 +2785,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The Context Directory accepted the new password. A wrong current password or a too-weak new password surfaces as an error instead.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2977,11 +2795,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -3000,7 +2814,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored consumer preferences; a default row is created on first access so this never 404s.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3010,11 +2824,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerUserPreferencesDto"
                     }
                   }
                 }
@@ -3031,7 +2841,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The full preference set after the update. Only supplied fields are written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3041,11 +2851,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerUserPreferencesDto"
                     }
                   }
                 }
@@ -3064,7 +2870,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A GDPR export of profile, goals, follows, bookmarks, collections and preferences was generated and stored; use the returned link to download it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3074,11 +2880,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerDataExportTicketDto"
                     }
                   }
                 }
@@ -3139,7 +2941,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deletion was scheduled; the account is removed after a 30-day grace period.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3149,11 +2951,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerAccountDeletionDto"
                     }
                   }
                 }
@@ -3172,7 +2970,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A pending deletion request was cancelled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3182,11 +2980,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
                 }
@@ -3205,7 +2999,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The user's Fediverse identity as held by the Context Directory. `data` is null when no identity has been created yet.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3215,11 +3009,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApIdentityDto"
                     }
                   }
                 }
@@ -3236,7 +3026,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The Fediverse identity. Idempotent — an existing identity is returned as-is.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3246,11 +3036,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApIdentityDto"
                     }
                   }
                 }
@@ -3267,7 +3053,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The Fediverse identity after the update.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3277,11 +3063,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApIdentityDto"
                     }
                   }
                 }
@@ -3309,7 +3091,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Preview of a remote actor, resolved via WebFinger by the Context Directory before following.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3319,11 +3101,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApActorPreviewDto"
                     }
                   }
                 }
@@ -3342,7 +3120,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All Fediverse actors the user follows, including still-pending requests.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3352,11 +3130,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerApFollowDto"
+                      }
                     }
                   }
                 }
@@ -3373,7 +3150,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The follow record. `status` stays pending until the remote instance sends its Accept.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3383,11 +3160,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApFollowDto"
                     }
                   }
                 }
@@ -3446,7 +3219,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All Fediverse actors the user has blocked.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3456,11 +3229,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerApBlockDto"
+                      }
                     }
                   }
                 }
@@ -3477,7 +3249,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The block record created in the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3487,11 +3259,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApBlockDto"
                     }
                   }
                 }
@@ -3591,7 +3359,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of ingested Fediverse posts from the Context Directory timeline, optionally filtered by actor, full-text query or tag.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3601,11 +3369,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApPostListDto"
                     }
                   }
                 }
@@ -3633,7 +3397,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A single ingested post, including the actions the current user took on it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3643,11 +3407,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApPostDto"
                     }
                   }
                 }
@@ -3666,7 +3426,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored post as normalized by the Context Directory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3676,11 +3436,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApPostDto"
                     }
                   }
                 }
@@ -3699,7 +3455,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many posts of the batch were newly stored and how many were already known.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3709,11 +3465,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApIngestBatchResultDto"
                     }
                   }
                 }
@@ -3732,7 +3484,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All likes, boosts, replies and blocks the user recorded on Fediverse objects.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3742,11 +3494,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerApActionDto"
+                      }
                     }
                   }
                 }
@@ -3763,7 +3514,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The recorded action. `activityIri` is set only when the action was federated (`isPublic`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -3773,11 +3524,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ConsumerApActionDto"
                     }
                   }
                 }
@@ -3853,6 +3600,3020 @@
       }
     },
     "schemas": {
+      "CdAccountStatusResponse": {
+        "type": "object",
+        "properties": {
+          "linked": {
+            "type": "boolean",
+            "description": "Whether the Studio user has a linked Context Directory account"
+          },
+          "cdUserId": {
+            "type": "string",
+            "description": "Context Directory user ID (linked accounts only)"
+          },
+          "cdEmail": {
+            "type": "string",
+            "description": "Email of the linked Context Directory account"
+          },
+          "linkedAt": {
+            "type": "string",
+            "description": "When the link was established",
+            "format": "date-time"
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "description": "When consumer data was last synced through this link",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "linked"
+        ]
+      },
+      "CdAccountUnlinkedResponse": {
+        "type": "object",
+        "properties": {
+          "unlinked": {
+            "type": "boolean",
+            "description": "Always true — the link was removed; the CD account itself is kept",
+            "example": true
+          }
+        },
+        "required": [
+          "unlinked"
+        ]
+      },
+      "ConsumerAccountDeletionDto": {
+        "type": "object",
+        "properties": {
+          "deleteAt": {
+            "type": "string",
+            "description": "When the account will be deleted (30-day grace period, cancellable until then)",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "deleteAt"
+        ]
+      },
+      "ConsumerApActionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Action record ID"
+          },
+          "objectIri": {
+            "type": "string",
+            "description": "IRI of the object the action applies to"
+          },
+          "actionType": {
+            "type": "string",
+            "description": "What the user did",
+            "enum": [
+              "like",
+              "boost",
+              "reply",
+              "block"
+            ]
+          },
+          "activityIri": {
+            "type": "object",
+            "description": "IRI of the federated activity; null while the action stayed local",
+            "nullable": true
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Whether the action was federated to the Fediverse"
+          },
+          "content": {
+            "type": "object",
+            "description": "Reply text; null for non-reply actions",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the action was recorded",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "objectIri",
+          "actionType",
+          "activityIri",
+          "isPublic",
+          "content",
+          "createdAt"
+        ]
+      },
+      "ConsumerApActorPreviewDto": {
+        "type": "object",
+        "properties": {
+          "actorIri": {
+            "type": "string",
+            "description": "ActivityPub actor IRI"
+          },
+          "handle": {
+            "type": "string",
+            "description": "Fediverse handle",
+            "example": "@someone@mastodon.social"
+          },
+          "displayName": {
+            "type": "object",
+            "description": "Display name",
+            "nullable": true
+          },
+          "summary": {
+            "type": "object",
+            "description": "Profile summary / bio",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "actorType": {
+            "type": "string",
+            "description": "ActivityPub actor type",
+            "example": "Person"
+          },
+          "inboxUrl": {
+            "type": "string",
+            "description": "Inbox URL of the actor"
+          },
+          "sharedInboxUrl": {
+            "type": "object",
+            "description": "Shared inbox URL of the instance",
+            "nullable": true
+          },
+          "followersCount": {
+            "type": "number",
+            "description": "Follower count as reported by the remote instance"
+          },
+          "followingCount": {
+            "type": "number",
+            "description": "Following count as reported by the remote instance"
+          },
+          "postsCount": {
+            "type": "number",
+            "description": "Post count as reported by the remote instance"
+          }
+        },
+        "required": [
+          "actorIri",
+          "handle",
+          "displayName",
+          "summary",
+          "iconUrl",
+          "actorType",
+          "inboxUrl",
+          "sharedInboxUrl"
+        ]
+      },
+      "ConsumerApBlockDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Block record ID"
+          },
+          "actorIri": {
+            "type": "string",
+            "description": "ActivityPub actor IRI that is blocked"
+          },
+          "handle": {
+            "type": "object",
+            "description": "Fediverse handle of the blocked actor",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "object",
+            "description": "Display name of the blocked actor",
+            "nullable": true
+          },
+          "reason": {
+            "type": "object",
+            "description": "Reason the user gave for the block",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the block was created",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "actorIri",
+          "handle",
+          "displayName",
+          "reason",
+          "createdAt"
+        ]
+      },
+      "ConsumerApFollowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Follow record ID"
+          },
+          "actorIri": {
+            "type": "string",
+            "description": "ActivityPub actor IRI being followed"
+          },
+          "handle": {
+            "type": "string",
+            "description": "Fediverse handle of the followed actor"
+          },
+          "displayName": {
+            "type": "object",
+            "description": "Display name of the followed actor",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "object",
+            "description": "Avatar image URL of the followed actor",
+            "nullable": true
+          },
+          "actorType": {
+            "type": "string",
+            "description": "ActivityPub actor type",
+            "example": "Person"
+          },
+          "status": {
+            "type": "string",
+            "description": "Federation state of the follow request",
+            "example": "accepted"
+          },
+          "acceptedAt": {
+            "type": "object",
+            "description": "When the remote actor accepted the follow; null while pending",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the follow was requested",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "actorIri",
+          "handle",
+          "displayName",
+          "iconUrl",
+          "actorType",
+          "status",
+          "acceptedAt",
+          "createdAt"
+        ]
+      },
+      "ConsumerApIdentityDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Context Directory user ID that owns the identity"
+          },
+          "actorIri": {
+            "type": "string",
+            "description": "ActivityPub actor IRI of the user",
+            "example": "https://social.roadbeat.net/users/jane"
+          },
+          "handle": {
+            "type": "string",
+            "description": "Fediverse handle",
+            "example": "@jane@social.roadbeat.net"
+          },
+          "federationHost": {
+            "type": "string",
+            "description": "Host the identity federates through"
+          },
+          "displayName": {
+            "type": "object",
+            "description": "Public display name",
+            "nullable": true
+          },
+          "summary": {
+            "type": "object",
+            "description": "Profile summary / bio",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether federation is switched on for this identity"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the identity was created",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "userId",
+          "actorIri",
+          "handle",
+          "federationHost",
+          "displayName",
+          "summary",
+          "iconUrl",
+          "enabled",
+          "createdAt"
+        ]
+      },
+      "ConsumerApIngestBatchResultDto": {
+        "type": "object",
+        "properties": {
+          "ingested": {
+            "type": "number",
+            "description": "Posts newly stored by the Context Directory"
+          },
+          "skipped": {
+            "type": "number",
+            "description": "Posts skipped because they were already known"
+          }
+        },
+        "required": [
+          "ingested",
+          "skipped"
+        ]
+      },
+      "ConsumerApPostDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Post record ID in the Context Directory"
+          },
+          "objectIri": {
+            "type": "string",
+            "description": "ActivityPub object IRI of the post"
+          },
+          "actorIri": {
+            "type": "string",
+            "description": "Actor IRI that created the post"
+          },
+          "actorHandle": {
+            "type": "string",
+            "description": "Handle of the authoring actor",
+            "example": "@someone@mastodon.social"
+          },
+          "actorName": {
+            "type": "object",
+            "description": "Display name of the authoring actor",
+            "nullable": true
+          },
+          "actorIconUrl": {
+            "type": "object",
+            "description": "Avatar image URL of the authoring actor",
+            "nullable": true
+          },
+          "activityType": {
+            "type": "string",
+            "description": "ActivityPub activity type",
+            "example": "Create"
+          },
+          "objectType": {
+            "type": "string",
+            "description": "ActivityPub object type",
+            "example": "Note"
+          },
+          "content": {
+            "type": "object",
+            "description": "Post content as HTML",
+            "nullable": true
+          },
+          "contentText": {
+            "type": "object",
+            "description": "Post content with HTML stripped",
+            "nullable": true
+          },
+          "summary": {
+            "type": "object",
+            "description": "Content warning / summary",
+            "nullable": true
+          },
+          "url": {
+            "type": "object",
+            "description": "Permalink of the post on its origin instance",
+            "nullable": true
+          },
+          "inReplyTo": {
+            "type": "object",
+            "description": "IRI of the post this one replies to",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Hashtags of the post",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "language": {
+            "type": "object",
+            "description": "Language of the post",
+            "nullable": true,
+            "example": "en"
+          },
+          "sensitive": {
+            "type": "boolean",
+            "description": "Whether the post is flagged sensitive"
+          },
+          "attachments": {
+            "type": "array",
+            "description": "Media attachments as delivered by the origin instance",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "When the post was published",
+            "format": "date-time"
+          },
+          "receivedAt": {
+            "type": "string",
+            "description": "When the Context Directory ingested the post",
+            "format": "date-time"
+          },
+          "actions": {
+            "description": "The current user's actions on this post",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerApActionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "objectIri",
+          "actorIri",
+          "actorHandle",
+          "actorName",
+          "actorIconUrl",
+          "activityType",
+          "objectType",
+          "content",
+          "contentText",
+          "summary",
+          "url",
+          "inReplyTo",
+          "tags",
+          "language",
+          "sensitive",
+          "attachments",
+          "publishedAt",
+          "receivedAt"
+        ]
+      },
+      "ConsumerApPostListDto": {
+        "type": "object",
+        "properties": {
+          "posts": {
+            "description": "The requested page of posts",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerApPostDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total posts matching the filter, across all pages"
+          },
+          "page": {
+            "type": "number",
+            "description": "Page that was returned (1-based)",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "Page size that was applied",
+            "example": 20
+          }
+        },
+        "required": [
+          "posts",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "ConsumerBookmarkCollectionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Collection ID (UUID)"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Studio user ID that owns the collection"
+          },
+          "name": {
+            "type": "string",
+            "description": "Collection name",
+            "example": "Read later"
+          },
+          "icon": {
+            "type": "object",
+            "description": "Icon name chosen for the collection",
+            "nullable": true
+          },
+          "itemCount": {
+            "type": "number",
+            "description": "Number of bookmarks in the collection",
+            "example": 7
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the collection was created",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "name",
+          "icon",
+          "itemCount",
+          "createdAt"
+        ]
+      },
+      "ConsumerBookmarkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Bookmark ID (UUID)"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Studio user ID that owns the bookmark"
+          },
+          "teaserId": {
+            "type": "string",
+            "description": "ID of the bookmarked teaser"
+          },
+          "note": {
+            "type": "object",
+            "description": "Free-text note the user attached",
+            "nullable": true
+          },
+          "savedAt": {
+            "type": "string",
+            "description": "When the bookmark was saved",
+            "format": "date-time"
+          },
+          "collectionIds": {
+            "description": "IDs of the collections this bookmark belongs to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string",
+            "description": "Teaser headline, resolved from a Discovery Node"
+          },
+          "description": {
+            "type": "string",
+            "description": "Teaser description, resolved from a Discovery Node"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Teaser image URL, resolved from a Discovery Node"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content type slug of the teaser",
+            "example": "news"
+          },
+          "publisherName": {
+            "type": "string",
+            "description": "Publisher display name of the teaser"
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "Publication date of the teaser",
+            "format": "date-time"
+          },
+          "url": {
+            "type": "string",
+            "description": "Canonical URL of the teaser"
+          },
+          "badges": {
+            "description": "Teaser badges (e.g. free, verified)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "teaserId",
+          "note",
+          "savedAt",
+          "collectionIds"
+        ]
+      },
+      "ConsumerBookmarkListDto": {
+        "type": "object",
+        "properties": {
+          "bookmarks": {
+            "description": "The requested page of bookmarks",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerBookmarkDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total bookmarks matching the filter, across all pages",
+            "example": 42
+          }
+        },
+        "required": [
+          "bookmarks",
+          "total"
+        ]
+      },
+      "ConsumerCdProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Context Directory user ID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Context Directory account email / username"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Preferred locale",
+            "example": "en"
+          },
+          "location": {
+            "$ref": "#/components/schemas/ConsumerUserLocationDto"
+          },
+          "onboardingCompletedAt": {
+            "type": "string",
+            "description": "When the user finished Compass onboarding",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the account was created",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "locale",
+          "createdAt"
+        ]
+      },
+      "ConsumerContentReaderResponseDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "description": "The full content item in Content Pod format — from the local Studio database when the item was published here, otherwise fetched from the pod. Null for external content and when nothing could be resolved. Content-type-specific fields beyond the documented ones are passed through unchanged.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsumerPodContentItemDto"
+              }
+            ]
+          },
+          "podCapabilities": {
+            "description": "Dynamic features the hosting pod advertises; null when it has none or is external",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsumerPodCapabilitiesDto"
+              }
+            ]
+          },
+          "podBaseUrl": {
+            "type": "string",
+            "description": "Base URL the reader should use for follow-up pod calls (the content URL for pod sources, the canonical URL for external content, empty when unresolved)"
+          },
+          "isDynamic": {
+            "type": "boolean",
+            "description": "True when at least one pod capability is enabled"
+          },
+          "isExternal": {
+            "type": "boolean",
+            "description": "True when the content lives on a foreign domain and must be opened there"
+          },
+          "signatureValid": {
+            "type": "object",
+            "description": "Signature verification outcome; null when the content carries no `_signature` block",
+            "nullable": true
+          }
+        },
+        "required": [
+          "podBaseUrl",
+          "isDynamic",
+          "isExternal"
+        ]
+      },
+      "ConsumerContentTypeCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Category ID",
+            "example": "media"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized category name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Media",
+              "de": "Medien"
+            }
+          },
+          "contentTypeIds": {
+            "description": "Content type slugs that belong to this category",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "contentTypeIds"
+        ]
+      },
+      "ConsumerContentTypeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content type slug",
+            "example": "news"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized content type name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "News",
+              "de": "Nachrichten"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon name for the content type"
+          },
+          "category": {
+            "type": "string",
+            "description": "ID of the category the content type belongs to"
+          },
+          "fields": {
+            "description": "Fields the consumer UI can display or filter on",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerContentTypeFieldDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ConsumerContentTypeFieldDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Field key inside the content-type schema",
+            "example": "headline"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized field label, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Headline",
+              "de": "Schlagzeile"
+            }
+          },
+          "type": {
+            "type": "string",
+            "description": "Field type as declared in the JSON Schema",
+            "example": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "type"
+        ]
+      },
+      "ConsumerCountryDto": {
+        "type": "object",
+        "properties": {
+          "alpha2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 code",
+            "example": "DE"
+          },
+          "alpha3": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-3 code",
+            "example": "DEU"
+          },
+          "name": {
+            "type": "string",
+            "description": "Country name in English",
+            "example": "Germany"
+          }
+        },
+        "required": [
+          "alpha2",
+          "alpha3",
+          "name"
+        ]
+      },
+      "ConsumerDataExportTicketDto": {
+        "type": "object",
+        "properties": {
+          "downloadUrl": {
+            "type": "string",
+            "description": "Single-use path to download the generated export",
+            "example": "/api/v1/consumer/user/export/9f8c…"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When the download link expires (24 hours after the request)",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "downloadUrl",
+          "expiresAt"
+        ]
+      },
+      "ConsumerDiscoveryNodeDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Base URL of the Discovery Node"
+          },
+          "name": {
+            "type": "string",
+            "description": "Node display name; falls back to `Node <n>` when unreachable"
+          },
+          "status": {
+            "type": "string",
+            "description": "Reachability of the node as probed just now",
+            "enum": [
+              "online",
+              "offline",
+              "degraded"
+            ]
+          },
+          "contentTypes": {
+            "description": "Content types the node indexes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "teaserCount": {
+            "type": "number",
+            "description": "Number of teasers indexed on the node"
+          }
+        },
+        "required": [
+          "url",
+          "name",
+          "status",
+          "contentTypes"
+        ]
+      },
+      "ConsumerDistrictDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "District code",
+            "example": "DE-BY-091"
+          },
+          "name": {
+            "type": "string",
+            "description": "District name",
+            "example": "München"
+          },
+          "regionCode": {
+            "type": "string",
+            "description": "Code of the region the district belongs to",
+            "example": "BY"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 code of the country",
+            "example": "DE"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "regionCode",
+          "countryCode"
+        ]
+      },
+      "ConsumerFacetBucketDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Facet value key",
+            "example": "news"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label",
+            "example": "News"
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of matching teasers (for range facets: the min/max value instead)"
+          },
+          "selected": {
+            "type": "boolean",
+            "description": "True when the bucket is part of the active filter set"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "count"
+        ]
+      },
+      "ConsumerFacetGroupDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Filter field this facet applies to",
+            "example": "contentType"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable facet label",
+            "example": "Content Type"
+          },
+          "type": {
+            "type": "string",
+            "description": "Facet kind",
+            "enum": [
+              "terms",
+              "date_range",
+              "date_histogram",
+              "geo_distance",
+              "boolean",
+              "range"
+            ]
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerFacetBucketDto"
+            }
+          },
+          "content_type_specific": {
+            "type": "boolean",
+            "description": "True for facets derived from the x-filter annotations of a single content type schema"
+          },
+          "ui_hint": {
+            "type": "string",
+            "description": "UI rendering hint",
+            "enum": [
+              "chips",
+              "checkboxes",
+              "searchable_checkboxes",
+              "toggle",
+              "slider",
+              "date_picker",
+              "star_rating"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit label for range facets",
+            "example": "m²"
+          },
+          "labels": {
+            "type": "object",
+            "description": "Multilingual labels from the x-filter schema annotation, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Price",
+              "de": "Preis"
+            }
+          },
+          "priority": {
+            "type": "number",
+            "description": "Display priority (lower sorts higher in the sidebar)"
+          }
+        },
+        "required": [
+          "field",
+          "label",
+          "type",
+          "buckets"
+        ]
+      },
+      "ConsumerFollowDto": {
+        "type": "object",
+        "properties": {
+          "publisherId": {
+            "type": "string",
+            "description": "Publisher ID as registered on the Discovery Nodes"
+          },
+          "publisherName": {
+            "type": "string",
+            "description": "Publisher display name at the time of following"
+          },
+          "followedAt": {
+            "type": "string",
+            "description": "When the user started following",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "publisherId",
+          "publisherName",
+          "followedAt"
+        ]
+      },
+      "ConsumerGoalCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Goal tree / category ID",
+            "example": "research-intelligence"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description of what the category covers"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the goal catalog this entry came from"
+          },
+          "syncedAt": {
+            "type": "string",
+            "description": "When the Context Directory last synced this catalog entry",
+            "format": "date-time"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon name for the category"
+          },
+          "templateCount": {
+            "type": "number",
+            "description": "Number of goal templates in the category"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ]
+      },
+      "ConsumerGoalDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "goal_id": {
+            "type": "string",
+            "description": "Goal definition ID within its subcategory",
+            "example": "goal-001"
+          },
+          "goal": {
+            "type": "string",
+            "description": "Short goal label"
+          },
+          "goal_text": {
+            "type": "string",
+            "description": "Goal text template, may contain `{{param}}` placeholders",
+            "example": "Follow {{topic}} for newsroom research"
+          },
+          "time_context": {
+            "description": "Time horizons this goal makes sense for",
+            "example": [
+              "week",
+              "month"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerGoalParameterDto"
+            }
+          },
+          "progress_tracking": {
+            "$ref": "#/components/schemas/ConsumerGoalProgressTrackingDto"
+          },
+          "content_queries": {
+            "type": "array",
+            "description": "Content queries (filterset fragments) executed against Discovery Nodes when the goal is active",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "goal_id",
+          "goal",
+          "goal_text",
+          "time_context",
+          "parameters",
+          "content_queries"
+        ]
+      },
+      "ConsumerGoalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Goal ID assigned by the Context Directory (UUID)"
+          },
+          "templateId": {
+            "type": "string",
+            "description": "Goal template ID in `<subcategoryId>/<goalDefinitionId>` form, or 'custom' for a free-form goal",
+            "example": "research-intelligence-topic-monitoring/goal-001"
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "Goal category ID; empty string when the goal carries no category",
+            "example": "research-intelligence"
+          },
+          "name": {
+            "type": "string",
+            "description": "Goal text as shown to the user (CD `goalText`)",
+            "example": "Follow AI Ethics for newsroom research"
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Resolved parameter values for the goal template",
+            "additionalProperties": true,
+            "example": {
+              "topic": "AI Ethics"
+            }
+          },
+          "timeHorizon": {
+            "type": "string",
+            "description": "Planning horizon the goal belongs to",
+            "enum": [
+              "day",
+              "week",
+              "month",
+              "year",
+              "life"
+            ],
+            "example": "week"
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Display order within the portfolio (CD `priority`; 0 = default)",
+            "example": 0
+          },
+          "status": {
+            "type": "string",
+            "description": "Goal lifecycle state",
+            "enum": [
+              "active",
+              "paused",
+              "completed",
+              "abandoned"
+            ],
+            "example": "active"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the goal was created",
+            "format": "date-time"
+          },
+          "contentQueries": {
+            "type": "array",
+            "description": "Content queries resolved from the goal definition with `{{param}}` placeholders substituted. Returned by the portfolio endpoint only; an empty array when the goal has no template or its definition could not be resolved.",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "id",
+          "templateId",
+          "categoryId",
+          "name",
+          "parameters",
+          "timeHorizon",
+          "sortOrder",
+          "status",
+          "createdAt"
+        ]
+      },
+      "ConsumerGoalParameterDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Parameter name used in `{{placeholder}}` substitution",
+            "example": "topic"
+          },
+          "type": {
+            "type": "string",
+            "description": "Parameter value type",
+            "example": "string"
+          },
+          "default": {
+            "type": "object",
+            "description": "Default value (type depends on `type`)"
+          },
+          "validation": {
+            "type": "object",
+            "description": "Validation constraints for the parameter (e.g. min/max/pattern)",
+            "additionalProperties": true
+          },
+          "options": {
+            "description": "Allowed values for enumerated parameters",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      },
+      "ConsumerGoalProgressTrackingDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether progress tracking applies to this goal"
+          },
+          "type": {
+            "type": "string",
+            "description": "Tracking kind (e.g. counter, percentage)"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of the tracked value",
+            "example": "books"
+          },
+          "target_field": {
+            "type": "string",
+            "description": "Parameter that holds the target value"
+          }
+        },
+        "required": [
+          "enabled",
+          "type"
+        ]
+      },
+      "ConsumerGoalSearchHitDto": {
+        "type": "object",
+        "properties": {
+          "goal_id": {
+            "type": "string",
+            "description": "Goal definition ID",
+            "example": "goal-001"
+          },
+          "goal": {
+            "type": "string",
+            "description": "Short goal label"
+          },
+          "goal_text": {
+            "type": "string",
+            "description": "Goal text template"
+          },
+          "filterset_id": {
+            "type": "string",
+            "description": "Filterset ID backing the goal"
+          },
+          "goal_tree": {
+            "type": "string",
+            "description": "Goal tree the hit belongs to"
+          },
+          "goal_category": {
+            "type": "string",
+            "description": "Category the hit belongs to"
+          },
+          "goal_subcategory": {
+            "type": "string",
+            "description": "Subcategory the hit belongs to"
+          },
+          "time_context": {
+            "description": "Time horizons this goal makes sense for",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "parameters": {
+            "description": "Goal parameters; when the search index only carries parameter names they are returned as `{ name, type: \"string\" }`",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerGoalParameterDto"
+            }
+          }
+        },
+        "required": [
+          "goal_id",
+          "goal",
+          "goal_text",
+          "filterset_id",
+          "goal_tree",
+          "goal_category",
+          "goal_subcategory",
+          "time_context",
+          "parameters"
+        ]
+      },
+      "ConsumerGoalSearchResultDto": {
+        "type": "object",
+        "properties": {
+          "hits": {
+            "description": "Matching goal definitions, normalized to snake_case for the frontend",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerGoalSearchHitDto"
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "The query that was executed",
+            "example": "ai ethics"
+          },
+          "processingTimeMs": {
+            "type": "number",
+            "description": "Search engine execution time in milliseconds",
+            "example": 4
+          },
+          "estimatedTotalHits": {
+            "type": "number",
+            "description": "Estimated total number of matches",
+            "example": 17
+          }
+        },
+        "required": [
+          "hits",
+          "query",
+          "processingTimeMs",
+          "estimatedTotalHits"
+        ]
+      },
+      "ConsumerGoalTreeCategoryDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Category name within the goal tree"
+          },
+          "subcategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerGoalTreeSubcategoryDto"
+            }
+          },
+          "totalGoals": {
+            "type": "number",
+            "description": "Total goal definitions across all subcategories"
+          }
+        },
+        "required": [
+          "category",
+          "subcategories",
+          "totalGoals"
+        ]
+      },
+      "ConsumerGoalTreeSubcategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Subcategory (filterset) ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "goalCount": {
+            "type": "number",
+            "description": "Number of goal definitions in the subcategory"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "goalCount"
+        ]
+      },
+      "ConsumerHealthCheckDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Outcome of the dependency check",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "latencyMs": {
+            "type": "number",
+            "description": "Round-trip time of the probe in milliseconds",
+            "example": 3
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message when the probe failed"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ConsumerHealthStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Overall health — 'degraded' as soon as one dependency fails",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "When the checks ran",
+            "format": "date-time"
+          },
+          "checks": {
+            "type": "object",
+            "description": "Per-dependency results, keyed by dependency name (currently only `database`)",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ConsumerHealthCheckDto"
+            },
+            "example": {
+              "database": {
+                "status": "ok",
+                "latencyMs": 3
+              }
+            }
+          }
+        },
+        "required": [
+          "status",
+          "timestamp",
+          "checks"
+        ]
+      },
+      "ConsumerLanguageDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "ISO 639-1 language code",
+            "example": "de"
+          },
+          "name": {
+            "type": "string",
+            "description": "Language name in English",
+            "example": "German"
+          },
+          "native_name": {
+            "type": "string",
+            "description": "Language name in the language itself",
+            "example": "Deutsch"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "native_name"
+        ]
+      },
+      "ConsumerLivenessDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Always `alive` — the process is running",
+            "example": "alive"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Current server time",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "status",
+          "timestamp"
+        ]
+      },
+      "ConsumerMapboxConfigDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "True when a Mapbox token is configured and the 3D globe is available"
+          },
+          "token": {
+            "type": "object",
+            "description": "Mapbox public access token for client-side use; null when unconfigured",
+            "nullable": true
+          }
+        },
+        "required": [
+          "enabled",
+          "token"
+        ]
+      },
+      "ConsumerNotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Notification ID (UUID)"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Studio user ID the notification belongs to"
+          },
+          "type": {
+            "type": "string",
+            "description": "Notification kind, e.g. goal digest, publisher update, system announcement",
+            "example": "goal_digest"
+          },
+          "title": {
+            "type": "string",
+            "description": "Notification headline"
+          },
+          "body": {
+            "type": "object",
+            "description": "Notification body text",
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "description": "Type-specific payload (e.g. the goal or teaser the notification refers to)",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "actionUrl": {
+            "type": "object",
+            "description": "Frontend route to open when the notification is clicked",
+            "nullable": true
+          },
+          "isRead": {
+            "type": "boolean",
+            "description": "Whether the user has read the notification"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the notification was created",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "type",
+          "title",
+          "body",
+          "data",
+          "actionUrl",
+          "isRead",
+          "createdAt"
+        ]
+      },
+      "ConsumerNotificationListDto": {
+        "type": "object",
+        "properties": {
+          "notifications": {
+            "description": "The requested page of notifications, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerNotificationDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total notifications matching the filter, across all pages",
+            "example": 42
+          }
+        },
+        "required": [
+          "notifications",
+          "total"
+        ]
+      },
+      "ConsumerNotificationPreferencesDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Preference row ID (UUID)"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Studio user ID the preferences belong to"
+          },
+          "goalDigestFrequency": {
+            "type": "string",
+            "description": "How often goal digests are sent",
+            "example": "weekly"
+          },
+          "publisherUpdates": {
+            "type": "boolean",
+            "description": "Notify about new content from followed publishers"
+          },
+          "bookmarkReminders": {
+            "type": "boolean",
+            "description": "Remind the user about unread bookmarks"
+          },
+          "systemAnnouncements": {
+            "type": "boolean",
+            "description": "Receive system announcements"
+          },
+          "browserPush": {
+            "type": "boolean",
+            "description": "Deliver notifications as browser push messages"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "goalDigestFrequency",
+          "publisherUpdates",
+          "bookmarkReminders",
+          "systemAnnouncements",
+          "browserPush"
+        ]
+      },
+      "ConsumerOperationResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Always true when the operation succeeded",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "ConsumerPodCapabilitiesDto": {
+        "type": "object",
+        "properties": {
+          "comments": {
+            "type": "object",
+            "description": "Comment capability: `enabled`, `requireEmail`, `allowAnonymous`, `maxDepth`",
+            "additionalProperties": true
+          },
+          "reactions": {
+            "type": "object",
+            "description": "Reaction capability: `enabled` plus the available reaction `types`",
+            "additionalProperties": true
+          },
+          "statistics": {
+            "$ref": "#/components/schemas/ConsumerPodCapabilityDto"
+          },
+          "newsletter": {
+            "$ref": "#/components/schemas/ConsumerPodCapabilityDto"
+          },
+          "paywall": {
+            "$ref": "#/components/schemas/ConsumerPodCapabilityDto"
+          },
+          "eventRsvp": {
+            "$ref": "#/components/schemas/ConsumerPodCapabilityDto"
+          },
+          "readingProgress": {
+            "$ref": "#/components/schemas/ConsumerPodCapabilityDto"
+          },
+          "webmention": {
+            "$ref": "#/components/schemas/ConsumerPodCapabilityDto"
+          }
+        }
+      },
+      "ConsumerPodCapabilityDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the pod has this capability switched on"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "ConsumerPodContentItemDto": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "object",
+            "description": "Content identity: `content_id`, `slug`, `uuid`",
+            "additionalProperties": true
+          },
+          "headline": {
+            "type": "object",
+            "description": "Localized headline, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "article_body": {
+            "type": "object",
+            "description": "Localized article body (HTML), keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "article_type": {
+            "type": "object",
+            "description": "Article type: `code` plus localized `label`",
+            "additionalProperties": true
+          },
+          "classification": {
+            "type": "object",
+            "description": "Categories, topics and tags",
+            "additionalProperties": true
+          },
+          "geographic": {
+            "type": "object",
+            "description": "Geographic scope, country codes and locations",
+            "additionalProperties": true
+          },
+          "media": {
+            "type": "object",
+            "description": "Hero image and gallery",
+            "additionalProperties": true
+          },
+          "dates": {
+            "type": "object",
+            "description": "Publication and modification dates",
+            "additionalProperties": true
+          },
+          "publisher": {
+            "type": "object",
+            "description": "Publisher identity: `id`, `name`, `type`",
+            "additionalProperties": true
+          },
+          "access": {
+            "type": "object",
+            "description": "Access information: `is_free`, `access_type`, `languages`",
+            "additionalProperties": true
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Derived metadata: `word_count`, `reading_time_minutes`",
+            "additionalProperties": true
+          },
+          "_pod": {
+            "type": "object",
+            "description": "Pod hosting info: `canonical_url`, `embed_url`",
+            "additionalProperties": true
+          },
+          "_signature": {
+            "type": "object",
+            "description": "Detached content signature: `algorithm`, `signature`, `signed_at`, `content_hash`, `public_key_url`",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ConsumerPublisherContentResultDto": {
+        "type": "object",
+        "properties": {
+          "teasers": {
+            "description": "The publisher's most recent teasers, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerPublisherTeaserDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total teasers of this publisher on the answering node"
+          },
+          "page": {
+            "type": "number",
+            "description": "Page that was returned (1-based)",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "Page size that was applied",
+            "example": 9
+          }
+        },
+        "required": [
+          "teasers",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "ConsumerPublisherDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Publisher ID as registered on the Discovery Nodes"
+          },
+          "name": {
+            "type": "string",
+            "description": "Publisher display name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Publisher kind (e.g. organization, person, media)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Self-description of the publisher"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Avatar / logo image URL"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Primary domain of the publisher"
+          },
+          "studioUrl": {
+            "type": "string",
+            "description": "URL of the publishing Studio instance"
+          },
+          "verificationLevel": {
+            "type": "string",
+            "description": "How far the publisher identity was verified",
+            "enum": [
+              "unverified",
+              "domain",
+              "organization",
+              "trusted"
+            ]
+          },
+          "contentTypes": {
+            "description": "Content types the publisher publishes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "teaserCount": {
+            "type": "number",
+            "description": "Teasers indexed for this publisher (highest count across nodes wins)",
+            "example": 128
+          },
+          "publishFrequency": {
+            "type": "string",
+            "description": "How often the publisher publishes",
+            "example": "daily"
+          },
+          "registeredAt": {
+            "type": "string",
+            "description": "When the publisher registered with the node",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "verificationLevel",
+          "contentTypes",
+          "teaserCount"
+        ]
+      },
+      "ConsumerPublisherSearchResultDto": {
+        "type": "object",
+        "properties": {
+          "publishers": {
+            "description": "The requested page, deduplicated across nodes and sorted by teaser count",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerPublisherDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total distinct publishers found across all nodes",
+            "example": 57
+          },
+          "page": {
+            "type": "number",
+            "description": "Page that was returned (1-based)",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "Page size that was applied",
+            "example": 20
+          }
+        },
+        "required": [
+          "publishers",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "ConsumerPublisherTeaserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Teaser ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Teaser headline"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content type slug",
+            "example": "news"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Teaser image URL"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL the teaser links to"
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "Publication date",
+            "format": "date-time"
+          },
+          "score": {
+            "type": "number",
+            "description": "Relevance score reported by the Discovery Node"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "contentType"
+        ]
+      },
+      "ConsumerReadinessDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Whether the API can serve traffic; 'not_ready' when the database is unreachable",
+            "enum": [
+              "ready",
+              "not_ready"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ConsumerRegionDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Region code within the country",
+            "example": "BY"
+          },
+          "name": {
+            "type": "string",
+            "description": "Region name",
+            "example": "Bayern"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 code of the country",
+            "example": "DE"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "countryCode"
+        ]
+      },
+      "ConsumerRelatedResponseDto": {
+        "type": "object",
+        "properties": {
+          "teasers": {
+            "description": "Related teasers, with the source teaser excluded",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerTeaserDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Number of related teasers returned"
+          }
+        },
+        "required": [
+          "teasers",
+          "total"
+        ]
+      },
+      "ConsumerSearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "teasers": {
+            "description": "The requested page of teasers, merged and deduplicated across nodes",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerTeaserDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total matches across all queried nodes",
+            "example": 128
+          },
+          "page": {
+            "type": "number",
+            "description": "Page that was returned (1-based)",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "description": "Page size that was applied",
+            "example": 20
+          },
+          "facets": {
+            "description": "Facets aggregated over the result set",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerFacetGroupDto"
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "The full-text query that was executed"
+          },
+          "executionTimeMs": {
+            "type": "number",
+            "description": "Wall-clock time of the federated fan-out in milliseconds"
+          },
+          "nodes": {
+            "description": "URLs of the Discovery Nodes that contributed to the result",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "_debug": {
+            "type": "object",
+            "description": "Raw requests sent to each Discovery Node — returned only while debug output is enabled",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "teasers",
+          "total",
+          "page",
+          "limit",
+          "facets",
+          "executionTimeMs",
+          "nodes"
+        ]
+      },
+      "ConsumerSubcategoryGoalsDto": {
+        "type": "object",
+        "properties": {
+          "filterset_id": {
+            "type": "string",
+            "description": "Filterset ID backing this subcategory"
+          },
+          "name": {
+            "type": "string",
+            "description": "Subcategory display name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Subcategory description"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the filterset definition"
+          },
+          "goal_tree": {
+            "type": "string",
+            "description": "Goal tree the subcategory belongs to"
+          },
+          "goal_category": {
+            "type": "string",
+            "description": "Category the subcategory belongs to"
+          },
+          "goal_subcategory": {
+            "type": "string",
+            "description": "Subcategory identifier"
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerGoalDefinitionDto"
+            }
+          }
+        },
+        "required": [
+          "filterset_id",
+          "name",
+          "description",
+          "version",
+          "goal_tree",
+          "goal_category",
+          "goal_subcategory",
+          "goals"
+        ]
+      },
+      "ConsumerSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Suggested completion",
+            "example": "solar energy storage"
+          },
+          "type": {
+            "type": "string",
+            "description": "What the suggestion refers to",
+            "enum": [
+              "query",
+              "publisher",
+              "category"
+            ]
+          },
+          "score": {
+            "type": "number",
+            "description": "Ranking score reported by the node"
+          }
+        },
+        "required": [
+          "text",
+          "type"
+        ]
+      },
+      "ConsumerSyncBookmarkDto": {
+        "type": "object",
+        "properties": {
+          "teaserId": {
+            "type": "string",
+            "description": "ID of the bookmarked teaser"
+          },
+          "savedAt": {
+            "type": "string",
+            "description": "When the bookmark was saved",
+            "format": "date-time"
+          },
+          "collections": {
+            "description": "Collection IDs the bookmark belongs to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "teaserId",
+          "savedAt",
+          "collections"
+        ]
+      },
+      "ConsumerSyncCollectionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Collection ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Collection name"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon name chosen for the collection"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ConsumerSyncGoalDto": {
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "description": "Goal template ID; empty string for a free-form goal",
+            "example": "research-intelligence-topic-monitoring/goal-001"
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "First active filterset of the goal, used as its category; empty when none"
+          },
+          "name": {
+            "type": "string",
+            "description": "Goal text as shown to the user"
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Resolved parameter values for the goal template",
+            "additionalProperties": true
+          },
+          "timeHorizon": {
+            "type": "string",
+            "description": "Planning horizon the goal belongs to",
+            "enum": [
+              "day",
+              "week",
+              "month",
+              "year",
+              "life"
+            ],
+            "example": "week"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the goal was created",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "templateId",
+          "categoryId",
+          "name",
+          "timeHorizon",
+          "createdAt"
+        ]
+      },
+      "ConsumerSyncLocationDto": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "DE"
+          },
+          "regionCode": {
+            "type": "string",
+            "description": "Region code within the country",
+            "example": "BY"
+          },
+          "city": {
+            "type": "string",
+            "description": "City name"
+          }
+        },
+        "required": [
+          "countryCode"
+        ]
+      },
+      "ConsumerSyncPackageDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Sync package format version",
+            "example": "1.0.0"
+          },
+          "exportedAt": {
+            "type": "string",
+            "description": "When the package was generated",
+            "format": "date-time"
+          },
+          "user": {
+            "$ref": "#/components/schemas/ConsumerSyncUserDto"
+          },
+          "goals": {
+            "description": "The full goal portfolio",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerSyncGoalDto"
+            }
+          },
+          "follows": {
+            "description": "Followed publisher IDs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bookmarks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerSyncBookmarkDto"
+            }
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerSyncCollectionDto"
+            }
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/ConsumerSyncPreferencesDto"
+          }
+        },
+        "required": [
+          "version",
+          "exportedAt",
+          "user",
+          "goals",
+          "follows",
+          "bookmarks",
+          "collections",
+          "preferences"
+        ]
+      },
+      "ConsumerSyncPreferencesDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "Preferred locale",
+            "example": "en"
+          },
+          "theme": {
+            "type": "string",
+            "description": "UI theme; currently always 'system' in the package",
+            "example": "system"
+          },
+          "contentTypesEnabled": {
+            "description": "Content types to enable on the mobile client; empty means \"all\"",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "locale",
+          "theme",
+          "contentTypesEnabled"
+        ]
+      },
+      "ConsumerSyncQrDataDto": {
+        "type": "object",
+        "properties": {
+          "qrContent": {
+            "type": "string",
+            "description": "String to encode into the QR code — the deep link of a freshly created token",
+            "example": "roadbeat://sync/9f8c…"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When the encoded token expires",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "qrContent",
+          "expiresAt"
+        ]
+      },
+      "ConsumerSyncTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Single-use pairing token (64 hex characters)"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When the token expires (10 minutes after creation)",
+            "format": "date-time"
+          },
+          "syncUrl": {
+            "type": "string",
+            "description": "Deep link the mobile app opens to claim the package",
+            "example": "roadbeat://sync/9f8c…"
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt",
+          "syncUrl"
+        ]
+      },
+      "ConsumerSyncUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Context Directory user ID"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Account email"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Preferred locale",
+            "example": "en"
+          },
+          "location": {
+            "$ref": "#/components/schemas/ConsumerSyncLocationDto"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "email",
+          "locale"
+        ]
+      },
+      "ConsumerTeaserDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Teaser ID as assigned by the publishing Studio"
+          },
+          "title": {
+            "type": "string",
+            "description": "Teaser headline"
+          },
+          "description": {
+            "type": "string",
+            "description": "Teaser description / lead text"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Hero or thumbnail image URL"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content type slug",
+            "example": "news"
+          },
+          "publisherName": {
+            "type": "string",
+            "description": "Publisher display name"
+          },
+          "publisherId": {
+            "type": "string",
+            "description": "Publisher ID"
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "Publication date",
+            "format": "date-time"
+          },
+          "eventDate": {
+            "type": "string",
+            "description": "Event start date for date-bound content types",
+            "format": "date-time"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL the teaser links to"
+          },
+          "score": {
+            "type": "number",
+            "description": "Relevance score reported by the Discovery Node"
+          },
+          "badges": {
+            "description": "Teaser badges (e.g. free, verified)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "location": {
+            "$ref": "#/components/schemas/ConsumerTeaserLocationDto"
+          },
+          "isExternal": {
+            "type": "boolean",
+            "description": "True when the canonical URL points to a non-pod, non-Studio domain"
+          },
+          "canonicalUrl": {
+            "type": "string",
+            "description": "Full canonical URL of the content origin"
+          },
+          "contentSourceType": {
+            "type": "string",
+            "description": "Where the full content lives",
+            "enum": [
+              "pod",
+              "studio",
+              "external"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL slug of the content item"
+          },
+          "heroImageUrl": {
+            "type": "string",
+            "description": "Full-size hero image URL"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Thumbnail image URL"
+          },
+          "categories": {
+            "description": "Category slugs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "description": "Free-form tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "languages": {
+            "description": "Locales the content is available in",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accessType": {
+            "type": "string",
+            "description": "Access model",
+            "enum": [
+              "free",
+              "paid",
+              "subscription"
+            ]
+          },
+          "readingTimeMinutes": {
+            "type": "number",
+            "description": "Estimated reading time in minutes"
+          },
+          "wordCount": {
+            "type": "number",
+            "description": "Word count of the full content"
+          },
+          "modifiedAt": {
+            "type": "string",
+            "description": "Last modification date",
+            "format": "date-time"
+          },
+          "publisherAvatarUrl": {
+            "type": "string",
+            "description": "Publisher avatar image URL"
+          },
+          "publisherType": {
+            "type": "string",
+            "description": "Publisher kind (e.g. organization, person)"
+          },
+          "publisherVerificationLevel": {
+            "type": "string",
+            "description": "How far the publisher identity was verified",
+            "example": "domain"
+          },
+          "publisherDomain": {
+            "type": "string",
+            "description": "Publisher domain"
+          },
+          "locationName": {
+            "type": "string",
+            "description": "Place name of the content location"
+          },
+          "locationCountryCodes": {
+            "description": "Country codes the content relates to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "eventVenue": {
+            "type": "string",
+            "description": "Event venue (events content type)"
+          },
+          "eventRegistrationUrl": {
+            "type": "string",
+            "description": "Event registration URL (events content type)"
+          },
+          "eventTicketPrice": {
+            "type": "string",
+            "description": "Event ticket price (events content type)"
+          },
+          "jobSalaryRange": {
+            "type": "string",
+            "description": "Salary range (jobs content type)"
+          },
+          "jobEmploymentType": {
+            "type": "string",
+            "description": "Employment type (jobs content type)"
+          },
+          "jobCompanyName": {
+            "type": "string",
+            "description": "Hiring company name (jobs content type)"
+          },
+          "jobApplicationDeadline": {
+            "type": "string",
+            "description": "Application deadline (jobs content type)"
+          },
+          "recipesPrepTime": {
+            "type": "string",
+            "description": "Preparation time (recipes content type)"
+          },
+          "recipesCookTime": {
+            "type": "string",
+            "description": "Cooking time (recipes content type)"
+          },
+          "recipesServings": {
+            "type": "number",
+            "description": "Number of servings (recipes content type)"
+          },
+          "recipesDifficulty": {
+            "type": "string",
+            "description": "Difficulty (recipes content type)"
+          },
+          "realEstatePrice": {
+            "type": "string",
+            "description": "Asking price (real-estate content type)"
+          },
+          "realEstateRooms": {
+            "type": "number",
+            "description": "Room count (real-estate content type)"
+          },
+          "realEstateArea": {
+            "type": "string",
+            "description": "Living area (real-estate content type)"
+          },
+          "realEstateAddress": {
+            "type": "string",
+            "description": "Address (real-estate content type)"
+          },
+          "learningDuration": {
+            "type": "string",
+            "description": "Course duration (learning content type)"
+          },
+          "learningSkillLevel": {
+            "type": "string",
+            "description": "Required skill level (learning content type)"
+          },
+          "learningFormat": {
+            "type": "string",
+            "description": "Delivery format (learning content type)"
+          },
+          "minPrice": {
+            "type": "number",
+            "description": "Lowest price found in the content"
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 currency of `minPrice`",
+            "example": "EUR"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "contentType"
+        ]
+      },
+      "ConsumerTeaserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Teaser ID as assigned by the publishing Studio"
+          },
+          "title": {
+            "type": "string",
+            "description": "Teaser headline"
+          },
+          "description": {
+            "type": "string",
+            "description": "Teaser description / lead text"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Hero or thumbnail image URL"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content type slug",
+            "example": "news"
+          },
+          "publisherName": {
+            "type": "string",
+            "description": "Publisher display name"
+          },
+          "publisherId": {
+            "type": "string",
+            "description": "Publisher ID"
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "Publication date",
+            "format": "date-time"
+          },
+          "eventDate": {
+            "type": "string",
+            "description": "Event start date for date-bound content types",
+            "format": "date-time"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL the teaser links to"
+          },
+          "score": {
+            "type": "number",
+            "description": "Relevance score reported by the Discovery Node"
+          },
+          "badges": {
+            "description": "Teaser badges (e.g. free, verified)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "location": {
+            "$ref": "#/components/schemas/ConsumerTeaserLocationDto"
+          },
+          "isExternal": {
+            "type": "boolean",
+            "description": "True when the canonical URL points to a non-pod, non-Studio domain"
+          },
+          "canonicalUrl": {
+            "type": "string",
+            "description": "Full canonical URL of the content origin"
+          },
+          "contentSourceType": {
+            "type": "string",
+            "description": "Where the full content lives",
+            "enum": [
+              "pod",
+              "studio",
+              "external"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "contentType"
+        ]
+      },
+      "ConsumerTeaserLocationDto": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "DE"
+          },
+          "regionCode": {
+            "type": "string",
+            "description": "Region code within the country",
+            "example": "BY"
+          },
+          "lat": {
+            "type": "number",
+            "description": "Latitude",
+            "example": 48.1372
+          },
+          "lon": {
+            "type": "number",
+            "description": "Longitude",
+            "example": 11.5756
+          },
+          "name": {
+            "type": "string",
+            "description": "Place name",
+            "example": "München"
+          }
+        }
+      },
+      "ConsumerUnreadCountDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Number of unread notifications",
+            "example": 3
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "ConsumerUserLocationDto": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "DE"
+          },
+          "regionCode": {
+            "type": "string",
+            "description": "Region code within the country",
+            "example": "BY"
+          },
+          "districtCode": {
+            "type": "string",
+            "description": "District code within the region"
+          }
+        },
+        "required": [
+          "countryCode"
+        ]
+      },
+      "ConsumerUserPreferencesDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "UI locale",
+            "example": "en"
+          },
+          "theme": {
+            "type": "string",
+            "description": "UI theme",
+            "example": "system"
+          },
+          "privacySyncGoals": {
+            "type": "boolean",
+            "description": "Sync goals to the Context Directory"
+          },
+          "privacySyncFollows": {
+            "type": "boolean",
+            "description": "Sync the follow list to the Context Directory"
+          },
+          "privacySyncBookmarks": {
+            "type": "boolean",
+            "description": "Sync bookmarks to the Context Directory"
+          },
+          "privacyShareLocation": {
+            "type": "boolean",
+            "description": "Allow the location to be used for geo-scoped discovery"
+          },
+          "privacyAnalyticsConsent": {
+            "type": "boolean",
+            "description": "Consent to analytics collection"
+          },
+          "contentTypesEnabled": {
+            "description": "Content types the user enabled; empty means \"all\"",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "discoveryNodeUrls": {
+            "description": "Extra Discovery Node URLs the user added on top of the defaults",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "locale",
+          "theme",
+          "privacySyncGoals",
+          "privacySyncFollows",
+          "privacySyncBookmarks",
+          "privacyShareLocation",
+          "privacyAnalyticsConsent",
+          "contentTypesEnabled",
+          "discoveryNodeUrls"
+        ]
+      },
+      "ConsumerUserProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Studio user ID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Studio account email"
+          },
+          "name": {
+            "type": "string",
+            "description": "Studio display name (falls back to the email)"
+          },
+          "cdLinked": {
+            "type": "boolean",
+            "description": "Whether a Context Directory account is linked and reachable right now"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Preferred locale from the Context Directory profile (CD-linked users only)",
+            "example": "en"
+          },
+          "location": {
+            "description": "Home location from the Context Directory profile",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsumerUserLocationDto"
+              }
+            ]
+          },
+          "cdName": {
+            "type": "string",
+            "description": "Display name stored in the Context Directory"
+          },
+          "cdEmail": {
+            "type": "string",
+            "description": "Email stored in the Context Directory"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the Context Directory account was created",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "cdLinked"
+        ]
+      },
       "ErrorResponse": {
         "type": "object",
         "required": [

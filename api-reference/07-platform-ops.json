@@ -60,7 +60,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Edition/tier, every active plugin with its UI contributions, and the effective resource limits.",
             "content": {
               "application/json": {
                 "schema": {
@@ -70,11 +70,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PluginManifestDto"
                     }
                   }
                 }
@@ -95,7 +91,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "License metadata. For CE (no valid license) every field is the community fallback: edition \"community\", null tier/organization, empty features/limits.",
             "content": {
               "application/json": {
                 "schema": {
@@ -105,11 +101,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PluginLicenseInfoDto"
                     }
                   }
                 }
@@ -145,7 +137,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Why the instance runs on the edition it reports, plus expiry/grace telemetry.",
             "content": {
               "application/json": {
                 "schema": {
@@ -155,11 +147,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PluginLicenseDiagnosticsDto"
                     }
                   }
                 }
@@ -195,7 +183,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Active plugins, plugins that failed to activate, and plugins still using deprecated manifest event wiring.",
             "content": {
               "application/json": {
                 "schema": {
@@ -205,11 +193,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PluginHealthDto"
                     }
                   }
                 }
@@ -444,7 +428,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Organizations across the whole platform, with owner and related record counts.",
             "content": {
               "application/json": {
                 "schema": {
@@ -454,11 +438,31 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformOrganizationDto"
+                      }
                     },
                     "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
                     }
                   }
                 }
@@ -501,7 +505,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new organization, its initial admin user, and the auto-provisioned Content Pod when `podMode` was requested.",
             "content": {
               "application/json": {
                 "schema": {
@@ -511,11 +515,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformCreateOrganizationResultDto"
                     }
                   }
                 }
@@ -570,7 +570,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The organization with owner, related record counts and computed storage usage.",
             "content": {
               "application/json": {
                 "schema": {
@@ -580,11 +580,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformOrganizationDetailDto"
                     }
                   }
                 }
@@ -637,7 +633,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The organization after the update (unchanged when the body carried no fields).",
             "content": {
               "application/json": {
                 "schema": {
@@ -647,11 +643,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformOrganizationDetailDto"
                     }
                   }
                 }
@@ -704,7 +696,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Idempotent — `alreadyInactive: true` (and no counts) when the organization was not active.",
             "content": {
               "application/json": {
                 "schema": {
@@ -714,11 +706,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformDeactivateOrganizationResultDto"
                     }
                   }
                 }
@@ -763,7 +751,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All users of the organization, oldest first. Password hashes are never returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -773,11 +761,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformOrgUserDto"
+                      }
                     }
                   }
                 }
@@ -822,7 +809,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A fresh access + refresh token pair whose claims target the requested org.",
             "content": {
               "application/json": {
                 "schema": {
@@ -832,11 +819,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/TokenResponseDto"
                     }
                   }
                 }
@@ -881,7 +864,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The organization after the owner change (same shape as the detail endpoint).",
             "content": {
               "application/json": {
                 "schema": {
@@ -891,11 +874,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformOrganizationDetailDto"
                     }
                   }
                 }
@@ -930,7 +909,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All super-admins, ordered by when the role was granted (oldest first).",
             "content": {
               "application/json": {
                 "schema": {
@@ -940,11 +919,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformAdminListItemDto"
+                      }
                     }
                   }
                 }
@@ -977,7 +955,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created grant, with the promoted user and their home organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -987,11 +965,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformGrantSuperAdminResultDto"
                     }
                   }
                 }
@@ -1036,7 +1010,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The demoted user. Self-revocation and revoking the last remaining super-admin are rejected with 400.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1046,11 +1020,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformRevokeSuperAdminResultDto"
                     }
                   }
                 }
@@ -1085,7 +1055,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Cross-organization totals, plan breakdown and the newest organizations.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1095,11 +1065,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformStatsDto"
                     }
                   }
                 }
@@ -1144,7 +1110,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Summary rows only (id, localized name, icon, schema version) — the JSON Schemas are not included.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1154,11 +1120,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformOrgContentTypeDto"
+                      }
                     }
                   }
                 }
@@ -1203,7 +1168,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The content type row created in the target organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1213,11 +1178,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ContentTypeDto"
                     }
                   }
                 }
@@ -1271,7 +1232,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Confirmation of removal. Rejected with 409 while content items still reference the type.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1281,11 +1242,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformDisableContentTypeResultDto"
                     }
                   }
                 }
@@ -1331,7 +1288,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new organization (status \"onboarding\" by default), its initial admin user, and the auto-provisioned Content Pod when `podMode` was requested.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1341,11 +1298,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/PlatformCreateOrganizationResultDto"
                     }
                   }
                 }
@@ -1401,7 +1354,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Organization metadata, quotas vs. usage, the four-step onboarding checklist, and Content Pod state.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1411,11 +1364,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/OnboardingStatusDto"
                     }
                   }
                 }
@@ -1461,7 +1410,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Metadata of the created backup record (the archive itself is fetched separately via the export/backup endpoints).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1471,11 +1420,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/OnboardingExportResultDto"
                     }
                   }
                 }
@@ -1521,7 +1466,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Counts of the records the archive created or updated in the target organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1531,11 +1476,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/OnboardingImportResultDto"
                     }
                   }
                 }
@@ -1581,7 +1522,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Idempotent — `deactivated: false` with zeroed counts when the organization was already archived.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1591,11 +1532,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/OnboardingArchiveResultDto"
                     }
                   }
                 }
@@ -1641,7 +1578,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The one-time token and its remaining lifetime in seconds.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1651,11 +1588,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/SsoTokenDto"
                     }
                   }
                 }
@@ -1711,7 +1644,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A regular access + refresh token pair, identical to password login. The SSO token is consumed and cannot be replayed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1721,11 +1654,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/TokenResponseDto"
                     }
                   }
                 }
@@ -1765,7 +1694,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Gateway availability plus the publisher actor. `available: false` when no Federation Gateway is configured.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1775,11 +1704,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationStatusDto"
                     }
                   }
                 }
@@ -1822,7 +1747,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The provisioned (or already existing) publisher actor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1832,11 +1757,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationPublisherStateDto"
                     }
                   }
                 }
@@ -1879,7 +1800,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The publisher actor after the update.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1889,11 +1810,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationPublisherStateDto"
                     }
                   }
                 }
@@ -1937,7 +1854,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Cursor-paginated followers. Filter with `status=accepted|pending|all`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1947,11 +1864,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationFollowerPageDto"
                     }
                   }
                 }
@@ -2003,7 +1916,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The follower row with `acceptedAt` set.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2013,11 +1926,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationFollowerDto"
                     }
                   }
                 }
@@ -2108,7 +2017,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Cursor-paginated replies. Filter with `status=approved|pending_review|rejected|dropped|all` and `objectLinkId`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2118,11 +2027,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationReplyPageDto"
                     }
                   }
                 }
@@ -2174,7 +2079,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The reply with `status: \"approved\"` and the review audit fields set.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2184,11 +2089,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationReplyDto"
                     }
                   }
                 }
@@ -2240,7 +2141,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The reply with `status: \"rejected\"` and `rejectedReason` recorded.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2250,11 +2151,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationReplyDto"
                     }
                   }
                 }
@@ -2298,7 +2195,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Publisher-wide totals, plus a per-object breakdown when `perObject=true` is requested.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2308,11 +2205,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationReactionAnalyticsDto"
                     }
                   }
                 }
@@ -2356,7 +2249,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Cursor-paginated reactions. Filter with `kind=like|announce|all`, `objectLinkId` and `includeUndone`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2366,11 +2259,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationReactionPageDto"
                     }
                   }
                 }
@@ -2414,7 +2303,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Cursor-paginated moderation events. Filter with `kind=block|flag|all` and `status=open|resolved|dismissed|all`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2424,11 +2313,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationModerationEventPageDto"
                     }
                   }
                 }
@@ -2480,7 +2365,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The event with `status: \"resolved\"` and the resolution audit fields set.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2490,11 +2375,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationModerationEventDto"
                     }
                   }
                 }
@@ -2546,7 +2427,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The event with `status: \"dismissed\"` and the resolution audit fields set.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2556,11 +2437,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationModerationEventDto"
                     }
                   }
                 }
@@ -2604,7 +2481,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The effective follow/reply policy after the update.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2614,11 +2491,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/FederationPolicyStateDto"
                     }
                   }
                 }
@@ -2758,7 +2631,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Audit events for the current organization, newest first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2768,11 +2641,31 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AuditEventDto"
+                      }
                     },
                     "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
                     }
                   }
                 }
@@ -2807,7 +2700,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Current usage and the effective limit for every quota-bearing resource (org override → license → CE default).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2817,11 +2710,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/UsageResponseDto"
                     }
                   }
                 }
@@ -2873,7 +2762,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Notifications belonging to the authenticated user, newest first. `take` defaults to 50 and is capped at 100.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2883,11 +2772,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/NotificationDto"
+                      }
                     }
                   }
                 }
@@ -2922,7 +2810,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Unread notification count for the authenticated user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2932,11 +2820,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/NotificationUnreadCountDto"
                     }
                   }
                 }
@@ -2981,7 +2865,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Idempotent — `updated: 0` when the notification was already read or does not belong to the caller.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2991,11 +2875,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/NotificationMarkReadResultDto"
                     }
                   }
                 }
@@ -3030,7 +2910,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Number of previously-unread notifications that were marked read.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3040,11 +2920,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/NotificationMarkReadResultDto"
                     }
                   }
                 }
@@ -3079,7 +2955,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Counts, storage usage and recent-activity rollups for the current organization. Cached for CACHE_TTL_DASHBOARD seconds (default 60).",
             "content": {
               "application/json": {
                 "schema": {
@@ -3089,11 +2965,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/DashboardStatsDto"
                     }
                   }
                 }
@@ -3128,7 +3000,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Process uptime and memory. Never touches DB/Redis/MeiliSearch, so a dependency outage cannot trigger a pod restart.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3138,11 +3010,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/HealthLivenessDto"
                     }
                   }
                 }
@@ -3162,7 +3030,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-dependency check results. Readiness requires DB + Redis ok, search not in error, and the queue not degraded; federation is reported but never gates readiness. A not-ready instance answers 503 instead.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3172,11 +3040,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/HealthReadinessDto"
                     }
                   }
                 }
@@ -3196,7 +3060,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Legacy shape: always 200, reporting \"ok\" or \"degraded\" plus the database/redis/search subset of the readiness checks.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3206,11 +3070,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/HealthAggregateDto"
                     }
                   }
                 }
@@ -3230,7 +3090,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Instance-wide BullMQ job counts for the webhook and search-index queues.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3240,11 +3100,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/HealthQueuesDto"
                     }
                   }
                 }
@@ -3280,7 +3136,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Recent slow-query samples, newest first, from a bounded in-memory ring buffer (lost on restart).",
             "content": {
               "application/json": {
                 "schema": {
@@ -3290,11 +3146,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/HealthSlowQueriesDto"
                     }
                   }
                 }
@@ -3438,7 +3290,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All three result buckets are always present; the ones outside the requested `scope` carry an empty `hits` array. When MeiliSearch is unavailable every bucket is empty and `meta` reports `{ enabled: false, message }`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3448,11 +3300,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/UnifiedSearchResultDto"
                     }
                   }
                 }
@@ -3487,7 +3335,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-index document counts. When MeiliSearch is unavailable only `message` is returned and nothing was re-indexed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3497,11 +3345,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/SearchReindexResultDto"
                     }
                   }
                 }
@@ -3536,7 +3380,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Index health and per-index document counts. When MeiliSearch is disabled/unreachable only `enabled: false` is returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3546,11 +3390,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/SearchStatsDto"
                     }
                   }
                 }
@@ -3593,6 +3433,152 @@
       }
     },
     "schemas": {
+      "AuditEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Audit event UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "actorUserId": {
+            "type": "object",
+            "description": "UUID of the acting user; null for system-originated events",
+            "nullable": true
+          },
+          "action": {
+            "type": "string",
+            "description": "Machine-readable action name",
+            "example": "user.updated"
+          },
+          "resourceType": {
+            "type": "string",
+            "description": "Type of the affected resource",
+            "example": "user"
+          },
+          "resourceId": {
+            "type": "object",
+            "description": "ID of the affected resource",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Secret-free context for the event (e.g. email, role, slug). Secret-looking keys are replaced with \"[redacted]\" before the row is written.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "ip": {
+            "type": "object",
+            "description": "Client IP of the request that caused the event",
+            "nullable": true,
+            "example": "203.0.113.42"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the event was recorded",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "actorUserId",
+          "action",
+          "resourceType",
+          "resourceId",
+          "ip",
+          "createdAt"
+        ]
+      },
+      "ContentTypeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content type ID (stable, per organization)",
+            "example": "news"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized display name, keyed by locale",
+            "additionalProperties": true,
+            "example": {
+              "en": "News",
+              "de": "Nachrichten"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description, keyed by locale",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "schemaVersion": {
+            "type": "string",
+            "description": "Semver version of the schema this type currently carries",
+            "example": "1.2.0"
+          },
+          "schema": {
+            "type": "object",
+            "description": "JSON Schema (2020-12) used to validate content of this type. Shape is the schema document itself, including any roadbeat `x-filter` / `x-teaser` annotations.",
+            "additionalProperties": true
+          },
+          "formSchema": {
+            "type": "object",
+            "description": "UI form layout schema (field groups, order, widgets, `settings.allow_invalid_drafts`)",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "teaserSchema": {
+            "type": "object",
+            "description": "Teaser field mapping — which schema fields feed the Discovery Node teaser",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "icon": {
+            "type": "object",
+            "description": "Lucide icon name",
+            "nullable": true,
+            "example": "newspaper"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Type settings: `slugSource`/`displayField`, inheritance (`extends`, `mixins`, `abstract`, `fieldOverrides`) and other per-type flags",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "syncedAt": {
+            "type": "string",
+            "description": "When this type was last synced from (or written as if from) the Schema Registry",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "name",
+          "schemaVersion",
+          "schema",
+          "syncedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
       "CreateOrganizationDto": {
         "type": "object",
         "properties": {
@@ -3703,6 +3689,187 @@
           "userId"
         ]
       },
+      "DashboardContentAuthorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID of the creating user"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the creating user"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "DashboardContentByStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Workflow status",
+            "enum": [
+              "draft",
+              "in_review",
+              "published",
+              "archived"
+            ]
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of content items in this status"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ]
+      },
+      "DashboardContentByTypeDto": {
+        "type": "object",
+        "properties": {
+          "contentTypeId": {
+            "type": "string",
+            "description": "Content type slug",
+            "example": "news"
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of content items of this type"
+          }
+        },
+        "required": [
+          "contentTypeId",
+          "count"
+        ]
+      },
+      "DashboardRecentContentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content slug",
+            "example": "eu-launches-open-data-portal"
+          },
+          "status": {
+            "type": "string",
+            "description": "Workflow status",
+            "enum": [
+              "draft",
+              "in_review",
+              "published",
+              "archived"
+            ]
+          },
+          "contentTypeId": {
+            "type": "string",
+            "description": "Content type slug",
+            "example": "news"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last modification time",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "description": "The user who created the item",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DashboardContentAuthorDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "status",
+          "contentTypeId",
+          "updatedAt",
+          "createdBy"
+        ]
+      },
+      "DashboardStatsDto": {
+        "type": "object",
+        "properties": {
+          "contentCount": {
+            "type": "number",
+            "description": "Total content items in the organization",
+            "example": 128
+          },
+          "publishedCount": {
+            "type": "number",
+            "description": "Content items with status \"published\"",
+            "example": 74
+          },
+          "draftCount": {
+            "type": "number",
+            "description": "Content items with status \"draft\"",
+            "example": 41
+          },
+          "assetCount": {
+            "type": "number",
+            "description": "Total assets in the organization",
+            "example": 512
+          },
+          "userCount": {
+            "type": "number",
+            "description": "Total users in the organization",
+            "example": 6
+          },
+          "contentTypeCount": {
+            "type": "number",
+            "description": "Content types enabled for the organization",
+            "example": 12
+          },
+          "storageUsedBytes": {
+            "type": "number",
+            "description": "Sum of all asset sizes in bytes",
+            "example": 734003200
+          },
+          "recentContent": {
+            "description": "The 10 most recently updated content items, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardRecentContentDto"
+            }
+          },
+          "contentByType": {
+            "description": "Content item counts grouped by content type",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardContentByTypeDto"
+            }
+          },
+          "contentByStatus": {
+            "description": "Content item counts grouped by workflow status",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardContentByStatusDto"
+            }
+          }
+        },
+        "required": [
+          "contentCount",
+          "publishedCount",
+          "draftCount",
+          "assetCount",
+          "userCount",
+          "contentTypeCount",
+          "storageUsedBytes",
+          "recentContent",
+          "contentByType",
+          "contentByStatus"
+        ]
+      },
       "ErrorResponse": {
         "type": "object",
         "required": [
@@ -3771,6 +3938,3556 @@
           "token"
         ]
       },
+      "FederationFollowerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Follower row ID (Gateway-side)"
+          },
+          "followerIri": {
+            "type": "string",
+            "description": "ActivityPub IRI of the remote follower",
+            "example": "https://mastodon.example/users/alice"
+          },
+          "followerInbox": {
+            "type": "string",
+            "description": "Inbox URL deliveries are sent to"
+          },
+          "acceptedAt": {
+            "type": "object",
+            "description": "When the follow was accepted; null while pending review",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the Follow activity arrived",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "followerIri",
+          "followerInbox",
+          "acceptedAt",
+          "createdAt"
+        ]
+      },
+      "FederationFollowerPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Followers on this page",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FederationFollowerDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object",
+            "description": "Cursor for the next page; null on the last page",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "FederationModerationEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Moderation event ID (Gateway-side)"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Event kind",
+            "enum": [
+              "block",
+              "flag"
+            ]
+          },
+          "activityIri": {
+            "type": "string",
+            "description": "IRI of the inbound Block/Flag activity"
+          },
+          "remoteActorIri": {
+            "type": "string",
+            "description": "ActivityPub IRI of the reporting/blocking remote account"
+          },
+          "remoteActorHandle": {
+            "type": "object",
+            "description": "Fediverse handle of the remote account, when resolvable",
+            "nullable": true
+          },
+          "targetIris": {
+            "description": "IRIs the activity targeted",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "object",
+            "description": "Reason supplied by the reporter",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Queue state",
+            "enum": [
+              "open",
+              "resolved",
+              "dismissed"
+            ]
+          },
+          "resolution": {
+            "type": "object",
+            "description": "Reason recorded when the event was closed",
+            "nullable": true
+          },
+          "resolvedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resolvedBy": {
+            "type": "object",
+            "description": "Email or UUID of the Studio user who closed the event",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the activity arrived",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "activityIri",
+          "remoteActorIri",
+          "remoteActorHandle",
+          "targetIris",
+          "reason",
+          "status",
+          "resolution",
+          "resolvedAt",
+          "resolvedBy",
+          "createdAt"
+        ]
+      },
+      "FederationModerationEventPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Moderation events on this page",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FederationModerationEventDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object",
+            "description": "Cursor for the next page; null on the last page",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "FederationPolicyStateDto": {
+        "type": "object",
+        "properties": {
+          "followPolicy": {
+            "type": "string",
+            "description": "How inbound Follow activities are handled",
+            "enum": [
+              "auto_accept",
+              "manual_approve"
+            ]
+          },
+          "replyPolicy": {
+            "type": "string",
+            "description": "How inbound replies are handled",
+            "enum": [
+              "auto_approve",
+              "manual_approve",
+              "drop"
+            ]
+          }
+        },
+        "required": [
+          "followPolicy",
+          "replyPolicy"
+        ]
+      },
+      "FederationPublisherStateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Federation actor ID (Gateway-side)"
+          },
+          "iri": {
+            "type": "string",
+            "description": "ActivityPub actor IRI",
+            "example": "https://social.example.org/publishers/my-news-org"
+          },
+          "handle": {
+            "type": "string",
+            "description": "Fediverse handle",
+            "example": "@my-news-org@social.example.org"
+          },
+          "host": {
+            "type": "string",
+            "description": "Host serving the actor",
+            "example": "social.example.org"
+          },
+          "localId": {
+            "type": "string",
+            "description": "URL-safe local ID (defaults to the org slug)"
+          },
+          "name": {
+            "type": "object",
+            "description": "Display name of the actor",
+            "nullable": true
+          },
+          "summary": {
+            "type": "object",
+            "description": "Actor summary / bio",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "object",
+            "description": "Header image URL",
+            "nullable": true
+          },
+          "federationEnabled": {
+            "type": "boolean",
+            "description": "Whether outbound federation is switched on"
+          },
+          "externalSource": {
+            "type": "object",
+            "description": "System that owns this actor, e.g. \"studio\"",
+            "nullable": true
+          },
+          "externalSourceId": {
+            "type": "object",
+            "description": "Studio organization UUID behind this actor",
+            "nullable": true
+          },
+          "followerCount": {
+            "type": "number",
+            "description": "Remote accounts following this publisher"
+          },
+          "followingCount": {
+            "type": "number",
+            "description": "Remote accounts this publisher follows"
+          },
+          "pendingDeliveries": {
+            "type": "number",
+            "description": "Outbound deliveries still queued"
+          },
+          "failedDeliveries": {
+            "type": "number",
+            "description": "Outbound deliveries that exhausted their retries"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "iri",
+          "handle",
+          "host",
+          "localId",
+          "name",
+          "summary",
+          "iconUrl",
+          "imageUrl",
+          "federationEnabled",
+          "externalSource",
+          "externalSourceId",
+          "followerCount",
+          "followingCount",
+          "pendingDeliveries",
+          "failedDeliveries",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "FederationReactionAnalyticsDto": {
+        "type": "object",
+        "properties": {
+          "totals": {
+            "description": "Aggregate counts across the whole publisher",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FederationReactionTotalsDto"
+              }
+            ]
+          },
+          "perObject": {
+            "description": "Per-object breakdown; only present when `perObject=true` was requested",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FederationReactionPerObjectDto"
+            }
+          }
+        },
+        "required": [
+          "totals"
+        ]
+      },
+      "FederationReactionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Reaction row ID (Gateway-side)"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Reaction kind",
+            "enum": [
+              "like",
+              "announce"
+            ]
+          },
+          "activityIri": {
+            "type": "string",
+            "description": "IRI of the inbound Like/Announce activity"
+          },
+          "remoteActorIri": {
+            "type": "string",
+            "description": "ActivityPub IRI of the reacting remote account"
+          },
+          "remoteActorHandle": {
+            "type": "object",
+            "description": "Fediverse handle of the reacting account, when resolvable",
+            "nullable": true
+          },
+          "objectIri": {
+            "type": "string",
+            "description": "IRI of the object that was liked/boosted"
+          },
+          "objectLinkId": {
+            "type": "object",
+            "description": "The federated object (content item link) that was reacted to",
+            "nullable": true
+          },
+          "undoneAt": {
+            "type": "object",
+            "description": "When the reaction was undone (Undo activity); null while active",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the reaction arrived",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "activityIri",
+          "remoteActorIri",
+          "remoteActorHandle",
+          "objectIri",
+          "objectLinkId",
+          "undoneAt",
+          "createdAt"
+        ]
+      },
+      "FederationReactionPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Reactions on this page",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FederationReactionDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object",
+            "description": "Cursor for the next page; null on the last page",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "FederationReactionPerObjectDto": {
+        "type": "object",
+        "properties": {
+          "objectLinkId": {
+            "type": "string",
+            "description": "The federated object (content item link) ID"
+          },
+          "likes": {
+            "type": "number",
+            "description": "Likes on this object"
+          },
+          "announces": {
+            "type": "number",
+            "description": "Announces (boosts) on this object"
+          }
+        },
+        "required": [
+          "objectLinkId",
+          "likes",
+          "announces"
+        ]
+      },
+      "FederationReactionTotalsDto": {
+        "type": "object",
+        "properties": {
+          "likes": {
+            "type": "number",
+            "description": "Active Like activities received"
+          },
+          "announces": {
+            "type": "number",
+            "description": "Active Announce (boost) activities received"
+          }
+        },
+        "required": [
+          "likes",
+          "announces"
+        ]
+      },
+      "FederationReplyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Reply row ID (Gateway-side)"
+          },
+          "noteIri": {
+            "type": "string",
+            "description": "ActivityPub IRI of the inbound Note"
+          },
+          "noteInReplyTo": {
+            "type": "string",
+            "description": "IRI of the object this Note replies to"
+          },
+          "remoteActorIri": {
+            "type": "string",
+            "description": "ActivityPub IRI of the remote author"
+          },
+          "remoteActorHandle": {
+            "type": "object",
+            "description": "Fediverse handle of the remote author, when resolvable",
+            "nullable": true,
+            "example": "@alice@mastodon.example"
+          },
+          "contentHtml": {
+            "type": "string",
+            "description": "Sanitized HTML body of the reply"
+          },
+          "contentText": {
+            "type": "string",
+            "description": "Plain-text body of the reply"
+          },
+          "language": {
+            "type": "object",
+            "description": "BCP-47 language tag declared by the sender",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "Publication time declared by the sender",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "description": "Moderation state of the reply",
+            "enum": [
+              "approved",
+              "pending_review",
+              "rejected",
+              "dropped"
+            ]
+          },
+          "rejectedReason": {
+            "type": "object",
+            "description": "Reason recorded when the reply was rejected",
+            "nullable": true
+          },
+          "reviewedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reviewedBy": {
+            "type": "object",
+            "description": "Email or UUID of the reviewing Studio user",
+            "nullable": true
+          },
+          "objectLinkId": {
+            "type": "object",
+            "description": "The federated object (content item link) this reply belongs to",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the reply arrived",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "noteIri",
+          "noteInReplyTo",
+          "remoteActorIri",
+          "remoteActorHandle",
+          "contentHtml",
+          "contentText",
+          "language",
+          "publishedAt",
+          "status",
+          "rejectedReason",
+          "reviewedAt",
+          "reviewedBy",
+          "objectLinkId",
+          "createdAt"
+        ]
+      },
+      "FederationReplyPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Replies on this page",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FederationReplyDto"
+            }
+          },
+          "nextCursor": {
+            "type": "object",
+            "description": "Cursor for the next page; null on the last page",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "FederationStatusDto": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "description": "False when no Federation Gateway is configured for this Studio instance — `state` is then always null."
+          },
+          "state": {
+            "description": "The publisher actor, or null when the organization is not provisioned yet",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FederationPublisherStateDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "available",
+          "state"
+        ]
+      },
+      "HealthAggregateDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Legacy aggregate verdict. This route always answers 200 and reports \"degraded\" instead of failing.",
+            "enum": [
+              "ok",
+              "degraded"
+            ],
+            "example": "ok"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "When the probe was answered",
+            "format": "date-time"
+          },
+          "services": {
+            "description": "Subset of the readiness checks kept for backwards compatibility",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HealthAggregateServicesDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "timestamp",
+          "services"
+        ]
+      },
+      "HealthAggregateServicesDto": {
+        "type": "object",
+        "properties": {
+          "database": {
+            "type": "string",
+            "description": "PostgreSQL reachability",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "redis": {
+            "type": "string",
+            "description": "Redis reachability",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "search": {
+            "type": "string",
+            "description": "MeiliSearch health; 'disabled' when search is switched off",
+            "enum": [
+              "ok",
+              "disabled",
+              "error"
+            ]
+          }
+        },
+        "required": [
+          "database",
+          "redis",
+          "search"
+        ]
+      },
+      "HealthLivenessDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Always \"ok\" — the route only answers when the process is alive.",
+            "example": "ok"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "When the probe was answered",
+            "format": "date-time"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "description": "Process uptime in whole seconds",
+            "example": 86400
+          },
+          "memory": {
+            "description": "Process memory snapshot",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HealthMemoryDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "timestamp",
+          "uptimeSeconds",
+          "memory"
+        ]
+      },
+      "HealthMemoryDto": {
+        "type": "object",
+        "properties": {
+          "rssBytes": {
+            "type": "number",
+            "description": "Resident set size in bytes",
+            "example": 187891712
+          },
+          "heapUsedBytes": {
+            "type": "number",
+            "description": "Used V8 heap in bytes",
+            "example": 98566144
+          }
+        },
+        "required": [
+          "rssBytes",
+          "heapUsedBytes"
+        ]
+      },
+      "HealthQueueCountsDto": {
+        "type": "object",
+        "properties": {
+          "waiting": {
+            "type": "number",
+            "description": "Jobs waiting to be processed"
+          },
+          "active": {
+            "type": "number",
+            "description": "Jobs currently being processed"
+          },
+          "completed": {
+            "type": "number",
+            "description": "Jobs completed (retained window)"
+          },
+          "failed": {
+            "type": "number",
+            "description": "Jobs that exhausted their retries"
+          }
+        },
+        "required": [
+          "waiting",
+          "active",
+          "completed",
+          "failed"
+        ]
+      },
+      "HealthQueuesDto": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "description": "When the counts were sampled",
+            "format": "date-time"
+          },
+          "queues": {
+            "description": "Per-queue job counts, instance-wide (all organizations)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HealthQueuesMapDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "timestamp",
+          "queues"
+        ]
+      },
+      "HealthQueuesMapDto": {
+        "type": "object",
+        "properties": {
+          "webhooks": {
+            "description": "Outbound webhook delivery queue",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HealthQueueCountsDto"
+              }
+            ]
+          },
+          "searchIndex": {
+            "description": "MeiliSearch indexing queue",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HealthQueueCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "webhooks",
+          "searchIndex"
+        ]
+      },
+      "HealthReadinessDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Overall readiness. Always \"ok\" on a 200; a not-ready instance answers 503 with the same body carried in the error payload.",
+            "enum": [
+              "ok",
+              "error"
+            ],
+            "example": "ok"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "When the probe was answered",
+            "format": "date-time"
+          },
+          "services": {
+            "description": "Per-dependency check results",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HealthReadinessServicesDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "timestamp",
+          "services"
+        ]
+      },
+      "HealthReadinessServicesDto": {
+        "type": "object",
+        "properties": {
+          "database": {
+            "type": "string",
+            "description": "PostgreSQL reachability (`SELECT 1`)",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "redis": {
+            "type": "string",
+            "description": "Redis reachability (PING)",
+            "enum": [
+              "ok",
+              "error"
+            ]
+          },
+          "search": {
+            "type": "string",
+            "description": "MeiliSearch health; 'disabled' when search is switched off",
+            "enum": [
+              "ok",
+              "disabled",
+              "error"
+            ]
+          },
+          "queue": {
+            "type": "string",
+            "description": "BullMQ backlog check; 'degraded' once failed > 100 or waiting > 10 000 jobs across the webhook and search-index queues.",
+            "enum": [
+              "ok",
+              "degraded",
+              "error"
+            ]
+          },
+          "federation": {
+            "type": "string",
+            "description": "Federation Gateway reachability; 'disabled' when no gateway is wired. Reported but deliberately EXCLUDED from the readiness gate (IMP-OPS-14).",
+            "enum": [
+              "ok",
+              "disabled",
+              "error"
+            ]
+          }
+        },
+        "required": [
+          "database",
+          "redis",
+          "search",
+          "queue",
+          "federation"
+        ]
+      },
+      "HealthSlowQueriesDto": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "description": "When the samples were read",
+            "format": "date-time"
+          },
+          "thresholdNote": {
+            "type": "string",
+            "description": "How the threshold is configured",
+            "example": "Configurable via SLOW_QUERY_MS (default 200ms)"
+          },
+          "samples": {
+            "description": "Recent slow queries, most recent first (bounded in-memory ring buffer)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HealthSlowQuerySampleDto"
+            }
+          }
+        },
+        "required": [
+          "timestamp",
+          "thresholdNote",
+          "samples"
+        ]
+      },
+      "HealthSlowQuerySampleDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Parameterized query SHAPE only ($1/$2 placeholders). Bound values may contain PII and are never captured.",
+            "example": "SELECT * FROM \"content\" WHERE \"organization_id\" = $1 LIMIT $2"
+          },
+          "durationMs": {
+            "type": "number",
+            "description": "Measured duration in milliseconds",
+            "example": 421
+          },
+          "at": {
+            "type": "string",
+            "description": "When the query ran",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "query",
+          "durationMs",
+          "at"
+        ]
+      },
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Notification UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Recipient user UUID"
+          },
+          "type": {
+            "type": "string",
+            "description": "Stable machine type of the notification",
+            "example": "comment.reply"
+          },
+          "title": {
+            "type": "string",
+            "description": "Short headline (max 255 chars)"
+          },
+          "body": {
+            "type": "object",
+            "description": "Optional longer body text",
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "description": "Small, PII-free context (ids/slugs only) — sensitive-looking keys and nested values are stripped before the row is written.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "readAt": {
+            "type": "object",
+            "description": "When the recipient read the notification; null while unread",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "userId",
+          "type",
+          "title",
+          "body",
+          "readAt",
+          "createdAt"
+        ]
+      },
+      "NotificationMarkReadResultDto": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "number",
+            "description": "How many notifications were flipped to read. `0` means nothing matched (already read, or not the callers row).",
+            "example": 1
+          }
+        },
+        "required": [
+          "updated"
+        ]
+      },
+      "NotificationUnreadCountDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Number of unread notifications for the current user",
+            "example": 3
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "OnboardingArchiveResultDto": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "description": "Archived organization UUID"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug"
+          },
+          "previousStatus": {
+            "type": "string",
+            "description": "Status the organization had before the call",
+            "example": "active"
+          },
+          "newStatus": {
+            "type": "string",
+            "description": "Always \"archived\"",
+            "example": "archived"
+          },
+          "deactivated": {
+            "type": "boolean",
+            "description": "False when the organization was already archived, so nothing was changed"
+          },
+          "revokedApiKeys": {
+            "type": "number",
+            "description": "API keys revoked as part of archiving"
+          },
+          "affectedUsers": {
+            "type": "number",
+            "description": "Users who lost access"
+          }
+        },
+        "required": [
+          "organizationId",
+          "slug",
+          "previousStatus",
+          "newStatus",
+          "deactivated",
+          "revokedApiKeys",
+          "affectedUsers"
+        ]
+      },
+      "OnboardingContentPodDto": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "description": "Always true — the record only exists when a pod is configured"
+          },
+          "podMode": {
+            "type": "string",
+            "description": "Pod mode",
+            "enum": [
+              "static",
+              "dynamic"
+            ],
+            "nullable": true
+          },
+          "tier": {
+            "type": "object",
+            "description": "Hosting tier of the pod",
+            "nullable": true,
+            "example": "free"
+          },
+          "subdomain": {
+            "type": "object",
+            "description": "Assigned pod subdomain",
+            "nullable": true
+          },
+          "baseUrl": {
+            "type": "object",
+            "description": "Public base URL of the pod",
+            "nullable": true
+          },
+          "dynamicRuntime": {
+            "type": "object",
+            "description": "Runtime backing a dynamic pod; null for static pods",
+            "nullable": true
+          },
+          "publishedCount": {
+            "type": "number",
+            "description": "Content items currently published to the pod"
+          },
+          "totalSizeBytes": {
+            "type": "number",
+            "description": "Bytes currently stored in the pod"
+          },
+          "quotaStorageBytes": {
+            "type": "number",
+            "description": "Storage quota of the pod in bytes"
+          },
+          "quotaItemCount": {
+            "type": "number",
+            "description": "Maximum number of published items allowed in the pod"
+          },
+          "status": {
+            "type": "object",
+            "description": "Pod provisioning/health status",
+            "nullable": true
+          }
+        },
+        "required": [
+          "configured",
+          "podMode",
+          "tier",
+          "subdomain",
+          "baseUrl",
+          "dynamicRuntime",
+          "publishedCount",
+          "totalSizeBytes",
+          "quotaStorageBytes",
+          "quotaItemCount",
+          "status"
+        ]
+      },
+      "OnboardingExportResultDto": {
+        "type": "object",
+        "properties": {
+          "backupId": {
+            "type": "string",
+            "description": "UUID of the created backup record"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization the export belongs to"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug"
+          },
+          "status": {
+            "type": "string",
+            "description": "Backup state",
+            "enum": [
+              "in_progress",
+              "completed",
+              "failed"
+            ]
+          },
+          "storageKey": {
+            "type": "object",
+            "description": "Storage key of the archive; null while the archive is not yet stored",
+            "nullable": true
+          },
+          "sizeBytes": {
+            "type": "object",
+            "description": "Archive size in bytes",
+            "nullable": true,
+            "example": 10485760
+          },
+          "contentCount": {
+            "type": "object",
+            "description": "Content items included in the archive",
+            "nullable": true
+          },
+          "assetCount": {
+            "type": "object",
+            "description": "Assets included in the archive",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "description": "When the backup finished; absent while still running",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "backupId",
+          "organizationId",
+          "slug",
+          "status",
+          "storageKey",
+          "sizeBytes",
+          "contentCount",
+          "assetCount"
+        ]
+      },
+      "OnboardingImportCountsDto": {
+        "type": "object",
+        "properties": {
+          "contentTypes": {
+            "type": "number",
+            "description": "Content types created or updated"
+          },
+          "content": {
+            "type": "number",
+            "description": "Content items created or updated"
+          },
+          "assets": {
+            "type": "number",
+            "description": "Asset metadata rows created or updated"
+          },
+          "config": {
+            "type": "boolean",
+            "description": "True when organization settings were applied from the archive"
+          }
+        },
+        "required": [
+          "contentTypes",
+          "content",
+          "assets",
+          "config"
+        ]
+      },
+      "OnboardingImportResultDto": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "description": "Target organization UUID"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Target organization slug"
+          },
+          "imported": {
+            "description": "What the archive contributed to the target organization",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnboardingImportCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "organizationId",
+          "slug",
+          "imported"
+        ]
+      },
+      "OnboardingProgressDto": {
+        "type": "object",
+        "properties": {
+          "hasAdmin": {
+            "type": "boolean",
+            "description": "At least one user exists"
+          },
+          "hasContentTypes": {
+            "type": "boolean",
+            "description": "At least one content type is enabled"
+          },
+          "hasContent": {
+            "type": "boolean",
+            "description": "At least one content item exists"
+          },
+          "hasLocales": {
+            "type": "boolean",
+            "description": "At least one locale is configured"
+          },
+          "completedSteps": {
+            "type": "number",
+            "description": "Number of the four onboarding steps already satisfied",
+            "example": 3
+          },
+          "totalSteps": {
+            "type": "number",
+            "description": "Total onboarding steps tracked",
+            "example": 4
+          }
+        },
+        "required": [
+          "hasAdmin",
+          "hasContentTypes",
+          "hasContent",
+          "hasLocales",
+          "completedSteps",
+          "totalSteps"
+        ]
+      },
+      "OnboardingQuotasDto": {
+        "type": "object",
+        "properties": {
+          "maxUsers": {
+            "type": "number",
+            "description": "Maximum number of users",
+            "example": 5
+          },
+          "maxContent": {
+            "type": "number",
+            "description": "Maximum content items (-1 = unlimited)",
+            "example": 10000
+          },
+          "maxAssetsMb": {
+            "type": "number",
+            "description": "Maximum asset storage in MB (-1 = unlimited)",
+            "example": 1024
+          },
+          "maxStorageGb": {
+            "type": "number",
+            "description": "Maximum total storage in GB",
+            "example": 1
+          }
+        },
+        "required": [
+          "maxUsers",
+          "maxContent",
+          "maxAssetsMb",
+          "maxStorageGb"
+        ]
+      },
+      "OnboardingStatusDto": {
+        "type": "object",
+        "properties": {
+          "organization": {
+            "description": "Organization metadata",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnboardingStatusOrganizationDto"
+              }
+            ]
+          },
+          "quotas": {
+            "description": "Per-org quota configuration",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnboardingQuotasDto"
+              }
+            ]
+          },
+          "usage": {
+            "description": "Current resource usage",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnboardingUsageDto"
+              }
+            ]
+          },
+          "onboarding": {
+            "description": "Onboarding checklist progress",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnboardingProgressDto"
+              }
+            ]
+          },
+          "contentPod": {
+            "description": "Content Pod state; null when no pod is configured for the organization",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnboardingContentPodDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "organization",
+          "quotas",
+          "usage",
+          "onboarding",
+          "contentPod"
+        ]
+      },
+      "OnboardingStatusOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug"
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle status",
+            "enum": [
+              "active",
+              "suspended",
+              "onboarding",
+              "archived",
+              "pending"
+            ]
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "status",
+          "plan",
+          "createdAt"
+        ]
+      },
+      "OnboardingUsageDto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "number",
+            "description": "Users in the organization"
+          },
+          "content": {
+            "type": "number",
+            "description": "Content items in the organization"
+          },
+          "assets": {
+            "type": "number",
+            "description": "Assets in the organization"
+          },
+          "storageUsedBytes": {
+            "type": "number",
+            "description": "Sum of all asset sizes in bytes"
+          }
+        },
+        "required": [
+          "users",
+          "content",
+          "assets",
+          "storageUsedBytes"
+        ]
+      },
+      "OrganizationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name",
+            "example": "My News Organization"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-safe unique slug",
+            "example": "my-news-org"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Free-form organization settings JSON",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "status": {
+            "type": "string",
+            "description": "Organization lifecycle status",
+            "enum": [
+              "active",
+              "suspended",
+              "onboarding",
+              "archived",
+              "pending"
+            ]
+          },
+          "maxUsers": {
+            "type": "number",
+            "description": "Maximum number of users",
+            "example": 5
+          },
+          "maxContent": {
+            "type": "number",
+            "description": "Maximum content items (-1 = unlimited)",
+            "example": 10000
+          },
+          "maxAssetsMb": {
+            "type": "number",
+            "description": "Maximum asset storage in MB (-1 = unlimited)",
+            "example": 1024
+          },
+          "maxStorageGb": {
+            "type": "number",
+            "description": "Maximum total storage in GB",
+            "example": 1
+          },
+          "ownerUserId": {
+            "type": "object",
+            "description": "UUID of the owning user",
+            "nullable": true
+          },
+          "domain": {
+            "type": "object",
+            "description": "Custom domain",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "object",
+            "description": "Organization logo URL",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Organization description",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "settings",
+          "plan",
+          "status",
+          "maxUsers",
+          "maxContent",
+          "maxAssetsMb",
+          "maxStorageGb",
+          "ownerUserId",
+          "domain",
+          "logoUrl",
+          "description",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PlatformAdminListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID of the super-admin"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "role": {
+            "type": "string",
+            "description": "CE role inside the home organization"
+          },
+          "avatarUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Home organization UUID"
+          },
+          "organizationName": {
+            "type": "object",
+            "description": "Home organization display name",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "description": "Last successful login",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isSuperAdmin": {
+            "type": "boolean",
+            "description": "Always true — every row in this list is a super-admin"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the super-admin role was granted (the PlatformAdmin `grantedAt`)",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "avatarUrl",
+          "organizationId",
+          "organizationName",
+          "lastLoginAt",
+          "isSuperAdmin",
+          "createdAt"
+        ]
+      },
+      "PlatformAdminUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "role": {
+            "type": "string",
+            "description": "CE role inside the home organization"
+          },
+          "organization": {
+            "description": "The home organization of the user",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAdminUserOrganizationDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "organization"
+        ]
+      },
+      "PlatformAdminUserOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "PlatformCreateOrganizationResultDto": {
+        "type": "object",
+        "properties": {
+          "organization": {
+            "description": "The newly created organization row (no counts or owner expansion)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationResponseDto"
+              }
+            ]
+          },
+          "adminUser": {
+            "description": "The initial admin user created alongside the organization",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformCreatedAdminUserDto"
+              }
+            ]
+          },
+          "podSetup": {
+            "description": "Auto-provisioned Content Pod, when `podMode` was requested. Null when not requested or when provisioning failed (non-fatal).",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformPodSetupDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "organization",
+          "adminUser",
+          "podSetup"
+        ]
+      },
+      "PlatformCreatedAdminUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Created admin user UUID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Admin email address"
+          },
+          "name": {
+            "type": "string",
+            "description": "Admin display name"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name"
+        ]
+      },
+      "PlatformDeactivateOrganizationResultDto": {
+        "type": "object",
+        "properties": {
+          "deactivated": {
+            "type": "boolean",
+            "description": "Always true — the organization is not active afterwards"
+          },
+          "alreadyInactive": {
+            "type": "boolean",
+            "description": "True when the organization was already inactive, so nothing was changed"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug of the affected organization"
+          },
+          "revokedApiKeys": {
+            "type": "number",
+            "description": "API keys revoked as part of the deactivation; absent when already inactive",
+            "example": 2
+          },
+          "affectedUsers": {
+            "type": "number",
+            "description": "Users who lost access; absent when already inactive",
+            "example": 6
+          }
+        },
+        "required": [
+          "deactivated",
+          "alreadyInactive",
+          "slug"
+        ]
+      },
+      "PlatformDisableContentTypeResultDto": {
+        "type": "object",
+        "properties": {
+          "disabled": {
+            "type": "boolean",
+            "description": "Always true when the call succeeded"
+          },
+          "contentTypeId": {
+            "type": "string",
+            "description": "The content type that was removed from the organization"
+          }
+        },
+        "required": [
+          "disabled",
+          "contentTypeId"
+        ]
+      },
+      "PlatformGrantSuperAdminResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "PlatformAdmin grant UUID"
+          },
+          "userId": {
+            "type": "string",
+            "description": "UUID of the user that was granted super-admin"
+          },
+          "grantedAt": {
+            "type": "string",
+            "description": "When the role was granted",
+            "format": "date-time"
+          },
+          "grantedBy": {
+            "type": "object",
+            "description": "UUID of the granting super-admin; null for system grants",
+            "nullable": true
+          },
+          "user": {
+            "description": "The promoted user",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformAdminUserDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "grantedAt",
+          "grantedBy",
+          "user"
+        ]
+      },
+      "PlatformOrgContentTypeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content type ID",
+            "example": "news"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized display name, keyed by locale",
+            "additionalProperties": true,
+            "example": {
+              "en": "News",
+              "de": "Nachrichten"
+            }
+          },
+          "icon": {
+            "type": "object",
+            "description": "Lucide icon name",
+            "nullable": true,
+            "example": "newspaper"
+          },
+          "schemaVersion": {
+            "type": "string",
+            "description": "Semver version of the schema this type carries",
+            "example": "1.2.0"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "schemaVersion",
+          "createdAt"
+        ]
+      },
+      "PlatformOrgUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "role": {
+            "type": "string",
+            "description": "CE role",
+            "enum": [
+              "admin",
+              "editor",
+              "viewer"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended",
+              "locked"
+            ]
+          },
+          "avatarUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "description": "Last successful login",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "status",
+          "avatarUrl",
+          "lastLoginAt",
+          "createdAt"
+        ]
+      },
+      "PlatformOrganizationCountsDto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "number",
+            "description": "Users in the organization"
+          },
+          "content": {
+            "type": "number",
+            "description": "Content items in the organization"
+          },
+          "assets": {
+            "type": "number",
+            "description": "Assets in the organization"
+          },
+          "contentTypes": {
+            "type": "number",
+            "description": "Content types enabled for the organization"
+          }
+        },
+        "required": [
+          "users",
+          "content",
+          "assets",
+          "contentTypes"
+        ]
+      },
+      "PlatformOrganizationDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name",
+            "example": "My News Organization"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-safe unique slug",
+            "example": "my-news-org"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Free-form organization settings JSON",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "status": {
+            "type": "string",
+            "description": "Organization lifecycle status",
+            "enum": [
+              "active",
+              "suspended",
+              "onboarding",
+              "archived",
+              "pending"
+            ]
+          },
+          "maxUsers": {
+            "type": "number",
+            "description": "Maximum number of users",
+            "example": 5
+          },
+          "maxContent": {
+            "type": "number",
+            "description": "Maximum content items (-1 = unlimited)",
+            "example": 10000
+          },
+          "maxAssetsMb": {
+            "type": "number",
+            "description": "Maximum asset storage in MB (-1 = unlimited)",
+            "example": 1024
+          },
+          "maxStorageGb": {
+            "type": "number",
+            "description": "Maximum total storage in GB",
+            "example": 1
+          },
+          "ownerUserId": {
+            "type": "object",
+            "description": "UUID of the owning user",
+            "nullable": true
+          },
+          "domain": {
+            "type": "object",
+            "description": "Custom domain",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "object",
+            "description": "Organization logo URL",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Organization description",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ownerUser": {
+            "description": "The owning user; null when no owner is set",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformOrganizationOwnerDto"
+              }
+            ]
+          },
+          "_count": {
+            "description": "Related record counts",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformOrganizationCountsDto"
+              }
+            ]
+          },
+          "storageUsedBytes": {
+            "type": "number",
+            "description": "Sum of all asset sizes in the organization, in bytes",
+            "example": 734003200
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "settings",
+          "plan",
+          "status",
+          "maxUsers",
+          "maxContent",
+          "maxAssetsMb",
+          "maxStorageGb",
+          "ownerUserId",
+          "domain",
+          "logoUrl",
+          "description",
+          "createdAt",
+          "updatedAt",
+          "ownerUser",
+          "_count",
+          "storageUsedBytes"
+        ]
+      },
+      "PlatformOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name",
+            "example": "My News Organization"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-safe unique slug",
+            "example": "my-news-org"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Free-form organization settings JSON",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "status": {
+            "type": "string",
+            "description": "Organization lifecycle status",
+            "enum": [
+              "active",
+              "suspended",
+              "onboarding",
+              "archived",
+              "pending"
+            ]
+          },
+          "maxUsers": {
+            "type": "number",
+            "description": "Maximum number of users",
+            "example": 5
+          },
+          "maxContent": {
+            "type": "number",
+            "description": "Maximum content items (-1 = unlimited)",
+            "example": 10000
+          },
+          "maxAssetsMb": {
+            "type": "number",
+            "description": "Maximum asset storage in MB (-1 = unlimited)",
+            "example": 1024
+          },
+          "maxStorageGb": {
+            "type": "number",
+            "description": "Maximum total storage in GB",
+            "example": 1
+          },
+          "ownerUserId": {
+            "type": "object",
+            "description": "UUID of the owning user",
+            "nullable": true
+          },
+          "domain": {
+            "type": "object",
+            "description": "Custom domain",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "object",
+            "description": "Organization logo URL",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Organization description",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ownerUser": {
+            "description": "The owning user; null when no owner is set",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformOrganizationOwnerDto"
+              }
+            ]
+          },
+          "_count": {
+            "description": "Related record counts",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformOrganizationCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "settings",
+          "plan",
+          "status",
+          "maxUsers",
+          "maxContent",
+          "maxAssetsMb",
+          "maxStorageGb",
+          "ownerUserId",
+          "domain",
+          "logoUrl",
+          "description",
+          "createdAt",
+          "updatedAt",
+          "ownerUser",
+          "_count"
+        ]
+      },
+      "PlatformOrganizationOwnerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Owner user UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Owner display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Owner email address"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "PlatformOrgsByPlanDto": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "count": {
+            "type": "number",
+            "description": "Organizations on this plan"
+          }
+        },
+        "required": [
+          "plan",
+          "count"
+        ]
+      },
+      "PlatformPodSetupDto": {
+        "type": "object",
+        "properties": {
+          "podMode": {
+            "type": "string",
+            "description": "Provisioned Content Pod mode",
+            "enum": [
+              "static",
+              "dynamic"
+            ]
+          },
+          "subdomain": {
+            "type": "string",
+            "description": "Assigned pod subdomain",
+            "example": "my-news-org"
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "Public base URL of the pod"
+          }
+        },
+        "required": [
+          "podMode",
+          "subdomain",
+          "baseUrl"
+        ]
+      },
+      "PlatformRecentOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug"
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "plan",
+          "createdAt"
+        ]
+      },
+      "PlatformRevokeSuperAdminResultDto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "description": "Always true when the call succeeded"
+          },
+          "user": {
+            "description": "The demoted user",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformRevokedUserDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "revoked",
+          "user"
+        ]
+      },
+      "PlatformRevokedUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "PlatformStatsDto": {
+        "type": "object",
+        "properties": {
+          "totalOrganizations": {
+            "type": "number",
+            "description": "Organizations on this Studio instance",
+            "example": 12
+          },
+          "activeOrganizations": {
+            "type": "number",
+            "description": "Organizations with status \"active\"",
+            "example": 10
+          },
+          "inactiveOrganizations": {
+            "type": "number",
+            "description": "totalOrganizations minus activeOrganizations",
+            "example": 2
+          },
+          "totalUsers": {
+            "type": "number",
+            "description": "Users across all organizations",
+            "example": 48
+          },
+          "totalContent": {
+            "type": "number",
+            "description": "Content items across all organizations",
+            "example": 1520
+          },
+          "totalAssets": {
+            "type": "number",
+            "description": "Assets across all organizations",
+            "example": 3810
+          },
+          "totalStorageUsedBytes": {
+            "type": "number",
+            "description": "Sum of all asset sizes in bytes",
+            "example": 10737418240
+          },
+          "orgsByPlan": {
+            "description": "Organization counts grouped by plan, most common first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformOrgsByPlanDto"
+            }
+          },
+          "recentOrganizations": {
+            "description": "The 5 most recently created organizations, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformRecentOrganizationDto"
+            }
+          }
+        },
+        "required": [
+          "totalOrganizations",
+          "activeOrganizations",
+          "inactiveOrganizations",
+          "totalUsers",
+          "totalContent",
+          "totalAssets",
+          "totalStorageUsedBytes",
+          "orgsByPlan",
+          "recentOrganizations"
+        ]
+      },
+      "PluginAdminRouteDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Route path segment",
+            "example": "workflows"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized route label, keyed by locale",
+            "additionalProperties": true,
+            "example": {
+              "en": "Workflows",
+              "de": "Workflows"
+            }
+          },
+          "icon": {
+            "type": "string",
+            "description": "Lucide icon name",
+            "example": "git-branch"
+          },
+          "moduleBundlePath": {
+            "type": "object",
+            "description": "Angular module bundle path relative to the plugin's dist/ directory",
+            "nullable": true
+          },
+          "requiredPermission": {
+            "type": "object",
+            "description": "Permission required to open the route",
+            "nullable": true,
+            "example": "workflows.read"
+          },
+          "order": {
+            "type": "number",
+            "description": "Sort order in navigation (lower = higher)",
+            "example": 100
+          }
+        },
+        "required": [
+          "path",
+          "label",
+          "icon",
+          "moduleBundlePath",
+          "requiredPermission",
+          "order"
+        ]
+      },
+      "PluginDeprecatedHandlerDto": {
+        "type": "object",
+        "properties": {
+          "pluginId": {
+            "type": "string",
+            "description": "Plugin declaring the deprecated manifest handlers"
+          },
+          "events": {
+            "description": "Distinct event names still wired via the manifest",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "pluginId",
+          "events"
+        ]
+      },
+      "PluginEditorExtensionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Extension kind",
+            "enum": [
+              "sidebar-panel",
+              "toolbar-action",
+              "field-wrapper",
+              "publish-guard"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique extension identifier"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized extension label, keyed by locale",
+            "additionalProperties": true
+          },
+          "icon": {
+            "type": "object",
+            "description": "Lucide icon name",
+            "nullable": true
+          },
+          "componentBundlePath": {
+            "type": "object",
+            "description": "Angular component bundle path for sidebar panels",
+            "nullable": true
+          },
+          "handler": {
+            "type": "object",
+            "description": "Handler identifier for toolbar actions / publish guards",
+            "nullable": true
+          },
+          "contentTypes": {
+            "description": "Content types the extension applies to; empty means all types",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "number",
+            "description": "Sort order (lower = first)",
+            "example": 100
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "label",
+          "icon",
+          "componentBundlePath",
+          "handler",
+          "contentTypes",
+          "order"
+        ]
+      },
+      "PluginHealthActiveDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Plugin ID"
+          },
+          "version": {
+            "type": "string",
+            "description": "Plugin version (semver)"
+          },
+          "missingDependencies": {
+            "description": "Required plugin IDs that are not currently active",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "missingDependencies"
+        ]
+      },
+      "PluginHealthDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "description": "Plugins that activated, with any unsatisfied Pro→Pro dependencies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginHealthActiveDto"
+            }
+          },
+          "failed": {
+            "description": "Plugins discovered but not activated, with the reason and phase",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginHealthFailedDto"
+            }
+          },
+          "deprecatedManifestEventHandlers": {
+            "description": "Plugins still declaring event handlers in their manifest (deprecated wiring)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginDeprecatedHandlerDto"
+            }
+          }
+        },
+        "required": [
+          "active",
+          "failed",
+          "deprecatedManifestEventHandlers"
+        ]
+      },
+      "PluginHealthFailedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Plugin ID"
+          },
+          "version": {
+            "type": "string",
+            "description": "Plugin version (semver)"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why the plugin was not activated"
+          },
+          "phase": {
+            "type": "string",
+            "description": "Which stage rejected the plugin",
+            "enum": [
+              "compatibility",
+              "init"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "reason",
+          "phase"
+        ]
+      },
+      "PluginInfoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Plugin ID",
+            "example": "pro-workflows"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable plugin name"
+          },
+          "version": {
+            "type": "string",
+            "description": "Plugin version (semver)",
+            "example": "1.4.0"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Always true — only active plugins are listed"
+          },
+          "adminRoutes": {
+            "description": "Admin UI routes contributed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginAdminRouteDto"
+            }
+          },
+          "menuItems": {
+            "description": "Sidebar menu items contributed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginMenuItemDto"
+            }
+          },
+          "menuGroups": {
+            "description": "Sidebar menu groups contributed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginMenuGroupDto"
+            }
+          },
+          "editorExtensions": {
+            "description": "Content editor extensions contributed",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginEditorExtensionDto"
+            }
+          },
+          "uiBaseUrl": {
+            "type": "string",
+            "description": "URL prefix for loading this plugin's frontend assets",
+            "example": "/api/v1/plugins/pro-workflows/ui"
+          },
+          "requiresPlugins": {
+            "description": "Hard Pro→Pro plugin dependencies declared by this plugin",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dependenciesSatisfied": {
+            "type": "boolean",
+            "description": "False when at least one required plugin is inactive — the frontend then hides the dependency-gated surfaces."
+          },
+          "missingDependencies": {
+            "description": "Required plugin IDs that are not currently active",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "active",
+          "adminRoutes",
+          "menuItems",
+          "menuGroups",
+          "editorExtensions",
+          "uiBaseUrl",
+          "requiresPlugins",
+          "dependenciesSatisfied",
+          "missingDependencies"
+        ]
+      },
+      "PluginLicenseDiagnosticsDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Operational license state: community (no key), active (valid Pro), invalid (key rejected), misconfigured (no verification key).",
+            "enum": [
+              "community",
+              "active",
+              "invalid",
+              "misconfigured"
+            ]
+          },
+          "reason": {
+            "type": "object",
+            "description": "Why the status is what it is; null when there is nothing to report",
+            "nullable": true
+          },
+          "publicKeyConfigured": {
+            "type": "boolean",
+            "description": "False when only the embedded placeholder verification key is present"
+          },
+          "edition": {
+            "type": "string",
+            "description": "Resulting edition",
+            "enum": [
+              "community",
+              "pro"
+            ]
+          },
+          "tier": {
+            "type": "object",
+            "description": "Licensed tier; null when not active",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "object",
+            "description": "License expiry; null when no license",
+            "format": "date-time",
+            "nullable": true
+          },
+          "daysUntilExpiry": {
+            "type": "object",
+            "description": "Days remaining until expiry; null when no license",
+            "nullable": true
+          },
+          "isGracePeriod": {
+            "type": "boolean",
+            "description": "True while the license runs on its post-expiry grace period"
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "publicKeyConfigured",
+          "edition",
+          "tier",
+          "expiresAt",
+          "daysUntilExpiry",
+          "isGracePeriod"
+        ]
+      },
+      "PluginLicenseInfoDto": {
+        "type": "object",
+        "properties": {
+          "edition": {
+            "type": "string",
+            "description": "Current edition",
+            "enum": [
+              "community",
+              "pro"
+            ]
+          },
+          "tier": {
+            "type": "object",
+            "description": "Licensed tier; null for CE",
+            "nullable": true
+          },
+          "organization": {
+            "type": "object",
+            "description": "Licensed organization name; null for CE",
+            "nullable": true
+          },
+          "features": {
+            "description": "Licensed feature/plugin IDs; empty for CE",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limits": {
+            "type": "object",
+            "description": "License-controlled limits; empty object for CE",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "expiresAt": {
+            "type": "object",
+            "description": "License expiry; null for CE",
+            "format": "date-time",
+            "nullable": true
+          },
+          "daysUntilExpiry": {
+            "type": "object",
+            "description": "Days remaining until expiry (negative once expired); null for CE",
+            "nullable": true
+          },
+          "isGracePeriod": {
+            "type": "boolean",
+            "description": "True while the license runs on its post-expiry grace period"
+          }
+        },
+        "required": [
+          "edition",
+          "tier",
+          "organization",
+          "features",
+          "limits",
+          "expiresAt",
+          "daysUntilExpiry",
+          "isGracePeriod"
+        ]
+      },
+      "PluginManifestDto": {
+        "type": "object",
+        "properties": {
+          "edition": {
+            "type": "string",
+            "description": "Current edition",
+            "enum": [
+              "community",
+              "pro"
+            ]
+          },
+          "tier": {
+            "type": "object",
+            "description": "Licensed tier; null for CE",
+            "nullable": true,
+            "example": "business"
+          },
+          "activePluginIds": {
+            "description": "IDs of all active plugins",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "plugins": {
+            "description": "All active plugins with their UI contributions",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginInfoDto"
+            }
+          },
+          "limits": {
+            "type": "object",
+            "description": "Effective resource limits (license values, or CE defaults when unlicensed). `-1` means unlimited.",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "max_users": 3,
+              "max_storage_gb": 5,
+              "max_webhooks": 3
+            }
+          }
+        },
+        "required": [
+          "edition",
+          "tier",
+          "activePluginIds",
+          "plugins",
+          "limits"
+        ]
+      },
+      "PluginMenuGroupDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique group identifier",
+            "example": "workflows"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized group header label, keyed by locale",
+            "additionalProperties": true
+          },
+          "icon": {
+            "type": "object",
+            "description": "Lucide icon name for the collapsed sidebar",
+            "nullable": true
+          },
+          "order": {
+            "type": "number",
+            "description": "Sort order among groups (lower = higher)",
+            "example": 100
+          },
+          "collapsible": {
+            "type": "boolean",
+            "description": "Whether the group can be collapsed in the sidebar"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "icon",
+          "order",
+          "collapsible"
+        ]
+      },
+      "PluginMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "section": {
+            "type": "string",
+            "description": "Sidebar section the item belongs to",
+            "enum": [
+              "content",
+              "media",
+              "settings",
+              "tools",
+              "system"
+            ]
+          },
+          "group": {
+            "type": "object",
+            "description": "ID of the menu group this item belongs to; null when ungrouped",
+            "nullable": true
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized menu label, keyed by locale",
+            "additionalProperties": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized short description shown on dashboard cards",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "description": "Lucide icon name"
+          },
+          "route": {
+            "type": "string",
+            "description": "Router path relative to the app root",
+            "example": "/workflows"
+          }
+        },
+        "required": [
+          "section",
+          "group",
+          "label",
+          "description",
+          "icon",
+          "route"
+        ]
+      },
+      "QuotaCounterDto": {
+        "type": "object",
+        "properties": {
+          "used": {
+            "type": "number",
+            "description": "Current count for the organization",
+            "example": 3
+          },
+          "limit": {
+            "type": "number",
+            "description": "Effective limit, resolved as org override → license → CE default. `-1` means unlimited.",
+            "example": 5
+          }
+        },
+        "required": [
+          "used",
+          "limit"
+        ]
+      },
+      "QuotaStorageDto": {
+        "type": "object",
+        "properties": {
+          "usedBytes": {
+            "type": "number",
+            "description": "Sum of all asset sizes in bytes",
+            "example": 734003200
+          },
+          "usedGb": {
+            "type": "number",
+            "description": "Same value in GB, rounded to 3 decimals",
+            "example": 0.684
+          },
+          "limitGb": {
+            "type": "number",
+            "description": "Effective storage limit in GB. `-1` means unlimited.",
+            "example": 5
+          }
+        },
+        "required": [
+          "usedBytes",
+          "usedGb",
+          "limitGb"
+        ]
+      },
+      "SearchAssetHitDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "originalName": {
+            "type": "string",
+            "description": "Original upload filename",
+            "example": "skyline.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type",
+            "example": "image/jpeg"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "File size in bytes",
+            "example": 284512
+          },
+          "url": {
+            "type": "string",
+            "description": "Public URL of the asset"
+          },
+          "folderId": {
+            "type": "object",
+            "description": "Containing asset folder UUID",
+            "nullable": true
+          },
+          "folderName": {
+            "type": "object",
+            "description": "Containing asset folder name",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "createdAt": {
+            "type": "number",
+            "description": "Upload time as epoch milliseconds",
+            "example": 1745000000000
+          },
+          "_formatted": {
+            "type": "object",
+            "description": "MeiliSearch highlight fragments, wrapped in `<mark>` tags.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "originalName",
+          "mimeType",
+          "sizeBytes",
+          "url",
+          "folderId",
+          "folderName",
+          "organizationId",
+          "createdAt"
+        ]
+      },
+      "SearchAssetResultDto": {
+        "type": "object",
+        "properties": {
+          "hits": {
+            "description": "Matching asset documents",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchAssetHitDto"
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "The query that was executed"
+          },
+          "processingTimeMs": {
+            "type": "number",
+            "description": "MeiliSearch processing time in milliseconds",
+            "example": 2
+          },
+          "estimatedTotalHits": {
+            "type": "number",
+            "description": "Approximate number of matches",
+            "example": 7
+          },
+          "limit": {
+            "type": "number",
+            "description": "Applied result limit",
+            "example": 10
+          },
+          "offset": {
+            "type": "number",
+            "description": "Applied result offset",
+            "example": 0
+          }
+        },
+        "required": [
+          "hits"
+        ]
+      },
+      "SearchContentHitDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content slug",
+            "example": "eu-launches-open-data-portal"
+          },
+          "status": {
+            "type": "string",
+            "description": "Workflow status of the content item",
+            "enum": [
+              "draft",
+              "in_review",
+              "published",
+              "archived"
+            ]
+          },
+          "contentTypeId": {
+            "type": "string",
+            "description": "Content type slug",
+            "example": "news"
+          },
+          "contentTypeName": {
+            "type": "string",
+            "description": "Content type display name",
+            "example": "News"
+          },
+          "contentTypeIcon": {
+            "type": "object",
+            "description": "Lucide icon name of the content type",
+            "nullable": true
+          },
+          "authorId": {
+            "type": "string",
+            "description": "UUID of the creating user"
+          },
+          "authorName": {
+            "type": "string",
+            "description": "Display name of the creating user"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Locale of the indexed variant",
+            "example": "en"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "createdAt": {
+            "type": "number",
+            "description": "Creation time as epoch milliseconds",
+            "example": 1745000000000
+          },
+          "updatedAt": {
+            "type": "number",
+            "description": "Last update time as epoch milliseconds",
+            "example": 1745000000000
+          },
+          "_formatted": {
+            "type": "object",
+            "description": "MeiliSearch highlight fragments for the matched attributes, wrapped in `<mark>` tags.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "status",
+          "contentTypeId",
+          "contentTypeName",
+          "contentTypeIcon",
+          "authorId",
+          "authorName",
+          "locale",
+          "organizationId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "SearchContentResultDto": {
+        "type": "object",
+        "properties": {
+          "hits": {
+            "description": "Matching content documents",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchContentHitDto"
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "The query that was executed"
+          },
+          "processingTimeMs": {
+            "type": "number",
+            "description": "MeiliSearch processing time in milliseconds",
+            "example": 3
+          },
+          "estimatedTotalHits": {
+            "type": "number",
+            "description": "Approximate number of matches",
+            "example": 42
+          },
+          "limit": {
+            "type": "number",
+            "description": "Applied result limit",
+            "example": 10
+          },
+          "offset": {
+            "type": "number",
+            "description": "Applied result offset",
+            "example": 0
+          }
+        },
+        "required": [
+          "hits"
+        ]
+      },
+      "SearchIndexStatsDto": {
+        "type": "object",
+        "properties": {
+          "numberOfDocuments": {
+            "type": "number",
+            "description": "Documents visible to the caller's organization in this index",
+            "example": 128
+          }
+        },
+        "required": [
+          "numberOfDocuments"
+        ]
+      },
+      "SearchIndexesStatsDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "description": "Content index stats; null when the index could not be queried.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchIndexStatsDto"
+              }
+            ]
+          },
+          "assets": {
+            "description": "Asset index stats; null when the index could not be queried.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchIndexStatsDto"
+              }
+            ]
+          },
+          "users": {
+            "description": "User index stats; null when the index could not be queried.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchIndexStatsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "content",
+          "assets",
+          "users"
+        ]
+      },
+      "SearchQueueDepthDto": {
+        "type": "object",
+        "properties": {
+          "waiting": {
+            "type": "number",
+            "description": "Jobs waiting to be processed"
+          },
+          "active": {
+            "type": "number",
+            "description": "Jobs currently being processed"
+          },
+          "completed": {
+            "type": "number",
+            "description": "Jobs completed (retained window)"
+          },
+          "failed": {
+            "type": "number",
+            "description": "Jobs that exhausted their retries"
+          }
+        },
+        "required": [
+          "waiting",
+          "active",
+          "completed",
+          "failed"
+        ]
+      },
+      "SearchReindexCountsDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "number",
+            "description": "Content documents re-indexed"
+          },
+          "assets": {
+            "type": "number",
+            "description": "Asset documents re-indexed"
+          },
+          "users": {
+            "type": "number",
+            "description": "User documents re-indexed"
+          }
+        },
+        "required": [
+          "content",
+          "assets",
+          "users"
+        ]
+      },
+      "SearchReindexResultDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Outcome message — 'Reindex complete', or 'MeiliSearch is not available' when search is disabled.",
+            "example": "Reindex complete"
+          },
+          "indexed": {
+            "description": "Per-index document counts; omitted when MeiliSearch is unavailable.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchReindexCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "SearchStatsDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "False when MeiliSearch is disabled or unreachable — no other fields are present."
+          },
+          "health": {
+            "type": "string",
+            "description": "MeiliSearch health status, or 'unknown' when the health probe failed",
+            "example": "available"
+          },
+          "indexes": {
+            "description": "Per-index document counts scoped to the caller's organization",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchIndexesStatsDto"
+              }
+            ]
+          },
+          "indexQueue": {
+            "description": "Instance-wide index queue depth (all organizations) — surfaces indexing drift/outage. Null when the queue is unavailable.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchQueueDepthDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "SearchUserHitDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "role": {
+            "type": "string",
+            "description": "CE role",
+            "enum": [
+              "admin",
+              "editor",
+              "viewer"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended",
+              "locked"
+            ]
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "createdAt": {
+            "type": "number",
+            "description": "Creation time as epoch milliseconds",
+            "example": 1745000000000
+          },
+          "_formatted": {
+            "type": "object",
+            "description": "MeiliSearch highlight fragments, wrapped in `<mark>` tags.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "status",
+          "organizationId",
+          "createdAt"
+        ]
+      },
+      "SearchUserResultDto": {
+        "type": "object",
+        "properties": {
+          "hits": {
+            "description": "Matching user documents",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchUserHitDto"
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "The query that was executed"
+          },
+          "processingTimeMs": {
+            "type": "number",
+            "description": "MeiliSearch processing time in milliseconds",
+            "example": 1
+          },
+          "estimatedTotalHits": {
+            "type": "number",
+            "description": "Approximate number of matches",
+            "example": 2
+          },
+          "limit": {
+            "type": "number",
+            "description": "Applied result limit",
+            "example": 10
+          },
+          "offset": {
+            "type": "number",
+            "description": "Applied result offset",
+            "example": 0
+          }
+        },
+        "required": [
+          "hits"
+        ]
+      },
+      "SsoTokenDto": {
+        "type": "object",
+        "properties": {
+          "ssoToken": {
+            "type": "string",
+            "description": "One-time SSO token (96 hex chars). Only its SHA-256 hash is stored, so this value is shown exactly once."
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "Token lifetime in seconds, clamped to [30, 300]",
+            "example": 300
+          }
+        },
+        "required": [
+          "ssoToken",
+          "expiresIn"
+        ]
+      },
+      "TokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT access token"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "JWT refresh token (longer-lived)"
+          },
+          "expiresIn": {
+            "type": "string",
+            "example": "24h",
+            "description": "Access token expiration duration"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "expiresIn"
+        ]
+      },
+      "UnifiedSearchResultDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "description": "Content matches; an empty `hits` array when `scope` excludes content.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchContentResultDto"
+              }
+            ]
+          },
+          "assets": {
+            "description": "Asset matches; an empty `hits` array when `scope` excludes assets.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchAssetResultDto"
+              }
+            ]
+          },
+          "users": {
+            "description": "User matches. Always empty for non-admin callers on `scope=all` (users are admin-only).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchUserResultDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "content",
+          "assets",
+          "users"
+        ]
+      },
       "UpdateOrganizationDto": {
         "type": "object",
         "properties": {
@@ -3789,6 +7506,67 @@
             "description": "Organization-level settings JSON"
           }
         }
+      },
+      "UsageResponseDto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "description": "Users vs. max_users",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuotaCounterDto"
+              }
+            ]
+          },
+          "webhooks": {
+            "description": "Webhooks vs. max_webhooks",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuotaCounterDto"
+              }
+            ]
+          },
+          "apiKeys": {
+            "description": "API keys vs. max_api_keys",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuotaCounterDto"
+              }
+            ]
+          },
+          "locales": {
+            "description": "Locales vs. max_locales",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuotaCounterDto"
+              }
+            ]
+          },
+          "discoveryNodes": {
+            "description": "Discovery Nodes vs. max_discovery_nodes",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuotaCounterDto"
+              }
+            ]
+          },
+          "storage": {
+            "description": "Asset storage vs. max_storage_gb",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuotaStorageDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "users",
+          "webhooks",
+          "apiKeys",
+          "locales",
+          "discoveryNodes",
+          "storage"
+        ]
       }
     }
   }

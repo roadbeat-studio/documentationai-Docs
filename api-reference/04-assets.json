@@ -35,7 +35,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Root folders, name-ascending, with subfolders nested recursively under `children`. A folder whose parent is missing is treated as a root.",
             "content": {
               "application/json": {
                 "schema": {
@@ -45,11 +45,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetFolderTreeNodeDto"
+                      }
                     }
                   }
                 }
@@ -84,7 +83,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All folders of the organization, name-ascending, each with its direct asset count and a compact parent reference.",
             "content": {
               "application/json": {
                 "schema": {
@@ -94,11 +93,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetFolderListItemDto"
+                      }
                     }
                   }
                 }
@@ -141,7 +139,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created folder row (no relations included).",
             "content": {
               "application/json": {
                 "schema": {
@@ -151,11 +149,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetFolderDto"
                     }
                   }
                 }
@@ -210,7 +204,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The folder with its parent reference, direct subfolders and counts.",
             "content": {
               "application/json": {
                 "schema": {
@@ -220,11 +214,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetFolderDetailDto"
                     }
                   }
                 }
@@ -277,7 +267,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated folder row (no relations included).",
             "content": {
               "application/json": {
                 "schema": {
@@ -287,11 +277,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetFolderDto"
                     }
                   }
                 }
@@ -344,7 +330,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement that the folder was deleted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -354,11 +340,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetFolderDeletedResultDto"
                     }
                   }
                 }
@@ -480,7 +462,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Page of assets, each with its uploader and a compact folder reference. `url` is a signed URL when signed-URL delivery is enabled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -490,11 +472,31 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetListItemDto"
+                      }
                     },
                     "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
                     }
                   }
                 }
@@ -707,7 +709,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Page of matching assets, each with its uploader and a compact folder reference. All filters are AND-combined; `q` matches filename, original name, title, description or an exact tag.",
             "content": {
               "application/json": {
                 "schema": {
@@ -717,11 +719,31 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetListItemDto"
+                      }
                     },
                     "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
                     }
                   }
                 }
@@ -756,7 +778,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-media-type counts plus the organization total count and size.",
             "content": {
               "application/json": {
                 "schema": {
@@ -766,11 +788,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetFacetsDto"
                     }
                   }
                 }
@@ -815,7 +833,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Tags used by the organization with their asset counts, most used first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -825,11 +843,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetTagCountDto"
+                      }
                     }
                   }
                 }
@@ -883,7 +900,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Assets with no usage records, oldest first (not paginated — capped by `limit`, default 50).",
             "content": {
               "application/json": {
                 "schema": {
@@ -893,11 +910,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetListItemDto"
+                      }
                     }
                   }
                 }
@@ -932,7 +948,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Bytes and asset count used, with the plan quota (null when unlimited).",
             "content": {
               "application/json": {
                 "schema": {
@@ -942,11 +958,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetStorageUsageDto"
                     }
                   }
                 }
@@ -981,7 +993,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Reconciliation report. All counters are zero and `slug` is empty when the organization no longer exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -991,11 +1003,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetReconcileReportDto"
                     }
                   }
                 }
@@ -1040,7 +1048,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The asset with its uploader, full folder row and every content field that embeds it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1050,11 +1058,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetDetailDto"
                     }
                   }
                 }
@@ -1107,7 +1111,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated asset row (no relations included). Moving to a folder also appends the asset to the end of the manual order in that folder.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1117,11 +1121,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetRecordDto"
                     }
                   }
                 }
@@ -1181,7 +1181,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement that the asset row was deleted. Storage cleanup is best-effort and never fails the response.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1191,11 +1191,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetDeletedResultDto"
                     }
                   }
                 }
@@ -1230,7 +1226,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created asset. When an identical file already exists in the organization the existing asset is returned instead (content-addressable dedup, IMP-ASSET-08) — the envelope then also carries `deduplicated: true` next to `data`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1240,11 +1236,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetUploadedDto"
                     }
                   }
                 }
@@ -1279,7 +1271,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One result per uploaded file, in request order. A per-file failure is reported in that entry rather than failing the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1289,11 +1281,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetBatchUploadResultDto"
+                      }
                     }
                   }
                 }
@@ -1338,7 +1329,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One result per requested asset id, in request order. Individual failures (e.g. a still-referenced asset on `delete`) do not fail the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1348,11 +1339,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AssetBulkResultDto"
+                      }
                     }
                   }
                 }
@@ -1417,7 +1407,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated asset row (no relations included). Omitted fields are left unchanged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1427,11 +1417,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetRecordDto"
                     }
                   }
                 }
@@ -1496,7 +1482,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated asset row with the merged tag list (lower-cased, trimmed and deduplicated).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1506,11 +1492,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetRecordDto"
                     }
                   }
                 }
@@ -1573,7 +1555,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated asset row with the remaining tags. Unknown tags are ignored.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1583,11 +1565,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetRecordDto"
                     }
                   }
                 }
@@ -1642,7 +1620,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Usage count and the referencing content items; `usedIn` is empty when the asset is unused.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1652,11 +1630,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetUsageInfoDto"
                     }
                   }
                 }
@@ -1701,7 +1675,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Whether deletion is safe, plus the number of remaining references.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1711,11 +1685,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetCanDeleteDto"
                     }
                   }
                 }
@@ -1760,7 +1730,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement that the new order was persisted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1770,11 +1740,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/AssetReorderResultDto"
                     }
                   }
                 }
@@ -1819,7 +1785,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Effective CDN configuration of this instance. `cdnUrl` is null and delivery uses direct storage URLs while CDN is disabled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1829,11 +1795,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnStatusDto"
                     }
                   }
                 }
@@ -1932,7 +1894,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The delivery URL with the requested transform params appended, plus the storage key it was built from. Signing only applies when a signing key is configured.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1942,11 +1904,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnResolvedUrlDto"
                     }
                   }
                 }
@@ -1981,7 +1939,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Map of asset UUID to delivery URL. Ids that do not exist in the organization are simply absent; an empty `assetIds` array yields an empty object.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1991,11 +1949,14 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "description": "Asset UUID → delivery URL",
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "3f1c0e2a-8d4b-4c19-9a77-1b2c3d4e5f60": "https://cdn.example.com/acme/images/a1b2c3.jpg?w=640"
+                      }
                     }
                   }
                 }
@@ -2058,7 +2019,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Everything needed to render a responsive `<picture>`: the base URL, a width-ladder srcset, and one source descriptor per requested format and breakpoint.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2068,11 +2029,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnResponsiveImageDto"
                     }
                   }
                 }
@@ -2107,7 +2064,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The eight built-in presets, keyed by preset name.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2117,11 +2074,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnImagePresetsDto"
                     }
                   }
                 }
@@ -2175,7 +2128,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The URL carrying the width/height/quality of the named preset. An unknown preset name falls back to the untransformed URL.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2185,11 +2138,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnPresetUrlDto"
                     }
                   }
                 }
@@ -2234,7 +2183,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many storage keys were submitted and which provider handled it. Returns `{ invalidated: 0, provider: 'none' }` when CDN delivery is disabled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2244,11 +2193,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnInvalidationResultDto"
                     }
                   }
                 }
@@ -2283,7 +2228,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many storage keys were submitted and which provider handled it. Returns `{ invalidated: 0, provider: 'none' }` when CDN delivery is disabled or no keys were given.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2293,11 +2238,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnInvalidationResultDto"
                     }
                   }
                 }
@@ -2332,7 +2273,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Whether a purge was issued and by which provider. Returns `{ purged: false, provider: 'none' }` when CDN delivery is disabled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2342,11 +2283,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnPurgeResultDto"
                     }
                   }
                 }
@@ -2381,7 +2318,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The built-in cache rules in match order — the first pattern that matches a path wins.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2391,11 +2328,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CdnCacheRuleDto"
+                      }
                     }
                   }
                 }
@@ -2440,7 +2376,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The headers that would be sent for this path and which rule produced them. Paths matching no rule yield `Cache-Control: no-store` and `info.rule: null`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2450,11 +2386,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnCacheHeadersDto"
                     }
                   }
                 }
@@ -2499,7 +2431,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The recommended cache headers for this asset, derived from its MIME type.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2509,11 +2441,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/CdnAssetCacheHeadersDto"
                     }
                   }
                 }
@@ -2556,6 +2484,1380 @@
       }
     },
     "schemas": {
+      "AssetBatchUploadResultDto": {
+        "type": "object",
+        "properties": {
+          "originalName": {
+            "type": "string",
+            "description": "Filename as uploaded",
+            "example": "hero-shot.jpg"
+          },
+          "ok": {
+            "type": "boolean",
+            "description": "Whether this file was ingested successfully"
+          },
+          "deduplicated": {
+            "type": "boolean",
+            "description": "True when an identical asset already existed and was reused (IMP-ASSET-08)"
+          },
+          "asset": {
+            "description": "The created (or reused) asset; absent when `ok` is false",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetUploadedDto"
+              }
+            ]
+          },
+          "error": {
+            "type": "string",
+            "description": "Why this file failed (validation, storage limit, storage error)"
+          }
+        },
+        "required": [
+          "originalName",
+          "ok"
+        ]
+      },
+      "AssetBulkResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset UUID this result refers to"
+          },
+          "ok": {
+            "type": "boolean",
+            "description": "Whether the action succeeded for this asset"
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure reason when `ok` is false"
+          }
+        },
+        "required": [
+          "id",
+          "ok"
+        ]
+      },
+      "AssetCanDeleteDto": {
+        "type": "object",
+        "properties": {
+          "canDelete": {
+            "type": "boolean",
+            "description": "True when no content references the asset, so deleting it needs no `force`"
+          },
+          "usageCount": {
+            "type": "number",
+            "description": "Number of content items still referencing the asset"
+          }
+        },
+        "required": [
+          "canDelete",
+          "usageCount"
+        ]
+      },
+      "AssetContentLinkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Join-row UUID"
+          },
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID that references the asset"
+          },
+          "assetId": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "fieldPath": {
+            "type": "string",
+            "description": "Dot path of the content field holding the reference",
+            "example": "media.hero_image"
+          }
+        },
+        "required": [
+          "id",
+          "contentId",
+          "assetId",
+          "fieldPath"
+        ]
+      },
+      "AssetDeletedResultDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true — the asset row was deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "AssetDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Generated filename on storage (hash-named)",
+            "example": "a1b2c3d4e5f6.webp"
+          },
+          "originalName": {
+            "type": "string",
+            "description": "Filename as uploaded by the user",
+            "example": "hero-shot.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type",
+            "example": "image/jpeg"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "File size in bytes",
+            "example": 284913
+          },
+          "storageKey": {
+            "type": "string",
+            "description": "Path/key in the storage provider",
+            "example": "acme-media/images/2026/a1b2c3d4e5f6.jpg"
+          },
+          "checksum": {
+            "type": "object",
+            "description": "SHA-256 of the stored bytes (content-addressable dedup); null for legacy rows",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Delivery URL (CDN or direct). Replaced by a time-limited signed URL when signed-URL delivery is enabled (IMP-ASSET-05)."
+          },
+          "width": {
+            "type": "object",
+            "description": "Image/video width in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "height": {
+            "type": "object",
+            "description": "Image/video height in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "title": {
+            "type": "object",
+            "description": "Editable display title",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Editable description / caption",
+            "nullable": true
+          },
+          "alt": {
+            "type": "object",
+            "description": "Alt text for accessibility; empty string means intentionally decorative",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Freeform tags, always lower-cased and deduplicated",
+            "example": [
+              "press",
+              "summer-campaign"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "description": "Generated responsive variants (IMP-ASSET-02); null until the variant job has run",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetVariantDto"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Free-form metadata JSON: extracted image info (dimensions, format, colorSpace, hasAlpha, non-PII EXIF), custom fields set via the metadata endpoint, and reconciliation flags such as `fileMissing`. GPS is only retained when the deployment opts in (IMP-ASSET-01).",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "folderId": {
+            "type": "object",
+            "description": "Containing folder UUID; null when the asset sits at the media-library root",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position within its folder"
+          },
+          "uploadedById": {
+            "type": "string",
+            "description": "UUID of the uploading user"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uploadedBy": {
+            "description": "The uploading user",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetUploaderRefDto"
+              }
+            ]
+          },
+          "folder": {
+            "description": "The containing folder (full row); null at the media-library root",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderEmbeddedDto"
+              }
+            ]
+          },
+          "contentAssets": {
+            "description": "Content fields that embed this asset; empty when it is unused",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetContentLinkDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "filename",
+          "originalName",
+          "mimeType",
+          "sizeBytes",
+          "storageKey",
+          "url",
+          "tags",
+          "sortOrder",
+          "uploadedById",
+          "createdAt",
+          "updatedAt",
+          "uploadedBy",
+          "contentAssets"
+        ]
+      },
+      "AssetFacetsDto": {
+        "type": "object",
+        "properties": {
+          "types": {
+            "description": "Asset counts per media type",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeFacetCountsDto"
+              }
+            ]
+          },
+          "totalCount": {
+            "type": "number",
+            "description": "Total number of assets in the organization"
+          },
+          "totalSizeBytes": {
+            "type": "number",
+            "description": "Combined size of all assets in bytes"
+          }
+        },
+        "required": [
+          "types",
+          "totalCount",
+          "totalSizeBytes"
+        ]
+      },
+      "AssetFolderAssetCountDto": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "number",
+            "description": "Assets directly inside this folder (not counting subfolders)"
+          }
+        },
+        "required": [
+          "assets"
+        ]
+      },
+      "AssetFolderChildRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Child folder UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Child folder name"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "AssetFolderDeletedResultDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true — the folder was deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "AssetFolderDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Folder UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Folder name, unique within its parent",
+            "example": "Press images"
+          },
+          "parentId": {
+            "type": "object",
+            "description": "Parent folder UUID; null for a root folder",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position among its siblings"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "parent": {
+            "description": "Compact reference to the parent folder; null for a root folder",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderParentRefDto"
+              }
+            ]
+          },
+          "children": {
+            "description": "Direct subfolders (id and name only), name-ascending",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetFolderChildRefDto"
+            }
+          },
+          "_count": {
+            "description": "Direct asset and subfolder counts",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderTreeCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "name",
+          "sortOrder",
+          "createdAt",
+          "updatedAt",
+          "children",
+          "_count"
+        ]
+      },
+      "AssetFolderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Folder UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Folder name, unique within its parent",
+            "example": "Press images"
+          },
+          "parentId": {
+            "type": "object",
+            "description": "Parent folder UUID; null for a root folder",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position among its siblings"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "name",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AssetFolderEmbeddedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Folder UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Folder name"
+          },
+          "parentId": {
+            "type": "object",
+            "description": "Parent folder UUID; null for a root folder",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position among its siblings"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "name",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AssetFolderListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Folder UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Folder name, unique within its parent",
+            "example": "Press images"
+          },
+          "parentId": {
+            "type": "object",
+            "description": "Parent folder UUID; null for a root folder",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position among its siblings"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_count": {
+            "description": "Direct asset count",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderAssetCountDto"
+              }
+            ]
+          },
+          "parent": {
+            "description": "Compact reference to the parent folder; null for a root folder",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderParentRefDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "name",
+          "sortOrder",
+          "createdAt",
+          "updatedAt",
+          "_count"
+        ]
+      },
+      "AssetFolderParentRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Parent folder UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Parent folder name"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "AssetFolderRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Folder UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Folder name",
+            "example": "Press images"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "AssetFolderTreeCountsDto": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "number",
+            "description": "Assets directly inside this folder (not counting subfolders)"
+          },
+          "children": {
+            "type": "number",
+            "description": "Direct subfolders of this folder"
+          }
+        },
+        "required": [
+          "assets",
+          "children"
+        ]
+      },
+      "AssetFolderTreeNodeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Folder UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Folder name, unique within its parent",
+            "example": "Press images"
+          },
+          "parentId": {
+            "type": "object",
+            "description": "Parent folder UUID; null for a root folder",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position among its siblings"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_count": {
+            "description": "Direct asset and subfolder counts for this node",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderTreeCountsDto"
+              }
+            ]
+          },
+          "children": {
+            "description": "Nested subfolders, name-ascending; empty array for a leaf folder",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Recursive — same shape as `AssetFolderTreeNodeDto`. Inlined as a free-form object because a self-referencing schema cannot be dereferenced into a finite document."
+            }
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "name",
+          "sortOrder",
+          "createdAt",
+          "updatedAt",
+          "_count",
+          "children"
+        ]
+      },
+      "AssetListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Generated filename on storage (hash-named)",
+            "example": "a1b2c3d4e5f6.webp"
+          },
+          "originalName": {
+            "type": "string",
+            "description": "Filename as uploaded by the user",
+            "example": "hero-shot.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type",
+            "example": "image/jpeg"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "File size in bytes",
+            "example": 284913
+          },
+          "storageKey": {
+            "type": "string",
+            "description": "Path/key in the storage provider",
+            "example": "acme-media/images/2026/a1b2c3d4e5f6.jpg"
+          },
+          "checksum": {
+            "type": "object",
+            "description": "SHA-256 of the stored bytes (content-addressable dedup); null for legacy rows",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Delivery URL (CDN or direct). Replaced by a time-limited signed URL when signed-URL delivery is enabled (IMP-ASSET-05)."
+          },
+          "width": {
+            "type": "object",
+            "description": "Image/video width in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "height": {
+            "type": "object",
+            "description": "Image/video height in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "title": {
+            "type": "object",
+            "description": "Editable display title",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Editable description / caption",
+            "nullable": true
+          },
+          "alt": {
+            "type": "object",
+            "description": "Alt text for accessibility; empty string means intentionally decorative",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Freeform tags, always lower-cased and deduplicated",
+            "example": [
+              "press",
+              "summer-campaign"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "description": "Generated responsive variants (IMP-ASSET-02); null until the variant job has run",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetVariantDto"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Free-form metadata JSON: extracted image info (dimensions, format, colorSpace, hasAlpha, non-PII EXIF), custom fields set via the metadata endpoint, and reconciliation flags such as `fileMissing`. GPS is only retained when the deployment opts in (IMP-ASSET-01).",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "folderId": {
+            "type": "object",
+            "description": "Containing folder UUID; null when the asset sits at the media-library root",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position within its folder"
+          },
+          "uploadedById": {
+            "type": "string",
+            "description": "UUID of the uploading user"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uploadedBy": {
+            "description": "The uploading user",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetUploaderRefDto"
+              }
+            ]
+          },
+          "folder": {
+            "description": "Compact reference to the containing folder; null at the root",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderRefDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "filename",
+          "originalName",
+          "mimeType",
+          "sizeBytes",
+          "storageKey",
+          "url",
+          "tags",
+          "sortOrder",
+          "uploadedById",
+          "createdAt",
+          "updatedAt",
+          "uploadedBy"
+        ]
+      },
+      "AssetReconcileReportDto": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "description": "Organization the reconciliation ran for"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug (the storage prefix that was listed); empty if the org is gone",
+            "example": "acme-media"
+          },
+          "orphanFiles": {
+            "type": "number",
+            "description": "Files on storage with no matching DB row (already-quarantined files excluded)"
+          },
+          "quarantined": {
+            "type": "number",
+            "description": "Orphans older than the TTL that were moved to the quarantine area"
+          },
+          "missingFiles": {
+            "type": "number",
+            "description": "DB rows whose backing file is missing; flagged via `metadata.fileMissing`"
+          },
+          "checkedFiles": {
+            "type": "number",
+            "description": "Storage objects inspected"
+          },
+          "checkedRows": {
+            "type": "number",
+            "description": "Asset rows inspected"
+          }
+        },
+        "required": [
+          "organizationId",
+          "slug",
+          "orphanFiles",
+          "quarantined",
+          "missingFiles",
+          "checkedFiles",
+          "checkedRows"
+        ]
+      },
+      "AssetRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Generated filename on storage (hash-named)",
+            "example": "a1b2c3d4e5f6.webp"
+          },
+          "originalName": {
+            "type": "string",
+            "description": "Filename as uploaded by the user",
+            "example": "hero-shot.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type",
+            "example": "image/jpeg"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "File size in bytes",
+            "example": 284913
+          },
+          "storageKey": {
+            "type": "string",
+            "description": "Path/key in the storage provider",
+            "example": "acme-media/images/2026/a1b2c3d4e5f6.jpg"
+          },
+          "checksum": {
+            "type": "object",
+            "description": "SHA-256 of the stored bytes (content-addressable dedup); null for legacy rows",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Delivery URL (CDN or direct). Replaced by a time-limited signed URL when signed-URL delivery is enabled (IMP-ASSET-05)."
+          },
+          "width": {
+            "type": "object",
+            "description": "Image/video width in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "height": {
+            "type": "object",
+            "description": "Image/video height in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "title": {
+            "type": "object",
+            "description": "Editable display title",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Editable description / caption",
+            "nullable": true
+          },
+          "alt": {
+            "type": "object",
+            "description": "Alt text for accessibility; empty string means intentionally decorative",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Freeform tags, always lower-cased and deduplicated",
+            "example": [
+              "press",
+              "summer-campaign"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "description": "Generated responsive variants (IMP-ASSET-02); null until the variant job has run",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetVariantDto"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Free-form metadata JSON: extracted image info (dimensions, format, colorSpace, hasAlpha, non-PII EXIF), custom fields set via the metadata endpoint, and reconciliation flags such as `fileMissing`. GPS is only retained when the deployment opts in (IMP-ASSET-01).",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "folderId": {
+            "type": "object",
+            "description": "Containing folder UUID; null when the asset sits at the media-library root",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position within its folder"
+          },
+          "uploadedById": {
+            "type": "string",
+            "description": "UUID of the uploading user"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "filename",
+          "originalName",
+          "mimeType",
+          "sizeBytes",
+          "storageKey",
+          "url",
+          "tags",
+          "sortOrder",
+          "uploadedById",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AssetReorderResultDto": {
+        "type": "object",
+        "properties": {
+          "reordered": {
+            "type": "boolean",
+            "description": "Always true — the new sort order was persisted",
+            "example": true
+          }
+        },
+        "required": [
+          "reordered"
+        ]
+      },
+      "AssetStorageUsageDto": {
+        "type": "object",
+        "properties": {
+          "usedBytes": {
+            "type": "number",
+            "description": "Bytes currently used by this organization"
+          },
+          "assetCount": {
+            "type": "number",
+            "description": "Number of assets in this organization"
+          },
+          "limitBytes": {
+            "type": "object",
+            "description": "Quota in bytes; null when storage is unlimited (Pro)",
+            "nullable": true,
+            "example": 5368709120
+          },
+          "limitGb": {
+            "type": "object",
+            "description": "Quota in gigabytes; null when storage is unlimited (Pro)",
+            "nullable": true,
+            "example": 5
+          }
+        },
+        "required": [
+          "usedBytes",
+          "assetCount"
+        ]
+      },
+      "AssetTagCountDto": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "description": "Tag value (lower-cased)",
+            "example": "press"
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of assets carrying this tag"
+          }
+        },
+        "required": [
+          "tag",
+          "count"
+        ]
+      },
+      "AssetTypeFacetCountsDto": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "number",
+            "description": "Assets with an `image/*` MIME type"
+          },
+          "videos": {
+            "type": "number",
+            "description": "Assets with a `video/*` MIME type"
+          },
+          "audio": {
+            "type": "number",
+            "description": "Assets with an `audio/*` MIME type"
+          },
+          "documents": {
+            "type": "number",
+            "description": "PDFs, office documents and `text/*` files"
+          },
+          "other": {
+            "type": "number",
+            "description": "Everything not covered by the other buckets"
+          }
+        },
+        "required": [
+          "images",
+          "videos",
+          "audio",
+          "documents",
+          "other"
+        ]
+      },
+      "AssetUploadedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization UUID"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Generated filename on storage (hash-named)",
+            "example": "a1b2c3d4e5f6.webp"
+          },
+          "originalName": {
+            "type": "string",
+            "description": "Filename as uploaded by the user",
+            "example": "hero-shot.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type",
+            "example": "image/jpeg"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "File size in bytes",
+            "example": 284913
+          },
+          "storageKey": {
+            "type": "string",
+            "description": "Path/key in the storage provider",
+            "example": "acme-media/images/2026/a1b2c3d4e5f6.jpg"
+          },
+          "checksum": {
+            "type": "object",
+            "description": "SHA-256 of the stored bytes (content-addressable dedup); null for legacy rows",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Delivery URL (CDN or direct). Replaced by a time-limited signed URL when signed-URL delivery is enabled (IMP-ASSET-05)."
+          },
+          "width": {
+            "type": "object",
+            "description": "Image/video width in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "height": {
+            "type": "object",
+            "description": "Image/video height in pixels; null for non-visual media",
+            "nullable": true
+          },
+          "title": {
+            "type": "object",
+            "description": "Editable display title",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Editable description / caption",
+            "nullable": true
+          },
+          "alt": {
+            "type": "object",
+            "description": "Alt text for accessibility; empty string means intentionally decorative",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Freeform tags, always lower-cased and deduplicated",
+            "example": [
+              "press",
+              "summer-campaign"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "description": "Generated responsive variants (IMP-ASSET-02); null until the variant job has run",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetVariantDto"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Free-form metadata JSON: extracted image info (dimensions, format, colorSpace, hasAlpha, non-PII EXIF), custom fields set via the metadata endpoint, and reconciliation flags such as `fileMissing`. GPS is only retained when the deployment opts in (IMP-ASSET-01).",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "folderId": {
+            "type": "object",
+            "description": "Containing folder UUID; null when the asset sits at the media-library root",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Manual ordering position within its folder"
+          },
+          "uploadedById": {
+            "type": "string",
+            "description": "UUID of the uploading user"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uploadedBy": {
+            "description": "The uploading user — only present when an identical asset already existed",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetUploaderRefDto"
+              }
+            ]
+          },
+          "folder": {
+            "description": "Compact folder reference — only present when an identical asset already existed",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFolderRefDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "filename",
+          "originalName",
+          "mimeType",
+          "sizeBytes",
+          "storageKey",
+          "url",
+          "tags",
+          "sortOrder",
+          "uploadedById",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AssetUploaderRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "User display name"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "AssetUsageContentRefDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID referencing the asset"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug of the referencing content item"
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle status of the referencing content item",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "contentType": {
+            "type": "string",
+            "description": "JSON-encoded localized content-type name, e.g. `{\"en\":\"News\",\"de\":\"Nachrichten\"}`",
+            "example": "{\"en\":\"News\",\"de\":\"Nachrichten\"}"
+          },
+          "fieldPath": {
+            "type": "object",
+            "description": "Field path of the reference when known; null when tracked at item level",
+            "nullable": true,
+            "example": "media.hero_image"
+          }
+        },
+        "required": [
+          "contentId",
+          "slug",
+          "status",
+          "contentType"
+        ]
+      },
+      "AssetUsageInfoDto": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "usageCount": {
+            "type": "number",
+            "description": "Number of content items referencing this asset"
+          },
+          "usedIn": {
+            "description": "The referencing content items; empty when the asset is unused",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetUsageContentRefDto"
+            }
+          }
+        },
+        "required": [
+          "assetId",
+          "usageCount",
+          "usedIn"
+        ]
+      },
+      "AssetVariantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Variant name",
+            "example": "medium",
+            "enum": [
+              "thumbnail",
+              "small",
+              "medium",
+              "large",
+              "xlarge",
+              "poster"
+            ]
+          },
+          "storageKey": {
+            "type": "string",
+            "description": "Storage key of the generated file"
+          },
+          "url": {
+            "type": "string",
+            "description": "Delivery URL of the generated file"
+          },
+          "width": {
+            "type": "number",
+            "description": "Variant width in pixels",
+            "example": 640
+          },
+          "height": {
+            "type": "number",
+            "description": "Variant height in pixels",
+            "example": 360
+          },
+          "format": {
+            "type": "string",
+            "description": "Output format",
+            "example": "webp"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "Variant file size in bytes",
+            "example": 48213
+          }
+        },
+        "required": [
+          "name",
+          "storageKey",
+          "url",
+          "width",
+          "height",
+          "format",
+          "sizeBytes"
+        ]
+      },
       "BulkAssetActionDto": {
         "type": "object",
         "properties": {
@@ -2596,6 +3898,446 @@
         "required": [
           "assetIds",
           "action"
+        ]
+      },
+      "CdnAssetCacheHeadersDto": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "description": "Asset UUID (echoed from the path)"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Recommended headers, derived from the asset MIME type (images 1 year immutable, video/audio 30 days, documents 1 week, otherwise the default TTL). Falls back to path-rule matching when the asset row is not found.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "Cache-Control": "public, max-age=31536000, stale-while-revalidate=86400, immutable"
+            }
+          }
+        },
+        "required": [
+          "assetId",
+          "headers"
+        ]
+      },
+      "CdnCacheHeadersDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The path that was evaluated (echoed)",
+            "example": "/uploads/a/b.jpg"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Headers that would be sent for this path — always `Cache-Control`, plus any extras the matched rule adds. Unmatched paths yield `no-store`.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "Cache-Control": "public, max-age=31536000, stale-while-revalidate=86400, immutable"
+            }
+          },
+          "info": {
+            "description": "Which rule matched and its effective TTL",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnCacheInfoDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "headers",
+          "info"
+        ]
+      },
+      "CdnCacheInfoDto": {
+        "type": "object",
+        "properties": {
+          "cached": {
+            "type": "boolean",
+            "description": "True when a rule matched and its TTL is greater than 0"
+          },
+          "ttl": {
+            "type": "number",
+            "description": "Effective TTL in seconds; 0 when no rule matched"
+          },
+          "rule": {
+            "description": "The matched rule; null when no rule matched the path",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnCacheRuleRefDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "cached",
+          "ttl"
+        ]
+      },
+      "CdnCacheRuleDto": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Glob-style path pattern (`*` = one segment, `**` = any depth)",
+            "example": "/uploads/**"
+          },
+          "ttl": {
+            "type": "number",
+            "description": "max-age in seconds; 0 means \"never cache\"",
+            "example": 31536000
+          },
+          "staleWhileRevalidate": {
+            "type": "number",
+            "description": "stale-while-revalidate in seconds",
+            "example": 86400
+          },
+          "staleIfError": {
+            "type": "number",
+            "description": "stale-if-error in seconds"
+          },
+          "immutable": {
+            "type": "boolean",
+            "description": "Whether the `immutable` directive is emitted"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Extra response headers emitted alongside Cache-Control",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "pattern",
+          "ttl"
+        ]
+      },
+      "CdnCacheRuleRefDto": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Pattern of the matched rule",
+            "example": "/uploads/**"
+          },
+          "ttl": {
+            "type": "number",
+            "description": "max-age of the matched rule in seconds"
+          }
+        },
+        "required": [
+          "pattern",
+          "ttl"
+        ]
+      },
+      "CdnImagePresetDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "width": {
+            "type": "number",
+            "description": "Target width in pixels",
+            "example": 640
+          },
+          "height": {
+            "type": "number",
+            "description": "Target height in pixels; omitted for width-only presets",
+            "example": 630
+          },
+          "quality": {
+            "type": "number",
+            "description": "Output quality (1-100)",
+            "example": 80
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label",
+            "example": "Medium (640w)"
+          }
+        },
+        "required": [
+          "width",
+          "quality",
+          "label"
+        ]
+      },
+      "CdnImagePresetsDto": {
+        "type": "object",
+        "properties": {
+          "thumbnail": {
+            "description": "150×150, quality 80",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          },
+          "small": {
+            "description": "320w, quality 80",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          },
+          "medium": {
+            "description": "640w, quality 80",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          },
+          "large": {
+            "description": "1024w, quality 85",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          },
+          "xlarge": {
+            "description": "1600w, quality 85",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          },
+          "full": {
+            "description": "2400w, quality 90",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          },
+          "og": {
+            "description": "Open Graph 1200×630, quality 85",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          },
+          "avatar": {
+            "description": "Avatar 256×256, quality 80",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CdnImagePresetDefinitionDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "thumbnail",
+          "small",
+          "medium",
+          "large",
+          "xlarge",
+          "full",
+          "og",
+          "avatar"
+        ]
+      },
+      "CdnInvalidationResultDto": {
+        "type": "object",
+        "properties": {
+          "invalidated": {
+            "type": "number",
+            "description": "Number of storage keys submitted for invalidation; 0 when CDN delivery is off"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider that handled the request; 'none' when CDN delivery is off",
+            "enum": [
+              "none",
+              "generic",
+              "cloudfront",
+              "cloudflare",
+              "bunny"
+            ]
+          }
+        },
+        "required": [
+          "invalidated",
+          "provider"
+        ]
+      },
+      "CdnPictureSourceDto": {
+        "type": "object",
+        "properties": {
+          "media": {
+            "type": "string",
+            "description": "Media query for this `<source>`; omitted for the widest fallback source",
+            "example": "(max-width: 640px)"
+          },
+          "srcset": {
+            "type": "string",
+            "description": "Comma-separated `url width` candidates",
+            "example": "https://cdn.example.com/k?w=320&f=webp 320w, https://cdn.example.com/k?w=640&f=webp 640w"
+          },
+          "type": {
+            "type": "string",
+            "description": "MIME type of this source",
+            "example": "image/webp"
+          }
+        },
+        "required": [
+          "srcset"
+        ]
+      },
+      "CdnPresetUrlDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Preset-optimized delivery URL for the asset"
+          },
+          "preset": {
+            "type": "string",
+            "description": "Preset that was applied (echoed from the path; unknown names yield the plain URL)",
+            "enum": [
+              "thumbnail",
+              "small",
+              "medium",
+              "large",
+              "xlarge",
+              "full",
+              "og",
+              "avatar"
+            ]
+          },
+          "cdnEnabled": {
+            "type": "boolean",
+            "description": "False when CDN delivery is off (URL is the direct storage URL)"
+          }
+        },
+        "required": [
+          "url",
+          "preset",
+          "cdnEnabled"
+        ]
+      },
+      "CdnPurgeResultDto": {
+        "type": "object",
+        "properties": {
+          "purged": {
+            "type": "boolean",
+            "description": "False when CDN delivery is off, so nothing was purged"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider that handled the purge; 'none' when CDN delivery is off",
+            "enum": [
+              "none",
+              "generic",
+              "cloudfront",
+              "cloudflare",
+              "bunny"
+            ]
+          }
+        },
+        "required": [
+          "purged",
+          "provider"
+        ]
+      },
+      "CdnResolvedUrlDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Delivery URL for the asset, with any transform params appended and optionally HMAC-signed",
+            "example": "https://cdn.example.com/acme/images/a1b2c3.jpg?w=640&q=80"
+          },
+          "cdnEnabled": {
+            "type": "boolean",
+            "description": "False when CDN delivery is off — the URL is then the direct storage URL"
+          },
+          "storageKey": {
+            "type": "string",
+            "description": "Storage key the URL was built from",
+            "example": "acme/images/2026/a1b2c3.jpg"
+          }
+        },
+        "required": [
+          "url",
+          "cdnEnabled",
+          "storageKey"
+        ]
+      },
+      "CdnResponsiveImageDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Base delivery URL of the asset (no transform params)"
+          },
+          "srcset": {
+            "type": "string",
+            "description": "Single srcset across the 320/640/1024/1600/2400 width ladder"
+          },
+          "sources": {
+            "description": "One `<picture><source>` descriptor per requested format and breakpoint (three per format: ≤640px, ≤1024px, and an unconstrained fallback)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CdnPictureSourceDto"
+            }
+          },
+          "cdnEnabled": {
+            "type": "boolean",
+            "description": "False when CDN delivery is off (URLs are direct storage URLs)"
+          }
+        },
+        "required": [
+          "url",
+          "srcset",
+          "sources",
+          "cdnEnabled"
+        ]
+      },
+      "CdnStatusDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether CDN delivery is switched on (`CDN_ENABLED`)"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Configured CDN provider adapter",
+            "enum": [
+              "generic",
+              "cloudfront",
+              "cloudflare",
+              "bunny"
+            ],
+            "example": "generic"
+          },
+          "cdnUrl": {
+            "type": "object",
+            "description": "CDN base URL (trailing slashes stripped); null while CDN delivery is off",
+            "nullable": true,
+            "example": "https://cdn.example.com"
+          },
+          "signingEnabled": {
+            "type": "boolean",
+            "description": "Whether an HMAC signing key is configured for signed URLs"
+          }
+        },
+        "required": [
+          "enabled",
+          "provider",
+          "signingEnabled"
         ]
       },
       "CreateFolderDto": {
