@@ -264,10 +264,11 @@ Team members can leave threaded comments on content items to discuss changes, pr
 
 ```bash
 # Add a comment (optionally as a reply, optionally @mentioning teammates)
-POST /api/v1/manage/content/:id/comments
+POST /api/v1/manage/comments
 Content-Type: application/json
 
 {
+  "contentId": "<content-id>",
   "text": "Please review the headline for accuracy.",
   "parentId": null,
   "mentions": ["<user-id>"]

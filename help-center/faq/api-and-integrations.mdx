@@ -44,19 +44,21 @@ description: Frequently asked questions about the Studio API, webhooks, and exte
 </Expandable>
 
 <Expandable title="How do I paginate API results?" default-open="false">
-  Use `page` and `pageSize` query parameters:
+  Use the `page` and `limit` query parameters:
 
   ```bash
-  GET /api/v1/manage/content?page=2&pageSize=20
+  GET /api/v1/manage/content?page=2&limit=20
   ```
 
   The response includes pagination metadata:
 
   ```json
   {
-    "meta": { "total": 156, "page": 2, "pageSize": 20, "totalPages": 8 }
+    "meta": { "total": 156, "page": 2, "limit": 20, "totalPages": 8 }
   }
   ```
+
+  `limit` accepts 1–250 and defaults to 20. Note it is `limit`, not `pageSize` — unknown query parameters are rejected, so a wrong name returns `400` rather than falling back to the default.
 </Expandable>
 
 ## Webhooks

@@ -265,4 +265,4 @@ Pro plugins follow the same multi-tenancy principles:
 |----------|--------|-------------|
 | `GET /health` | Public | Basic health check (DB, Redis, MeiliSearch status). No server info leaked. |
 | `GET /health/queues` | Admin only | Queue statistics. Requires JWT + admin role. |
-| `GET /api/v1/search/stats` | Admin only | Per-org search index document counts. |
+| `GET /api/v1/manage/search/stats` | Admin only | Per-org search index document counts. |

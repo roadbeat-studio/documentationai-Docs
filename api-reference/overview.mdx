@@ -38,7 +38,8 @@ All API responses follow a consistent envelope format:
   "meta": {
     "total": 42,
     "page": 1,
-    "pageSize": 20
+    "limit": 20,
+    "totalPages": 3
   }
 }
 ```
@@ -74,48 +75,43 @@ Errors return an appropriate HTTP status code with a structured error body. `cod
 | `429` | Too Many Requests — rate limit exceeded |
 | `500` | Internal Server Error — unexpected server error |
 
-**Content validation errors** (creating/updating/publishing content) return `422` with a per-field `errors` array — one entry per rule that failed, each with a JSON-pointer `path`, a `message`, and the `keyword` that fired (e.g. `required`, `after_field`, `requiredIf`, `asset_exists`, `reference_exists`):
+**Content validation errors** (creating, updating or publishing content) return `422` when the data does not satisfy its content type — including the cross-field rules (`after_field`, `before_field`), conditional requirements (`requiredIf`, `requiredUnless`) and referenced-item checks (`asset_exists`, `reference_exists`):
 
 ```json
 {
   "statusCode": 422,
   "error": "Unprocessable Entity",
+  "code": "UNPROCESSABLE_ENTITY",
   "message": "Content does not match its content type schema",
-  "errors": [
-    { "path": "/end_date", "message": "must be on or after \"start_date\"", "keyword": "after_field" },
-    { "path": "/cover_image", "message": "Referenced asset \"a1b2\" does not exist", "keyword": "asset_exists" }
-  ]
+  "timestamp": "2026-08-08T12:34:56.789Z",
+  "path": "/api/v1/manage/content",
+  "requestId": "req_a1b2c3"
 }
 ```
+
+<Callout kind="alert">
+  **The response does not currently identify which field failed.** The validator builds a per-field list (a JSON-pointer `path`, a `message`, and the `keyword` that fired for each violation), but the global error handler emits the fixed body above and drops it, so `422` tells you only that validation failed. Until that is addressed, validate against the content type's JSON Schema client-side if you need field-level feedback.
+</Callout>
 
 ## Management API
 
 The Management API requires **JWT authentication** and is used by the admin UI and internal tools.
 
-### Endpoint Categories
+### Endpoint areas
 
-| Category | Base Path | Description |
-|----------|-----------|-------------|
-| **Auth** | `/api/v1/auth/` | Login, setup, refresh, password management |
-| **Content** | `/api/v1/manage/content/` | Content CRUD, versioning, publish/unpublish |
-| **Content Types** | `/api/v1/manage/content-types/` | Content type definitions |
-| **Content Relations** | `/api/v1/manage/content-relations/` | References, hierarchy |
-| **Assets** | `/api/v1/assets/` | File upload, metadata, folders, tags, search |
-| **Users** | `/api/v1/manage/users/` | User CRUD (admin) |
-| **Webhooks** | `/api/v1/manage/webhooks/` | Webhook configuration |
-| **API Keys** | `/api/v1/manage/api-keys/` | API key management |
-| **Publishing** | `/api/v1/manage/publishing/` | Discovery Node distribution |
-| **Discovery Nodes** | `/api/v1/manage/discovery-nodes/` | Publishing target configuration |
-| **Locales** | `/api/v1/manage/locales/` | Locale management |
-| **Translations** | `/api/v1/manage/translations/` | Translation tasks |
-| **Search** | `/api/v1/manage/search/` | Full-text search |
-| **Export** | `/api/v1/manage/export/` | Backup/restore, content export |
-| **Dashboard** | `/api/v1/manage/dashboard/` | Statistics |
-| **Schema Registry** | `/api/v1/manage/schema-registry/` | Import content types |
-| **Layouts** | `/api/v1/manage/layouts/` | Content presentation layouts |
-| **Organizations** | `/api/v1/manage/organizations/` | Organization settings |
-| **Currencies** | `/api/v1/currencies` | ISO 4217 currency list (Context Directory proxy) |
-| **Countries** | `/api/v1/countries` | ISO 3166-1 country list (Context Directory proxy) |
+The sidebar groups every endpoint into one of these areas. Each is generated from the API, so the endpoint list under it is always current — browse there for exact paths rather than looking them up here.
+
+| Area | Covers |
+|------|--------|
+| **Authentication, Users & Organizations** | Login and token flows, user accounts, organization settings, Delivery-API keys |
+| **Content Management** | Content CRUD and versioning, content types, variants, relations and hierarchy, comments, layouts, Schema Registry import |
+| **Localization & Reference Data** | Locales, translation tasks, machine translation, and the language / country / currency lists (the last three proxy the Context Directory) |
+| **Assets & Media Delivery** | Upload, metadata, folders, tags, search, CDN integration |
+| **Publishing & Distribution** | Discovery Node distribution, content pods, the Delivery API, exports and backups, outgoing webhooks |
+| **Consumer Features** | Goals, follows, bookmarks, discovery, geo search, ActivityPub, Context Directory sync |
+| **Platform, Administration & Operations** | Platform admin and onboarding, SSO exchange, federation, plugins, audit log, quotas, dashboard, search, health probes |
+
+Licensed **Pro** plugins add seven further areas — editorial workflow, content operations, the AI assistant, the integration hub, governance and access, the GraphQL and realtime APIs, and media, layouts and notifications. Their endpoints only exist when the corresponding plugin is installed and licensed; see [CE vs Pro](/plugins/ce-vs-pro).
 
 ### Authentication
 
@@ -179,7 +175,11 @@ List endpoints support pagination via query parameters:
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `page` | `1` | Page number (1-indexed) |
-| `pageSize` | `20` | Items per page (max 100) |
+| `limit` | `20` | Items per page (1–250) |
+
+<Callout kind="alert">
+  The parameter is `limit`, not `pageSize`. Unknown query parameters are rejected rather than ignored, so sending `pageSize` returns `400 Bad Request`.
+</Callout>
 
 Response includes pagination metadata:
 
@@ -189,11 +189,13 @@ Response includes pagination metadata:
   "meta": {
     "total": 156,
     "page": 1,
-    "pageSize": 20,
+    "limit": 20,
     "totalPages": 8
   }
 }
 ```
+
+A few high-volume endpoints use cursor pagination instead, replacing `meta` with `{ "limit", "hasMore", "nextCursor" }`. The endpoint's own page says which it uses.
 
 ## Filtering
 
@@ -207,7 +209,7 @@ GET /api/v1/manage/api-keys?filter[isActive]=true
 GET /api/v1/manage/discovery-nodes?filter[region]=eu-central
 ```
 
-Multiple `filter[...]` parameters combine with AND. Filtering composes with `page`/`pageSize` and sorting.
+Multiple `filter[...]` parameters combine with AND. Filtering composes with `page`/`limit` and sorting.
 
 ## Versioning
 
@@ -224,9 +226,16 @@ API responses are automatically compressed with gzip/deflate for responses large
 ## Health Checks
 
 ```bash
-# Basic health check
+# Overall health, including dependency checks
 GET /api/v1/health
 
-# Detailed health (DB, Redis, MeiliSearch, queues)
-GET /api/v1/health/detailed
+# Kubernetes-style probes
+GET /api/v1/health/live
+GET /api/v1/health/ready
+
+# Background job queues, and slow-query diagnostics
+GET /api/v1/health/queues
+GET /api/v1/health/slow-queries
 ```
+
+See **Platform, Administration & Operations** in the sidebar for the response schemas.

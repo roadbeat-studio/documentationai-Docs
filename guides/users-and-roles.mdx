@@ -266,7 +266,7 @@ Super admins operate at the **platform level**, above individual organizations. 
 The first super admin is created automatically during the initial setup wizard. Additional super admins can be granted by existing super admins via:
 
 - **Platform Admin UI** — navigate to **Platform** → **Admins** → search for a user → click **Grant Super Admin**
-- **API** — `POST /api/v1/platform/admins/:userId/grant`
+- **API** — `POST /api/v1/platform/admins` with `{ "userId": "<user-id>" }` to grant; `DELETE /api/v1/platform/admins/:userId` to revoke (self-revocation and removing the last super admin are both rejected)
 
 ### Platform Admin Dashboard
 

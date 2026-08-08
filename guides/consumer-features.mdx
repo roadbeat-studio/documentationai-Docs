@@ -172,7 +172,7 @@ POST /api/v1/consumer/discover/search
   "contentType": "news",
   "filters": { "location.country": "DE" },
   "page": 1,
-  "pageSize": 20
+  "limit": 20
 }
 
 # Goal-based search
@@ -473,10 +473,9 @@ POST /api/v1/consumer/bookmarks
 
 # Remove bookmark
 DELETE /api/v1/consumer/bookmarks/:teaserId
-
-# Check if bookmarked
-GET /api/v1/consumer/bookmarks/:teaserId/status
 ```
+
+There is no per-teaser "is this bookmarked?" endpoint — list the bookmarks once with `GET /api/v1/consumer/bookmarks` and resolve state client-side. That is also what keeps the follow/bookmark graph off the server's request log.
 
 ### Collections
 

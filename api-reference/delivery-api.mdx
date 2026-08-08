@@ -31,7 +31,7 @@ See [Authentication](/api-reference/authentication#api-key-authentication-delive
 GET /api/v1/delivery/content
 ```
 
-<ParamField query="contentType" param-type="string" required="false">
+<ParamField query="contentTypeId" param-type="string" required="false">
   Filter by content type ID (e.g., `news`, `event`).
 </ParamField>
 
@@ -47,22 +47,30 @@ GET /api/v1/delivery/content
   Page number (default: 1).
 </ParamField>
 
-<ParamField query="pageSize" param-type="integer" required="false">
-  Items per page (default: 20, max: 100).
+<ParamField query="limit" param-type="integer" required="false">
+  Items per page (default: 20, range 1–250).
 </ParamField>
 
-<ParamField query="sort" param-type="string" required="false">
+<ParamField query="sortBy" param-type="string" required="false">
   Sort field: `createdAt`, `updatedAt`, `publishedAt`, `title`.
 </ParamField>
 
-<ParamField query="order" param-type="string" required="false">
+<ParamField query="sortOrder" param-type="string" required="false">
   Sort order: `asc` or `desc` (default: `desc`).
 </ParamField>
+
+<ParamField query="cursor" param-type="string" required="false">
+  Cursor from a previous response's `meta.nextCursor`. When set, `meta` returns `{ limit, hasMore, nextCursor }` instead of page counts — cheaper than `page` for deep pagination.
+</ParamField>
+
+<Callout kind="alert">
+  Unknown query parameters are rejected rather than ignored, so a misspelled name returns `400 Bad Request` instead of being silently dropped.
+</Callout>
 
 **Example:**
 
 ```bash
-curl "http://localhost:3000/api/v1/delivery/content?contentType=news&locale=en&pageSize=10" \
+curl "http://localhost:3000/api/v1/delivery/content?contentTypeId=news&locale=en&limit=10" \
   -H "X-Api-Key: rbk_your_key"
 ```
 
@@ -86,7 +94,7 @@ curl "http://localhost:3000/api/v1/delivery/content?contentType=news&locale=en&p
       "createdAt": "2026-01-24T10:00:00Z"
     }
   ],
-  "meta": { "total": 42, "page": 1, "pageSize": 10 }
+  "meta": { "total": 42, "page": 1, "limit": 10, "totalPages": 5 }
 }
 ```
 

@@ -30,6 +30,27 @@ description: Release notes and updates for roadbeat Studio.
 
   Endpoints that return a file, a stream, or no content are documented as such
   rather than being given a body they do not send.
+
+  ### Corrections
+
+  Generating from the source also exposed places where the hand-written pages
+  described an API we do not actually serve. All of these were wrong before
+  today, not changed today:
+
+  - **Pagination is `limit`, not `pageSize`** (1–250, default 20). Because
+    unknown query parameters are rejected rather than ignored, the previously
+    documented `pageSize` returned `400` instead of paginating. Corrected in the
+    overview, the Delivery API page, the FAQ and the consumer guide.
+  - **Delivery API parameter names** — `contentTypeId`, `sortBy` and `sortOrder`
+    (previously documented as `contentType`, `sort` and `order`), plus the
+    `cursor` parameter, which was undocumented.
+  - **`422` validation errors do not name the offending field.** The validator
+    builds a per-field list, but the global error handler drops it. Previously
+    documented as if the client received it — see the overview for the body that
+    actually arrives.
+  - **Four stale base paths** and a `/health/detailed` endpoint that does not
+    exist; the real probes are `/health`, `/health/live`, `/health/ready`,
+    `/health/queues` and `/health/slow-queries`.
 </Update>
 
 <Update label="2026-07-03" description="Content validation depth, zero-leakage tenancy & UI consistency" tags={["feature", "security", "api"]}>
