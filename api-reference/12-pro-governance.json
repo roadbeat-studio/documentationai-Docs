@@ -1670,7 +1670,7 @@
         },
         "responses": {
           "201": {
-            "description": "The stored entry, including the freshly computed `prev_hash`/`entry_hash` chain links. The actor, IP, user-agent and `source: \"manual\"` are stamped server-side from the authenticated request and cannot be supplied by the caller. Note that a `changes` object sent in the body is persisted and echoed back verbatim — the secret-field redaction and value truncation applied to platform-computed diffs do not run on this path.",
+            "description": "The stored entry, including the freshly computed `prev_hash`/`entry_hash` chain links. The actor, IP, user-agent and `source: \"manual\"` are stamped server-side from the authenticated request and cannot be supplied by the caller. A `changes` object sent in the body goes through the same redaction as platform-computed diffs (IMP-PRO-AUDIT-06): secret-like field names become `[REDACTED]` and oversized values are truncated before the row is persisted and hashed, so the echoed entry can differ from what was posted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2093,11 +2093,11 @@
     "/api/v1/pro/audit/verify": {
       "get": {
         "operationId": "AuditController_verifyChain",
-        "summary": "Verify the organization's tamper-evident audit hash chain (admin only)",
+        "summary": "Verify the organization's tamper-evident audit hash chain (admin only) — detects careless or accidental modification and truncation, not a privileged direct-database writer",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Chain verification outcome. Returns only aggregate chain state and the first broken entry ID — no hashes and no keys, and the chain digests are unkeyed SHA-256 in any case. The verification run itself is appended to the chain as an `audit_verify` entry.",
+            "description": "Chain verification outcome. Returns only aggregate chain state and the first broken entry ID — no hashes and no keys, and the chain digests are unkeyed SHA-256 in any case. That unkeyed construction bounds what the result can mean: `valid: true` says the trail is internally consistent (nothing was edited, re-ordered, dropped or re-attributed without the chain being rebuilt) and that any pruned history is anchored by a retention checkpoint. It is NOT proof of integrity against an attacker with write access to `pro_audit_logs`, who can rewrite entries and recompute a chain that verifies clean — protection against that comes from the append-only trigger, least-privilege database credentials and off-host log shipping. The verification run itself is appended to the chain as an `audit_verify` entry.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2508,7 +2508,7 @@
         },
         "responses": {
           "201": {
-            "description": "The inserted `pro_sso_configs` row as returned by `RETURNING *` — NOT masked: `client_secret` is the stored value (encryption envelope, or the plaintext secret when `PRO_SSO_SECRET_KEY` is unset), and `scim_token_hash` / `scim_token_hint` are included. When SCIM was enabled, `scim_token` carries the plaintext bearer token — this response is the only place it ever appears.",
+            "description": "The inserted `pro_sso_configs` row as returned by `RETURNING *`, with the same secret masking `GET /pro/sso/config` applies: `client_secret` becomes a fixed bullet string and `scim_token_hash` / `scim_token_hint` are removed entirely. The certificate is NOT truncated here. When SCIM was enabled, `scim_token` carries the plaintext bearer token — masking deliberately preserves it, and this response is the only place it ever appears.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2556,7 +2556,7 @@
         },
         "responses": {
           "200": {
-            "description": "The re-read `pro_sso_configs` row — NOT masked, unlike GET: `client_secret` is the stored value (encryption envelope, or the plaintext secret when `PRO_SSO_SECRET_KEY` is unset) and `scim_token_hash` / `scim_token_hint` are included. `scim_token` is always `null` here; enabling SCIM through this endpoint stores a hash only, the plaintext is obtained from POST /pro/sso/config/regenerate-scim-token.",
+            "description": "The re-read `pro_sso_configs` row, masked exactly as `GET /pro/sso/config` masks it: `client_secret` becomes a fixed bullet string and `scim_token_hash` / `scim_token_hint` are removed entirely. The certificate is NOT truncated here. `scim_token` never carries a usable token on this endpoint — it is the `<hint>••••••••` preview when a hashed token exists, otherwise `null`; enabling SCIM through this endpoint stores a hash only, the plaintext is obtained from POST /pro/sso/config/regenerate-scim-token.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3199,19 +3199,11 @@
         ],
         "responses": {
           "200": {
-            "description": "An RFC 7644 ListResponse — SCIM's own paging envelope, which CE's global response interceptor additionally nests under `data`. `count` is clamped to 200. Supported filters are `userName eq \"…\"` and `externalId eq \"…\"`; anything else answers a SCIM 400 error body.",
+            "description": "An RFC 7644 ListResponse — SCIM's own paging envelope, sent as the bare top-level body. `count` is clamped to 200. Supported filters are `userName eq \"…\"` and `externalId eq \"…\"`; anything else answers a SCIM 400 error body.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimListResponseDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimListResponseDto"
                 }
               }
             }
@@ -3236,19 +3228,11 @@
         ],
         "responses": {
           "201": {
-            "description": "The provisioned user as a SCIM core User resource (nested under `data` by the global response interceptor). The account is created without a password, so it can only be used through SSO. `meta.created` / `meta.lastModified` are empty strings on this endpoint. A duplicate `userName` answers a SCIM 409 error body instead.",
+            "description": "The provisioned user as a SCIM core User resource, sent as the bare top-level body. The account is created without a password, so it can only be used through SSO. A duplicate `userName` answers a SCIM 409 error body instead.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimUserDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimUserDto"
                 }
               }
             }
@@ -3283,19 +3267,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The user as a SCIM core User resource, scoped to the organization the presented bearer token belongs to. `meta.created` / `meta.lastModified` are empty strings on this endpoint. Unknown ids answer a SCIM 404 error body.",
+            "description": "The user as a SCIM core User resource, sent as the bare top-level body and scoped to the organization the presented bearer token belongs to. Unknown ids answer a SCIM 404 error body.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimUserDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimUserDto"
                 }
               }
             }
@@ -3328,19 +3304,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The patched user as a SCIM core User resource. Only `replace`/`add` on `active`, `name.givenName`, `name.familyName`, `emails` and path-less value objects are applied; other operations are ignored. `meta.created` / `meta.lastModified` are empty strings on this endpoint.",
+            "description": "The patched user as a SCIM core User resource, sent as the bare top-level body. Only `replace`/`add` on `active`, `name.givenName`, `name.familyName`, `emails` and path-less value objects are applied; other operations are ignored.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimUserDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimUserDto"
                 }
               }
             }
@@ -3373,19 +3341,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The updated user as a SCIM core User resource. Only name, primary email and `active` are taken from the payload; omitted fields keep their current value. `meta.created` / `meta.lastModified` are empty strings on this endpoint.",
+            "description": "The updated user as a SCIM core User resource, sent as the bare top-level body. Only name, primary email and `active` are taken from the payload; omitted fields keep their current value.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimUserDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimUserDto"
                 }
               }
             }
@@ -3432,19 +3392,11 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Static capability document: PATCH and filtering are supported, bulk / sort / ETag / password change are not, and the only authentication scheme is a bearer token.",
+            "description": "Static capability document, sent as the bare top-level body: PATCH and filtering are supported, bulk / sort / ETag / password change are not, and the only authentication scheme is a bearer token.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimServiceProviderConfigDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimServiceProviderConfigDto"
                 }
               }
             }
@@ -3462,19 +3414,11 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Static ListResponse with the single supported resource type, `User`.",
+            "description": "Static ListResponse with the single supported resource type, `User`, sent as the bare top-level body.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimResourceTypeListDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimResourceTypeListDto"
                 }
               }
             }
@@ -3492,19 +3436,11 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Static ListResponse describing the core User schema and the four attributes this implementation honours (`userName`, `name`, `emails`, `active`).",
+            "description": "Static ListResponse describing the core User schema and the four attributes this implementation honours (`userName`, `name`, `emails`, `active`), sent as the bare top-level body.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/ProSsoScimSchemaListDto"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ProSsoScimSchemaListDto"
                 }
               }
             }
@@ -4384,6 +4320,30 @@
             "type": "string",
             "nullable": true,
             "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Present on 422 content-validation failures: one entry per rule that failed. Absent otherwise.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON pointer to the offending field",
+                  "example": "/end_date"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Human-readable explanation",
+                  "example": "must be on or after \"start_date\""
+                },
+                "keyword": {
+                  "type": "string",
+                  "description": "The rule that fired, e.g. required, after_field, before_field, requiredIf, requiredUnless, asset_exists, reference_exists",
+                  "example": "after_field"
+                }
+              }
+            }
           }
         }
       },
@@ -4543,7 +4503,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Audit entry ID (UUID text).",
+            "description": "Audit entry ID: UUID in a `TEXT` column (migration 001 — `gen_random_uuid()::TEXT`), generated in `AuditService.log()`. Not a numeric surrogate key, so nothing here is driver-dependent and no bigint→number coercion is involved; the value is a string on the wire in every case.",
             "example": "3f2a6c1e-9b4d-4f8a-9c31-7d5e0a1b2c3d"
           },
           "organization_id": {
@@ -4553,7 +4513,7 @@
           },
           "user_id": {
             "type": "object",
-            "description": "Actor who performed the action. Null for system-generated events with no user context. After a GDPR erasure scrub (migration 005) this holds the deterministic pseudonym `erased-user-<16 hex>` instead of the original user ID.",
+            "description": "Actor who performed the action. Null for system-generated events with no user context. After a GDPR erasure scrub (migration 005) this holds the deterministic pseudonym `erased-user-<16 hex>` instead of the original user ID — an HMAC-SHA-256 of the user ID keyed by the server-side `AUDIT_PSEUDONYM_SECRET` plus the organization ID. Pseudonyms are stable for a given secret, so activity still correlates; changing (or first setting) the secret changes newly minted pseudonyms, so a subject erased on both sides of that change appears under two values.",
             "nullable": true,
             "example": "usr_01HZX9K7Q2"
           },
@@ -4589,7 +4549,7 @@
             "type": "object",
             "additionalProperties": true,
             "nullable": true,
-            "description": "Field-level diff, or null when the event carries none. Keys are field names of the audited entity; each value is an object `{ \"old\": <any>, \"new\": <any> }`. Values are arbitrary JSON, so the shape is intentionally not modelled further. For diffs the platform computes itself from content/user mutation events, two filters are applied before persistence (IMP-PRO-AUDIT-06): fields whose name matches password / secret / token / api-key / credential / private-key become `{ \"old\": \"[REDACTED]\", \"new\": \"[REDACTED]\" }`, and any single value serializing to more than 2000 characters is replaced by the marker `[TRUNCATED <n> chars]`. Diffs supplied verbatim in the body of POST /pro/audit are stored as given and are NOT passed through those filters, so a manual entry can contain anything its admin author put there.",
+            "description": "Field-level diff, or null when the event carries none. Keys are field names of the audited entity; each value is an object `{ \"old\": <any>, \"new\": <any> }`. Values are arbitrary JSON, so the shape is intentionally not modelled further. Two filters are applied to EVERY entry before it is persisted, regardless of origin (IMP-PRO-AUDIT-06 — platform-computed diffs and diffs supplied in the body of POST /pro/audit alike): fields whose name matches password / secret / token / api-key / credential / private-key become `{ \"old\": \"[REDACTED]\", \"new\": \"[REDACTED]\" }`, and any single value serializing to more than 2000 characters is replaced by the marker `[TRUNCATED <n> chars]`. Redaction runs before the tamper-evidence hash, so the chain covers the redacted row that is actually stored. A manually supplied value that is not in `{ old, new }` form is size-capped and kept as-is rather than reshaped.",
             "example": {
               "title": {
                 "old": "Summer Festival",
@@ -4664,7 +4624,7 @@
           },
           "entry_hash": {
             "type": "object",
-            "description": "Tamper-evidence chain link: unkeyed SHA-256 over `prev_hash` plus the canonicalized row fields (IMP-PRO-AUDIT-04). Null for rows written before migration 004 — those are counted as `legacyRows`, not failures, by GET /pro/audit/verify. This is a digest of data the caller can already read; no secret or signing key is involved.",
+            "description": "Tamper-evidence chain link: unkeyed SHA-256 over `prev_hash` plus the canonicalized row fields (IMP-PRO-AUDIT-04). Null for rows written before migration 004 — those are counted as `legacyRows`, not failures, by GET /pro/audit/verify. This is a digest of data the caller can already read; no secret or signing key is involved, so it cannot be used to prove authorship — anyone able to write the table can recompute it.",
             "nullable": true,
             "example": "c17d84...9ab0"
           },
@@ -5039,7 +4999,7 @@
         "properties": {
           "valid": {
             "type": "boolean",
-            "description": "True when no broken link was found AND the chain start is properly anchored.",
+            "description": "True when no broken link was found AND the chain start is properly anchored. What that does and does not establish: it detects careless or partial tampering (a row edited, re-attributed or re-ordered without rebuilding the chain), accidental mutation such as a stray UPDATE or a bad restore, and truncation — history removed without an authorized retention run leaving its `retention_checkpoint` anchor (reported via `anchored`). It does NOT detect a determined attacker with direct write access to `pro_audit_logs`: because the digests are unkeyed and cover only row data, such an attacker can rewrite history and recompute a fully self-consistent chain, after which this field still reads true. Treat `valid: true` as \"no evidence of tampering\", not as cryptographic proof of integrity; the defences against a privileged writer are the append-only database trigger, least-privilege DB credentials, and off-host log shipping.",
             "example": true
           },
           "checkedRows": {
@@ -6646,8 +6606,9 @@
           },
           "client_secret": {
             "type": "object",
-            "description": "OAuth/OIDC client secret AS STORED — this endpoint does not mask it. With `PRO_SSO_SECRET_KEY` configured the value is the AES-256-GCM envelope `enc:v1:<iv>:<tag>:<ciphertext>`; without that key at-rest encryption is a logged no-op and this field is the plaintext client secret verbatim. `null` when no secret is configured.",
-            "nullable": true
+            "description": "OAuth/OIDC client secret — masked here exactly as on `GET /pro/sso/config`: a fixed bullet string whenever any secret is stored, `null` when none is. The stored value is never sent, which matters because at-rest encryption is a logged no-op without `PRO_SSO_SECRET_KEY` and the column would then be the plaintext secret.",
+            "nullable": true,
+            "example": "••••••••"
           },
           "authorization_url": {
             "type": "object",
@@ -6714,19 +6675,8 @@
           },
           "scim_token": {
             "type": "object",
-            "description": "Plaintext SCIM bearer token, shown EXACTLY ONCE: it is present only in the `POST /pro/sso/config` response and only when SCIM was enabled at creation. The token is never persisted (only its hash is), so it is `null` on `PUT /pro/sso/config` and on every later read — use POST /pro/sso/config/regenerate-scim-token to obtain a new one.",
+            "description": "On `POST /pro/sso/config`: the plaintext SCIM bearer token, shown EXACTLY ONCE and only when SCIM was enabled at creation — masking preserves it deliberately, and it is the only place it ever appears. Everywhere else, including `PUT /pro/sso/config`, this is the non-usable hint `<hint>••••••••` when a hashed token exists and `null` when none does; only the hash is persisted, so use POST /pro/sso/config/regenerate-scim-token to obtain a fresh token. `scim_token_hash` and `scim_token_hint` are removed from the response entirely.",
             "nullable": true
-          },
-          "scim_token_hash": {
-            "type": "object",
-            "description": "SHA-256 hex digest of the SCIM bearer token (hash-only storage). Not a usable credential, but not masked on this endpoint either.",
-            "nullable": true
-          },
-          "scim_token_hint": {
-            "type": "object",
-            "description": "First 8 characters of the SCIM bearer token, kept so the UI can identify which token is active.",
-            "nullable": true,
-            "example": "a1b2c3d4"
           },
           "scim_last_used_at": {
             "type": "object",
@@ -7020,12 +6970,12 @@
           },
           "created": {
             "type": "string",
-            "description": "Creation timestamp. Populated on the list endpoint (which reads the raw `created_at` column); on the single-resource endpoints the record is read via the Prisma client, whose camelCase field the mapper does not pick up, so an EMPTY STRING is returned there.",
+            "description": "Creation timestamp as an ISO 8601 string, on every endpoint — the mapper accepts both the raw `created_at` column of the list query and the Prisma client's `createdAt`. Empty string only if the record genuinely carries no creation timestamp.",
             "example": "2026-04-01T09:15:00.000Z"
           },
           "lastModified": {
             "type": "string",
-            "description": "Last-modification timestamp, with the same empty-string caveat as `created`.",
+            "description": "Last-modification timestamp, in the same ISO 8601 form as `created`.",
             "example": "2026-04-01T09:15:00.000Z"
           },
           "location": {

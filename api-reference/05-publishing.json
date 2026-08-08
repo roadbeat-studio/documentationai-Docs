@@ -5714,6 +5714,30 @@
             "type": "string",
             "nullable": true,
             "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Present on 422 content-validation failures: one entry per rule that failed. Absent otherwise.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON pointer to the offending field",
+                  "example": "/end_date"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Human-readable explanation",
+                  "example": "must be on or after \"start_date\""
+                },
+                "keyword": {
+                  "type": "string",
+                  "description": "The rule that fired, e.g. required, after_field, before_field, requiredIf, requiredUnless, asset_exists, reference_exists",
+                  "example": "after_field"
+                }
+              }
+            }
           }
         }
       },
@@ -7431,12 +7455,15 @@
             }
           },
           "secret": {
-            "type": "string",
-            "description": "Current HMAC signing secret. Returned so the integrator can configure their receiver; treat it as a credential."
+            "type": "object",
+            "description": "Masked hint for the current HMAC signing secret — the first 8 characters followed by bullets, enough to tell two webhooks apart and useless for forging a signature. The full secret is returned only when the webhook is created and by `POST :id/rotate-secret`. Null when no secret is set.",
+            "example": "a1b2c3d4••••••••",
+            "nullable": true
           },
           "secretPrevious": {
             "type": "object",
-            "description": "Previous signing secret — both secrets verify during a rotation window (IMP-API-01); null when never rotated",
+            "description": "Masked hint for the previous signing secret — both secrets verify during a rotation window (IMP-API-01). Null when never rotated.",
+            "example": "9f8e7d6c••••••••",
             "nullable": true
           },
           "status": {
@@ -7469,7 +7496,6 @@
           "name",
           "url",
           "events",
-          "secret",
           "status",
           "createdAt",
           "updatedAt",
@@ -7521,12 +7547,15 @@
             }
           },
           "secret": {
-            "type": "string",
-            "description": "Current HMAC signing secret. Returned so the integrator can configure their receiver; treat it as a credential."
+            "type": "object",
+            "description": "Masked hint for the current HMAC signing secret — the first 8 characters followed by bullets, enough to tell two webhooks apart and useless for forging a signature. The full secret is returned only when the webhook is created and by `POST :id/rotate-secret`. Null when no secret is set.",
+            "example": "a1b2c3d4••••••••",
+            "nullable": true
           },
           "secretPrevious": {
             "type": "object",
-            "description": "Previous signing secret — both secrets verify during a rotation window (IMP-API-01); null when never rotated",
+            "description": "Masked hint for the previous signing secret — both secrets verify during a rotation window (IMP-API-01). Null when never rotated.",
+            "example": "9f8e7d6c••••••••",
             "nullable": true
           },
           "status": {
@@ -7552,7 +7581,6 @@
           "name",
           "url",
           "events",
-          "secret",
           "status",
           "createdAt",
           "updatedAt"

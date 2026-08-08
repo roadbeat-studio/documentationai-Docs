@@ -3066,21 +3066,13 @@
         ],
         "responses": {
           "200": {
-            "description": "A flat translation catalog: message key → translated string (keys are dotted, e.g. `page.title`, `tab.providers`). Documented as an open string map because the key set is the catalog itself, not a fixed schema. Unknown locales return `{}` so ngx-translate falls back to `en`. Cached for 24 h.",
+            "description": "A flat translation catalog: message key → translated string (keys are dotted, e.g. `page.title`, `tab.providers`). Documented as an open string map because the key set is the catalog itself, not a fixed schema. The body is the map itself — this route is exempt from the `{ data }` envelope so ngx-translate can consume it directly. Unknown locales return `{}` so ngx-translate falls back to `en`. Cached for 24 h.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "additionalProperties": {
-                        "type": "string"
-                      }
-                    }
+                  "additionalProperties": {
+                    "type": "string"
                   }
                 }
               }
@@ -3184,6 +3176,30 @@
             "type": "string",
             "nullable": true,
             "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Present on 422 content-validation failures: one entry per rule that failed. Absent otherwise.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON pointer to the offending field",
+                  "example": "/end_date"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Human-readable explanation",
+                  "example": "must be on or after \"start_date\""
+                },
+                "keyword": {
+                  "type": "string",
+                  "description": "The rule that fired, e.g. required, after_field, before_field, requiredIf, requiredUnless, asset_exists, reference_exists",
+                  "example": "after_field"
+                }
+              }
+            }
           }
         }
       },
@@ -3200,7 +3216,7 @@
         "properties": {
           "id": {
             "type": "number",
-            "description": "Log row id (`BIGSERIAL`, returned by the raw query without coercion).",
+            "description": "Log row id (`BIGSERIAL`). A JSON number while it fits an exact integer, a string beyond 2^53.",
             "example": 918233
           },
           "ts": {
@@ -3358,7 +3374,7 @@
         "properties": {
           "id": {
             "type": "number",
-            "description": "Log row id. The column is `BIGSERIAL`, returned by the raw query without coercion, so the JSON value follows the driver's bigint handling.",
+            "description": "Log row id. The column is `BIGSERIAL`; the API serializes it as a JSON **number** while it fits an exact integer, and as a **string** beyond 2^53 so no precision is lost. Deliberately not coerced with `Number()`, which would silently round off the large case.",
             "example": 918233
           },
           "ts": {

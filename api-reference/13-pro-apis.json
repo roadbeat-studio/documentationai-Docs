@@ -3339,7 +3339,7 @@
       },
       "put": {
         "operationId": "IncomingWebhookController_update",
-        "summary": "Update an incoming webhook",
+        "summary": "Update an incoming webhook (signing secret is masked)",
         "parameters": [
           {
             "name": "id",
@@ -3362,7 +3362,7 @@
         },
         "responses": {
           "200": {
-            "description": "The updated webhook. Note: when at least one field changed the row comes straight from `RETURNING *` and therefore carries the **full, unmasked** signing secret; an empty patch returns the masked row instead.",
+            "description": "The updated webhook with `secret` masked to `<first4>…<last4>` — same shape as list/get, whether or not any field actually changed. The full secret is only ever returned by create and regenerate-secret.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3372,7 +3372,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/ProIncomingWebhookWithSecretDto"
+                      "$ref": "#/components/schemas/ProIncomingWebhookDto"
                     }
                   }
                 }
@@ -3677,6 +3677,30 @@
             "type": "string",
             "nullable": true,
             "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Present on 422 content-validation failures: one entry per rule that failed. Absent otherwise.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON pointer to the offending field",
+                  "example": "/end_date"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Human-readable explanation",
+                  "example": "must be on or after \"start_date\""
+                },
+                "keyword": {
+                  "type": "string",
+                  "description": "The rule that fired, e.g. required, after_field, before_field, requiredIf, requiredUnless, asset_exists, reference_exists",
+                  "example": "after_field"
+                }
+              }
+            }
           }
         }
       },
@@ -5147,7 +5171,7 @@
           },
           "secret": {
             "type": "string",
-            "description": "HMAC-SHA256 signing secret, **masked** as `<first4>…<last4>` on this read path. The full value is only ever returned by create, update and regenerate-secret.",
+            "description": "HMAC-SHA256 signing secret, **masked** as `<first4>…<last4>` on this read path. The full value is only ever returned by create and regenerate-secret.",
             "example": "a1b2…9f0e"
           },
           "action_type": {

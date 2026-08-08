@@ -118,7 +118,7 @@ Each field supports validation rules, enforced **on the server** against the con
 - **Referenced-item existence** — a **Media** field must point at an asset that exists in your organization, and a **Reference** field at existing content (of an allowed type when the field restricts it). Dangling ids are rejected so they never reach a published teaser
 - **Modular blocks** — block count limits and required inner fields for **Blocks** fields
 
-Validation failures come back as a single `422 Unprocessable Entity`, whether the problem is structural, a cross-field rule, or a missing reference. Note that the API response does not yet name the offending field — see [the error-response reference](/api-reference/overview#error-responses) for what it does contain.
+Validation failures come back as a single `422 Unprocessable Entity` with a per-field `errors` array (`path`, `message`, `keyword`), whether the problem is structural, a cross-field rule, or a missing reference — see [the error-response reference](/api-reference/overview#error-responses).
 
 Invalid **drafts** are tolerated where the content type allows it, but **publishing is always strict** — invalid content (including dangling asset/reference ids) can never go live. The content type definition itself is also validated when you save it: an uncompilable schema, an invalid version, or a form/teaser mapping that points at a missing property is rejected with a clear error.
 

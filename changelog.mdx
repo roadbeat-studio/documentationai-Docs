@@ -44,10 +44,11 @@ description: Release notes and updates for roadbeat Studio.
   - **Delivery API parameter names** — `contentTypeId`, `sortBy` and `sortOrder`
     (previously documented as `contentType`, `sort` and `order`), plus the
     `cursor` parameter, which was undocumented.
-  - **`422` validation errors do not name the offending field.** The validator
-    builds a per-field list, but the global error handler drops it. Previously
-    documented as if the client received it — see the overview for the body that
-    actually arrives.
+  - **`422` validation errors did not name the offending field.** The validator
+    built a per-field list, but the global error handler dropped it before the
+    response went out, so three pages described a capability that never
+    reached a client. **Now fixed in the API** — `422` carries the `errors`
+    array (`path` / `message` / `keyword`) the docs always promised.
   - **Four stale base paths** and a `/health/detailed` endpoint that does not
     exist; the real probes are `/health`, `/health/live`, `/health/ready`,
     `/health/queues` and `/health/slow-queries`.

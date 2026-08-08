@@ -4410,6 +4410,30 @@
             "type": "string",
             "nullable": true,
             "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Present on 422 content-validation failures: one entry per rule that failed. Absent otherwise.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON pointer to the offending field",
+                  "example": "/end_date"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Human-readable explanation",
+                  "example": "must be on or after \"start_date\""
+                },
+                "keyword": {
+                  "type": "string",
+                  "description": "The rule that fired, e.g. required, after_field, before_field, requiredIf, requiredUnless, asset_exists, reference_exists",
+                  "example": "after_field"
+                }
+              }
+            }
           }
         }
       },

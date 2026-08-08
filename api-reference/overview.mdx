@@ -77,6 +77,8 @@ Errors return an appropriate HTTP status code with a structured error body. `cod
 
 **Content validation errors** (creating, updating or publishing content) return `422` when the data does not satisfy its content type — including the cross-field rules (`after_field`, `before_field`), conditional requirements (`requiredIf`, `requiredUnless`) and referenced-item checks (`asset_exists`, `reference_exists`):
 
+The body carries an additional `errors` array — one entry per rule that failed, each with a JSON-pointer `path`, a `message`, and the `keyword` that fired:
+
 ```json
 {
   "statusCode": 422,
@@ -85,13 +87,15 @@ Errors return an appropriate HTTP status code with a structured error body. `cod
   "message": "Content does not match its content type schema",
   "timestamp": "2026-08-08T12:34:56.789Z",
   "path": "/api/v1/manage/content",
-  "requestId": "req_a1b2c3"
+  "requestId": "req_a1b2c3",
+  "errors": [
+    { "path": "/end_date", "message": "must be on or after \"start_date\"", "keyword": "after_field" },
+    { "path": "/cover_image", "message": "Referenced asset \"a1b2\" does not exist", "keyword": "asset_exists" }
+  ]
 }
 ```
 
-<Callout kind="alert">
-  **The response does not currently identify which field failed.** The validator builds a per-field list (a JSON-pointer `path`, a `message`, and the `keyword` that fired for each violation), but the global error handler emits the fixed body above and drops it, so `422` tells you only that validation failed. Until that is addressed, validate against the content type's JSON Schema client-side if you need field-level feedback.
-</Callout>
+`errors` appears only on validation failures that produce field-level detail; it is absent from other errors.
 
 ## Management API
 

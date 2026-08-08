@@ -149,6 +149,22 @@ Redis is used for caching, session storage, and BullMQ job queues.
 | `ROADBEAT_LICENSE_KEY` | — | Ed25519-signed license JWT |
 | `PLUGINS_DIR` | `./plugins` | Directory containing plugin packages |
 
+### Pro plugin secrets
+
+<Callout kind="alert">
+  Each of these degrades **silently** when unset — the plugin still starts and works, just without the protection. Set all three that apply to the plugins you run.
+</Callout>
+
+| Variable | Plugin | Consequence if unset |
+|----------|--------|----------------------|
+| `PRO_SSO_SECRET_KEY` | pro-sso | IdP client secrets are stored **unencrypted**. Encryption becomes a logged no-op, so the plaintext sits in the database. A 64-hex-character key, or any passphrase (SHA-256 derived). |
+| `PRO_AI_VAULT_KEK` | pro-ai | AI provider credentials fall back to an insecure development key — `GET /pro/ai/status` reports `vaultKeyMode: 'insecure-dev'`. Base64-encoded 32 bytes. The plugin refuses to start in production without it. |
+| `AUDIT_PSEUDONYM_SECRET` | pro-audit | GDPR erasure pseudonyms are keyed by a value published in the source, so `erased-user-<hex>` is re-identifiable by anyone who can guess a user id — it is not anonymisation. Generate with `openssl rand -base64 32`. |
+
+<Callout kind="info">
+  `AUDIT_PSEUDONYM_SECRET` changes the pseudonym a given user maps to. Users erased before you set it keep their old pseudonym, so activity correlation does not carry across the change. Set it before going live if you can.
+</Callout>
+
 ## Server
 
 | Variable | Default | Description |

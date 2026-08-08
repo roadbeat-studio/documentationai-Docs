@@ -953,6 +953,16 @@
         "operationId": "PlatformController_grantSuperAdmin",
         "summary": "Grant super-admin role to a user",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantSuperAdminDto"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "The created grant, with the promoted user and their home organization.",
@@ -968,6 +978,16 @@
                       "$ref": "#/components/schemas/PlatformGrantSuperAdminResultDto"
                     }
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3923,6 +3943,30 @@
             "type": "string",
             "nullable": true,
             "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Present on 422 content-validation failures: one entry per rule that failed. Absent otherwise.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON pointer to the offending field",
+                  "example": "/end_date"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Human-readable explanation",
+                  "example": "must be on or after \"start_date\""
+                },
+                "keyword": {
+                  "type": "string",
+                  "description": "The rule that fired, e.g. required, after_field, before_field, requiredIf, requiredUnless, asset_exists, reference_exists",
+                  "example": "after_field"
+                }
+              }
+            }
           }
         }
       },
@@ -4515,6 +4559,20 @@
         "required": [
           "available",
           "state"
+        ]
+      },
+      "GrantSuperAdminDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "UUID of the user to promote to super-admin",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        },
+        "required": [
+          "userId"
         ]
       },
       "HealthAggregateDto": {
