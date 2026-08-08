@@ -77,6 +77,8 @@ cd ../studio && pnpm docs:openapi
 
 That emits the OpenAPI document from the API's controller metadata and splits it into one spec per functional area, overwriting the files here. The tag→area mapping lives in `studio/tools/split-openapi.mjs`; a controller with a new `@ApiTags(...)` value must be added to an area there or the split fails deliberately, so no endpoint can silently drop out of the docs.
 
+> **Do not hand-edit a spec to fix a build error.** The generator will undo it on the next run. Fix it in `studio/tools/split-openapi.mjs` so the correction survives — that is where the recursive-schema workaround lives, for example: Documentation.AI dereferences every `$ref` into a live object and then serializes it, so a self-referencing schema fails the deploy with `Converting circular structure to JSON`. The splitter breaks those cycles in these published copies (and verifies each file survives a dereference pass before writing it), while the API's own document keeps the recursive types its SDK consumers need.
+
 Only the prose pages in `api-reference/` (`overview.mdx`, `authentication.mdx`, `delivery-api.mdx`) are hand-written.
 
 ## Workflow

@@ -5808,7 +5808,8 @@
             "description": "Nested children — present only when the requested `depth` is greater than 1 and the node has children",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContentTreeNodeDto"
+              "type": "object",
+              "description": "Recursive — same shape as `ContentTreeNodeDto`. Inlined as a free-form object because a self-referencing schema cannot be dereferenced into a finite document."
             }
           }
         },
@@ -7490,7 +7491,8 @@
             "description": "Nested regions, resolved recursively; absent for leaf regions",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ResolvedRegionDto"
+              "type": "object",
+              "description": "Recursive — same shape as `ResolvedRegionDto`. Inlined as a free-form object because a self-referencing schema cannot be dereferenced into a finite document."
             }
           }
         },
