@@ -63,7 +63,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The acquired lock plus the one-time `releaseToken` on success. A blocking exclusive clash answers 201 with `success: false` and `code: LOCKED_BY_OTHER` — not an error status.",
             "content": {
               "application/json": {
                 "schema": {
@@ -73,11 +73,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLockResultDto"
                     }
                   }
                 }
@@ -166,7 +162,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Whether the item is locked, by whom, and the configured TTL. Expired locks are swept before answering, and the beacon token is never included.",
             "content": {
               "application/json": {
                 "schema": {
@@ -176,11 +172,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLockStatusDto"
                     }
                   }
                 }
@@ -224,7 +216,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The lock with a pushed-out `expires_at`. If the lock had already expired the call re-acquires it, so the payload may carry a fresh `releaseToken` — or a blocking `code` if someone else took it meanwhile.",
             "content": {
               "application/json": {
                 "schema": {
@@ -234,11 +226,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLockResultDto"
                     }
                   }
                 }
@@ -321,7 +309,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement that the holder was notified and the request audited.",
             "content": {
               "application/json": {
                 "schema": {
@@ -331,11 +319,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLockTakeoverRequestDto"
                     }
                   }
                 }
@@ -370,7 +354,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Every live lock of the organization with holder name and content slug, plus the configured TTL.",
             "content": {
               "application/json": {
                 "schema": {
@@ -380,11 +364,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProActiveLocksDto"
                     }
                   }
                 }
@@ -419,7 +399,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The 50 most recent audit entries of the organization, newest first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -429,11 +409,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProLockAuditEntryDto"
+                      }
                     }
                   }
                 }
@@ -502,7 +481,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created series, with `next_run_at` already armed to the first occurrence.",
             "content": {
               "application/json": {
                 "schema": {
@@ -512,11 +491,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProRecurringScheduleDto"
                     }
                   }
                 }
@@ -559,7 +534,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All series of the organization, newest first, each with the joined `content_slug`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -569,11 +544,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProRecurringScheduleDto"
+                      }
                     }
                   }
                 }
@@ -617,7 +591,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The next five occurrence instants in UTC, computed from the RRULE in the schedule’s IANA zone (not stored).",
             "content": {
               "application/json": {
                 "schema": {
@@ -627,11 +601,15 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "example": [
+                        "2026-08-10T06:00:00.000Z",
+                        "2026-08-17T06:00:00.000Z"
+                      ]
                     }
                   }
                 }
@@ -685,7 +663,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated series. Reactivation re-arms `next_run_at` so a long-paused schedule does not fire for every missed occurrence.",
             "content": {
               "application/json": {
                 "schema": {
@@ -695,11 +673,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProRecurringScheduleDto"
                     }
                   }
                 }
@@ -792,7 +766,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Series targeting this content item, newest first. No `content_slug` on this endpoint (no join).",
             "content": {
               "application/json": {
                 "schema": {
@@ -802,11 +776,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProRecurringScheduleDto"
+                      }
                     }
                   }
                 }
@@ -860,7 +833,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The pending action. Any previously pending publish for the same content is cancelled first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -870,11 +843,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProScheduledActionDto"
                     }
                   }
                 }
@@ -938,7 +907,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The pending action. Any previously pending unpublish for the same content is cancelled first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -948,11 +917,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProScheduledActionDto"
                     }
                   }
                 }
@@ -1016,7 +981,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The pending action. Any previously pending archive for the same content is cancelled first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1026,11 +991,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProScheduledActionDto"
                     }
                   }
                 }
@@ -1084,7 +1045,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Every action ever scheduled for this content item — pending and terminal — ordered by execution time.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1094,11 +1055,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProScheduledActionDto"
+                      }
                     }
                   }
                 }
@@ -1142,7 +1102,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Only the `pending` actions for this content item, ordered by execution time.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1152,11 +1112,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProScheduledActionDto"
+                      }
                     }
                   }
                 }
@@ -1230,7 +1189,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Pending actions across the organization, soonest first, each with the joined `content_slug`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1240,11 +1199,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProPendingScheduledActionDto"
+                      }
                     }
                   }
                 }
@@ -1300,7 +1258,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Pending actions inside the requested window, flattened into calendar events (title = content slug).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1310,11 +1268,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProScheduleCalendarEventDto"
+                      }
                     }
                   }
                 }
@@ -1359,7 +1316,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Partial-success summary: the content ids that were scheduled and the per-item failures.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1369,11 +1326,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkScheduleResultDto"
                     }
                   }
                 }
@@ -1418,7 +1371,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Releases of the organization, newest first, with `item_count` instead of the full item list.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1428,11 +1381,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProReleaseSummaryDto"
+                      }
                     }
                   }
                 }
@@ -1475,7 +1427,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created draft release with its items (release + items are one transaction).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1485,11 +1437,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -1543,7 +1491,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The release with its items in execution order (the item join is org-scoped, so foreign content is not listed).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1553,11 +1501,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -1609,7 +1553,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated release; 400 unless it is still a draft.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1619,11 +1563,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -1724,7 +1664,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The release with the merged item list; an item already present has its action and sort order updated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1734,11 +1674,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -1800,7 +1736,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The release with the remaining items; 400 unless it is still a draft.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1810,11 +1746,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -1868,7 +1800,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-item readiness plus the aggregate `empty` / `valid` verdicts. Read-only — it never changes the release.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1878,11 +1810,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseValidationDto"
                     }
                   }
                 }
@@ -1934,7 +1862,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The release after execution: `published` when every item succeeded, otherwise `failed`, with the per-item outcome in `results`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1944,11 +1872,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -1992,7 +1916,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The release with merged `results` — previously successful items are kept, never re-executed. 400 unless the release is `failed`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2002,11 +1926,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -2060,7 +1980,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The release with `status: scheduled` and `scheduled_at` set. Preflight-checked; `force` overrides item warnings but never the empty-release check.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2070,11 +1990,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -2128,7 +2044,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The release back in `draft` with `scheduled_at` cleared; 400 unless it was `scheduled`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2138,11 +2054,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProReleaseDto"
                     }
                   }
                 }
@@ -2202,7 +2114,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of versions (newest first) plus the total count. `limit` is clamped to 1–200 and defaults to 50; `offset` defaults to 0.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2212,11 +2124,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVersionListDto"
                     }
                   }
                 }
@@ -2276,7 +2184,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Both snapshots side by side plus the field-level diff and its summary. 404 when either version does not exist for the content item.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2286,11 +2194,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVersionComparisonDto"
                     }
                   }
                 }
@@ -2342,7 +2246,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The comparison against the nearest lower version (which need not be `version - 1` after pruning). `data` is `null` (with a `message`) when there is no predecessor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2352,11 +2256,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVersionComparisonDto"
                     }
                   }
                 }
@@ -2391,7 +2291,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored policy. `data` is `null` when the organization has never configured one (CE default: keep everything).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2401,11 +2301,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVersionRetentionPolicyDto"
                     }
                   }
                 }
@@ -2438,7 +2334,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The upserted policy. `keepLast` / `maxAgeDays` must be positive integers or null; `keepPublished` defaults to true.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2448,11 +2344,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVersionRetentionPolicyDto"
                     }
                   }
                 }
@@ -2496,7 +2388,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many versions had the field path overwritten with the `[redacted]` tombstone. 400 when `fieldPath` is not dot-separated identifiers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2506,11 +2398,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVersionRedactionResultDto"
                     }
                   }
                 }
@@ -2545,7 +2433,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The 50 most recent redactions of the organization, newest first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2555,11 +2443,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProVersionRedactionAuditDto"
+                      }
                     }
                   }
                 }
@@ -2594,7 +2481,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All definitions of the organization, newest first. The list selects a narrower column set, so `version` is absent here.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2604,11 +2491,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
+                      }
                     }
                   }
                 }
@@ -2651,7 +2537,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created definition (version 1, active).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2661,11 +2547,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
                     }
                   }
                 }
@@ -2719,7 +2601,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The full definition row; 404 when it does not exist in the caller’s organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2729,11 +2611,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
                     }
                   }
                 }
@@ -2785,7 +2663,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated definition. A structural edit (states/transitions) snapshots a new version and bumps `version`; in-flight instances stay pinned to their own version.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2795,11 +2673,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
                     }
                   }
                 }
@@ -2881,7 +2755,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The newest definition of the organization — the freshly seeded one, or the existing newest when workflows were already present. `null` only if the organization has no definitions at all.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2891,11 +2765,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
                     }
                   }
                 }
@@ -2949,7 +2819,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Number of instances re-pinned to the definition’s current version.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2959,11 +2829,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowMigrationResultDto"
                     }
                   }
                 }
@@ -3017,7 +2883,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The newest instance for the content item, with the states/transitions of its pinned definition version. `data` is `null` when the content has no workflow instance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3027,11 +2893,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowInstanceDto"
                     }
                   }
                 }
@@ -3085,7 +2947,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created instance, standing on the definition’s initial state with a single `initialized` history entry.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3095,11 +2957,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowInstanceDto"
                     }
                   }
                 }
@@ -3163,7 +3021,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The instance with the new `assignee_id`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3173,11 +3031,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowInstanceDto"
                     }
                   }
                 }
@@ -3241,7 +3095,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The instance after the transition, with the new entry appended to `history`. 409 when another transition won the race, 403 when a role gate or the four-eyes rule blocks it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3251,11 +3105,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowInstanceDto"
                     }
                   }
                 }
@@ -3317,7 +3167,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Tasks of the organization, newest first, optionally filtered by assignee and status. Each row carries the joined `content_id`, `current_state` and `workflow_name`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3327,11 +3177,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProWorkflowTaskDto"
+                      }
                     }
                   }
                 }
@@ -3375,7 +3224,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Pending tasks for `assigneeId`, defaulting to the calling user.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3385,11 +3234,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowTaskCountDto"
                     }
                   }
                 }
@@ -3433,7 +3278,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The task with the joined `content_id` and `current_state` (no `workflow_name` on the single-task read).",
             "content": {
               "application/json": {
                 "schema": {
@@ -3443,11 +3288,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowTaskDto"
                     }
                   }
                 }
@@ -3491,7 +3332,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The task with `status: completed` plus `completed_by` / `completed_at` set.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3501,11 +3342,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowTaskDto"
                     }
                   }
                 }
@@ -3549,7 +3386,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The task with `status: cancelled`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3559,11 +3396,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowTaskDto"
                     }
                   }
                 }
@@ -3617,7 +3450,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The task with the new `assignee_id`. 404 when the assignee is not a member of the same organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3627,11 +3460,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowTaskDto"
                     }
                   }
                 }
@@ -3676,7 +3505,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The built-in template gallery (simple approval, editorial review, multi-stage approval, legal compliance, translation).",
             "content": {
               "application/json": {
                 "schema": {
@@ -3686,11 +3515,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProWorkflowTemplateDto"
+                      }
                     }
                   }
                 }
@@ -3734,7 +3562,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The template. `data` is `null` (with an explanatory `message`) when no template carries that id.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3744,11 +3572,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowTemplateDto"
                     }
                   }
                 }
@@ -3792,7 +3616,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The definition created from the template. `data` is `null` (with a `message`) when the template id is unknown.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3802,11 +3626,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
                     }
                   }
                 }
@@ -3841,7 +3661,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Reachability/validity findings for the posted states and transitions.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3851,11 +3671,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowAnalysisDto"
                     }
                   }
                 }
@@ -3890,7 +3706,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The current state plus the transitions leaving it, filtered by `userRole` when one was supplied.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3900,11 +3716,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowSimulationStepDto"
                     }
                   }
                 }
@@ -3939,7 +3751,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The shortest transition sequence from the initial state to the target. `data` is `null` when there is no initial state, no target, or no path.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3949,11 +3761,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowSimulationPathDto"
                     }
                   }
                 }
@@ -3997,7 +3805,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Reachability/validity findings for the stored definition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4007,11 +3815,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowAnalysisDto"
                     }
                   }
                 }
@@ -4055,7 +3859,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A portable `roadbeat-workflow-v1` document that the import endpoint accepts unchanged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4065,11 +3869,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowExportDto"
                     }
                   }
                 }
@@ -4104,7 +3904,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The definition created from the imported document.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4114,11 +3914,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
                     }
                   }
                 }
@@ -4162,7 +3958,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The copy — same states/transitions, every locale of `name` suffixed with \" (Copy)\", never the org default.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4172,11 +3968,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProWorkflowDefinitionDto"
                     }
                   }
                 }
@@ -4220,7 +4012,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Templates of the organization, grouped by content type with the default first, then by English name.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4230,11 +4022,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProContentTemplateDto"
+                      }
                     }
                   }
                 }
@@ -4277,7 +4068,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created template. Setting `isDefault` clears the previous default of the same content type.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4287,11 +4078,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProContentTemplateDto"
                     }
                   }
                 }
@@ -4345,7 +4132,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The template; 404 when it does not exist in the caller’s organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4355,11 +4142,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProContentTemplateDto"
                     }
                   }
                 }
@@ -4411,7 +4194,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated template; omitted fields keep their previous value.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4421,11 +4204,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProContentTemplateDto"
                     }
                   }
                 }
@@ -4516,7 +4295,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The template’s pre-filled field values, ready to merge into a CreateContentDto. The shape is dynamic — it mirrors the JSON Schema of the template’s content type — so it is not modelled here.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4526,11 +4305,9 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "additionalProperties": true,
+                      "description": "Pre-filled field values (`{}` when the template stores none)"
                     }
                   }
                 }
@@ -4574,7 +4351,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The template with `is_default: true`; the previous default of the same content type is cleared in the same transaction.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4584,11 +4361,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProContentTemplateDto"
                     }
                   }
                 }
@@ -4642,7 +4415,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new template, carrying the source item’s content type and current field data (never the org default).",
             "content": {
               "application/json": {
                 "schema": {
@@ -4652,11 +4425,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProContentTemplateDto"
                     }
                   }
                 }
@@ -4971,6 +4740,2284 @@
       "MigrateInstancesDto": {
         "type": "object",
         "properties": {}
+      },
+      "ProActiveLocksDto": {
+        "type": "object",
+        "properties": {
+          "locks": {
+            "description": "All live locks of the organization, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProContentLockDto"
+            }
+          },
+          "lockTtlSeconds": {
+            "type": "number",
+            "description": "Configured lock TTL in seconds",
+            "example": 300
+          }
+        },
+        "required": [
+          "locks",
+          "lockTtlSeconds"
+        ]
+      },
+      "ProBulkScheduleFailureDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID that could not be scheduled"
+          },
+          "error": {
+            "type": "string",
+            "description": "Why it failed (unknown content, date in the past, …)",
+            "example": "Scheduled date must be in the future"
+          }
+        },
+        "required": [
+          "contentId",
+          "error"
+        ]
+      },
+      "ProBulkScheduleResultDto": {
+        "type": "object",
+        "properties": {
+          "scheduled": {
+            "description": "Content UUIDs that were scheduled successfully",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failed": {
+            "description": "Per-item failures; the bulk call itself still succeeds",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProBulkScheduleFailureDto"
+            }
+          }
+        },
+        "required": [
+          "scheduled",
+          "failed"
+        ]
+      },
+      "ProContentLockDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Lock UUID"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID that is locked (at most one live lock per item)"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "UUID of the lock holder"
+          },
+          "lock_type": {
+            "type": "string",
+            "description": "`exclusive` blocks other users’ saves; `advisory` only warns them (they may still save).",
+            "enum": [
+              "advisory",
+              "exclusive"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "description": "When the lock auto-expires unless heartbeated",
+            "format": "date-time"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user_name": {
+            "type": "object",
+            "description": "Display name of the holder (joined from users — name only, data minimization). Null when the user has no name.",
+            "nullable": true
+          },
+          "content_slug": {
+            "type": "string",
+            "description": "Slug of the locked content item. Present on the organization-wide lock list only."
+          }
+        },
+        "required": [
+          "id",
+          "content_id",
+          "user_id",
+          "lock_type",
+          "expires_at",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProContentTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content template UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "content_type_id": {
+            "type": "string",
+            "description": "Content type this template applies to",
+            "example": "news"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized template name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Weekly Roundup",
+              "de": "Wochenrückblick"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "description": "Pre-filled field values used to seed a new draft. The shape is dynamic — it mirrors the JSON Schema of `content_type_id`.",
+            "additionalProperties": true
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Auto-applied for its content type (at most one per org + type)"
+          },
+          "created_by_id": {
+            "type": "object",
+            "description": "UUID of the creating user; null when that user was deleted",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "content_type_id",
+          "name",
+          "data",
+          "is_default",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProLockAuditEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Audit entry UUID"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID the action concerned"
+          },
+          "action": {
+            "type": "string",
+            "description": "What was recorded",
+            "enum": [
+              "force_unlock",
+              "takeover_requested"
+            ]
+          },
+          "actor_id": {
+            "type": "string",
+            "description": "UUID of the acting user (the admin, or the requester)"
+          },
+          "previous_holder_id": {
+            "type": "object",
+            "description": "UUID of the user who held the lock at that moment; null when nobody did",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actor_name": {
+            "type": "object",
+            "description": "Display name of the actor (joined); null when the user was deleted",
+            "nullable": true
+          },
+          "previous_holder_name": {
+            "type": "object",
+            "description": "Display name of the previous holder (joined); null when unknown",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "content_id",
+          "action",
+          "actor_id",
+          "created_at"
+        ]
+      },
+      "ProLockResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "False only when another user holds a blocking exclusive lock. An advisory clash still succeeds and carries a `warning`."
+          },
+          "lock": {
+            "description": "The live lock — the caller’s own on success, the blocking holder’s on failure. Never carries the beacon `release_token`.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProContentLockDto"
+              }
+            ]
+          },
+          "warning": {
+            "type": "string",
+            "description": "English fallback text for an advisory clash (someone else is also editing)",
+            "example": "Jane Doe is also editing this content"
+          },
+          "message": {
+            "type": "string",
+            "description": "English fallback text for a blocking clash",
+            "example": "Content is locked by Jane Doe"
+          },
+          "code": {
+            "type": "string",
+            "description": "Machine-readable outcome code clients translate with `params` (IMP-PRO-LOCK-07); absent on a clean acquire.",
+            "enum": [
+              "LOCKED_BY_OTHER",
+              "ALSO_EDITING"
+            ]
+          },
+          "params": {
+            "description": "Interpolation values for the translated `code` message",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProLockResultParamsDto"
+              }
+            ]
+          },
+          "lockTtlSeconds": {
+            "type": "number",
+            "description": "Configured lock TTL, so clients can render expiry hints and pick a heartbeat rate",
+            "example": 300
+          },
+          "releaseToken": {
+            "type": "string",
+            "description": "Beacon-release credential, returned ONLY to the lock owner on acquire/extend (IMP-PRO-LOCK-04). Never present in status payloads."
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "ProLockResultParamsDto": {
+        "type": "object",
+        "properties": {
+          "userName": {
+            "type": "string",
+            "description": "Display name of the blocking / co-editing user, for client-side interpolation"
+          }
+        }
+      },
+      "ProLockStatusDto": {
+        "type": "object",
+        "properties": {
+          "locked": {
+            "type": "boolean",
+            "description": "Whether a live (non-expired) lock exists on the content item"
+          },
+          "lock": {
+            "description": "The live lock; null when the content is unlocked",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProContentLockDto"
+              }
+            ]
+          },
+          "lockTtlSeconds": {
+            "type": "number",
+            "description": "Configured lock TTL in seconds",
+            "example": 300
+          }
+        },
+        "required": [
+          "locked",
+          "lockTtlSeconds"
+        ]
+      },
+      "ProLockTakeoverRequestDto": {
+        "type": "object",
+        "properties": {
+          "requested": {
+            "type": "boolean",
+            "description": "Always true — the holder has been notified and the request audited. 404 when nothing is locked, 400 when the caller already holds the lock.",
+            "example": true
+          }
+        },
+        "required": [
+          "requested"
+        ]
+      },
+      "ProPendingScheduledActionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Scheduled action UUID"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID the action targets"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "unpublish",
+              "archive"
+            ]
+          },
+          "scheduled_at": {
+            "type": "string",
+            "description": "Execution instant in UTC",
+            "format": "date-time"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA zone",
+            "example": "Europe/Berlin"
+          },
+          "status": {
+            "type": "string",
+            "description": "Always `pending` on this endpoint",
+            "enum": [
+              "pending"
+            ]
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "UUID of the scheduling user"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "content_slug": {
+            "type": "string",
+            "description": "Slug of the targeted content item (joined)"
+          }
+        },
+        "required": [
+          "id",
+          "content_id",
+          "action",
+          "scheduled_at",
+          "timezone",
+          "status",
+          "created_by_id",
+          "created_at",
+          "content_slug"
+        ]
+      },
+      "ProRecurringScheduleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Recurring schedule UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID the series targets"
+          },
+          "action": {
+            "type": "string",
+            "description": "What each occurrence does",
+            "enum": [
+              "publish",
+              "unpublish"
+            ]
+          },
+          "rrule": {
+            "type": "string",
+            "description": "RFC 5545 subset: FREQ=DAILY|WEEKLY|MONTHLY [;INTERVAL=n] [;BYDAY=..] [;BYMONTHDAY=n]",
+            "example": "FREQ=WEEKLY;BYDAY=MO"
+          },
+          "local_time": {
+            "type": "string",
+            "description": "HH:MM wall-clock time of each occurrence, interpreted in `timezone`",
+            "example": "08:00"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA zone (DST-correct)",
+            "example": "Europe/Berlin"
+          },
+          "next_run_at": {
+            "type": "object",
+            "description": "Next occurrence in UTC. `null` while a poller replica holds the claim, or while the schedule is inactive.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "last_run_at": {
+            "type": "object",
+            "description": "When the previous occurrence ran; null before the first run",
+            "format": "date-time",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Inactive series are never claimed by the poller"
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "UUID of the creating user (each occurrence executes as them)"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "content_slug": {
+            "type": "string",
+            "description": "Slug of the targeted content item (joined). Present on the organization-wide list only."
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "content_id",
+          "action",
+          "rrule",
+          "local_time",
+          "timezone",
+          "active",
+          "created_by_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProReleaseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Release UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Release name",
+            "example": "March Product Launch"
+          },
+          "description": {
+            "type": "object",
+            "description": "Free-text description",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state. `publishing` is the distributed claim a poller replica holds while executing the items.",
+            "enum": [
+              "draft",
+              "scheduled",
+              "publishing",
+              "published",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "scheduled_at": {
+            "type": "object",
+            "description": "Planned publication instant in UTC; null while the release is a draft",
+            "format": "date-time",
+            "nullable": true
+          },
+          "published_at": {
+            "type": "object",
+            "description": "When the release was last executed (also set on a failed run)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "results": {
+            "description": "Per-item outcome of the last run; null before the first execution",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProReleaseItemResultDto"
+            }
+          },
+          "attempts": {
+            "type": "number",
+            "description": "Execution attempts so far (retry/stale-claim recovery)",
+            "example": 0
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "UUID of the creating user"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "description": "The release items in execution order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProReleaseItemRowDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "status",
+          "attempts",
+          "created_by_id",
+          "created_at",
+          "updated_at",
+          "items"
+        ]
+      },
+      "ProReleaseItemResultDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID the item targeted"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "unpublish",
+              "archive"
+            ]
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the content-service call succeeded"
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure reason when `success` is false"
+          }
+        },
+        "required": [
+          "contentId",
+          "action",
+          "success"
+        ]
+      },
+      "ProReleaseItemRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Release item UUID (used by the remove-items endpoint)"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "action": {
+            "type": "string",
+            "description": "What the release does to this item",
+            "enum": [
+              "publish",
+              "unpublish",
+              "archive"
+            ]
+          },
+          "sort_order": {
+            "type": "number",
+            "description": "Execution order within the release (ascending)",
+            "example": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "content_slug": {
+            "type": "string",
+            "description": "Slug of the content item (joined, org-scoped)"
+          },
+          "content_status": {
+            "type": "string",
+            "description": "Current lifecycle status of the content item (joined)",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "content_id",
+          "action",
+          "sort_order",
+          "created_at",
+          "content_slug",
+          "content_status"
+        ]
+      },
+      "ProReleaseSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Release UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Release name"
+          },
+          "description": {
+            "type": "object",
+            "description": "Free-text description",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state",
+            "enum": [
+              "draft",
+              "scheduled",
+              "publishing",
+              "published",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "scheduled_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "published_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "results": {
+            "description": "Per-item outcome of the last run; null before the first execution",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProReleaseItemResultDto"
+            }
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "UUID of the creating user"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "item_count": {
+            "type": "number",
+            "description": "Number of items in the release",
+            "example": 12
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "created_by_id",
+          "created_at",
+          "updated_at",
+          "item_count"
+        ]
+      },
+      "ProReleaseValidationDto": {
+        "type": "object",
+        "properties": {
+          "releaseId": {
+            "type": "string",
+            "description": "Release UUID that was validated"
+          },
+          "empty": {
+            "type": "boolean",
+            "description": "True when the release has no items (never overridable by force)"
+          },
+          "valid": {
+            "type": "boolean",
+            "description": "True when the release has items and every one of them is ready"
+          },
+          "items": {
+            "description": "Per-item readiness in execution order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProReleaseValidationItemDto"
+            }
+          }
+        },
+        "required": [
+          "releaseId",
+          "empty",
+          "valid",
+          "items"
+        ]
+      },
+      "ProReleaseValidationItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "description": "Release item UUID"
+          },
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "contentSlug": {
+            "type": "object",
+            "description": "Slug of the content item; null when the content no longer exists",
+            "nullable": true
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "unpublish",
+              "archive"
+            ]
+          },
+          "exists": {
+            "type": "boolean",
+            "description": "Whether the referenced content row still exists"
+          },
+          "orgMatches": {
+            "type": "boolean",
+            "description": "Whether the content belongs to the release’s organization"
+          },
+          "workflowPublishable": {
+            "type": "boolean",
+            "description": "Whether the workflow state allows publishing. Always true for non-publish actions and when pro-workflows is not installed."
+          },
+          "workflowState": {
+            "type": "object",
+            "description": "Current workflow state id; null when the content has no workflow instance",
+            "nullable": true,
+            "example": "approved"
+          },
+          "conflictingActions": {
+            "type": "number",
+            "description": "Number of pending one-shot scheduled actions competing for the same content",
+            "example": 0
+          },
+          "ready": {
+            "type": "boolean",
+            "description": "`exists && orgMatches && workflowPublishable`"
+          }
+        },
+        "required": [
+          "itemId",
+          "contentId",
+          "action",
+          "exists",
+          "orgMatches",
+          "workflowPublishable",
+          "conflictingActions",
+          "ready"
+        ]
+      },
+      "ProScheduleCalendarEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Scheduled action UUID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Event title — the slug of the targeted content item"
+          },
+          "date": {
+            "type": "string",
+            "description": "Execution instant in UTC",
+            "format": "date-time"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "unpublish",
+              "archive"
+            ]
+          },
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID the action targets"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA zone the action was scheduled in",
+            "example": "Europe/Berlin"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "date",
+          "action",
+          "contentId",
+          "timezone"
+        ]
+      },
+      "ProScheduledActionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Scheduled action UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID the action targets"
+          },
+          "action": {
+            "type": "string",
+            "description": "What happens at `scheduled_at`. `archive` unpublishes and soft-deletes.",
+            "enum": [
+              "publish",
+              "unpublish",
+              "archive"
+            ]
+          },
+          "scheduled_at": {
+            "type": "string",
+            "description": "Execution instant in UTC (already converted from the submitted wall-clock time)",
+            "format": "date-time"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA zone the wall-clock time was interpreted in",
+            "example": "Europe/Berlin"
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state. `processing` is the distributed claim a poller replica holds while executing.",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "UUID of the scheduling user (the action executes as them)"
+          },
+          "executed_at": {
+            "type": "object",
+            "description": "When the action actually ran (also set when it failed terminally)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "error": {
+            "type": "object",
+            "description": "Message of the last failed attempt; null while healthy",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "content_id",
+          "action",
+          "scheduled_at",
+          "timezone",
+          "status",
+          "created_by_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProVersionComparisonDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "contentTypeId": {
+            "type": "string",
+            "description": "Content type of the item",
+            "example": "news"
+          },
+          "version1": {
+            "description": "The left-hand snapshot",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProVersionSnapshotDto"
+              }
+            ]
+          },
+          "version2": {
+            "description": "The right-hand snapshot",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProVersionSnapshotDto"
+              }
+            ]
+          },
+          "diff": {
+            "description": "Field rows sorted changed → added → removed → unchanged, then by path",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProVersionFieldDiffDto"
+            }
+          },
+          "summary": {
+            "description": "Row counts per diff type",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProVersionDiffSummaryDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "contentId",
+          "contentTypeId",
+          "version1",
+          "version2",
+          "diff",
+          "summary"
+        ]
+      },
+      "ProVersionDiffSummaryDto": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "number",
+            "description": "Number of `added` diff rows"
+          },
+          "removed": {
+            "type": "number",
+            "description": "Number of `removed` diff rows"
+          },
+          "changed": {
+            "type": "number",
+            "description": "Number of `changed` diff rows"
+          },
+          "unchanged": {
+            "type": "number",
+            "description": "Number of `unchanged` diff rows (top level only)"
+          },
+          "totalFields": {
+            "type": "number",
+            "description": "Total diff rows",
+            "example": 14
+          }
+        },
+        "required": [
+          "added",
+          "removed",
+          "changed",
+          "unchanged",
+          "totalFields"
+        ]
+      },
+      "ProVersionFieldDiffDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Path-addressed field (IMP-PRO-VER-04): `title.de`, `body.blocks[2].text`, `authors[id=abc].name`.",
+            "example": "title.de"
+          },
+          "type": {
+            "type": "string",
+            "description": "How the field differs. `unchanged` rows are emitted at the top level only.",
+            "enum": [
+              "added",
+              "removed",
+              "changed",
+              "unchanged"
+            ]
+          },
+          "oldValue": {
+            "type": "object",
+            "description": "Left-hand value; absent for `added`. Any JSON type — scalar, object or array.",
+            "nullable": true
+          },
+          "newValue": {
+            "type": "object",
+            "description": "Right-hand value; absent for `removed`. Any JSON type — scalar, object or array.",
+            "nullable": true
+          },
+          "textDiff": {
+            "description": "Word-level diff for `changed` leaves; null for structural rows and for values that cannot be rendered as text.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProVersionTextDiffDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "field",
+          "type"
+        ]
+      },
+      "ProVersionListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "One page of versions, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProVersionSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total versions stored for the content item",
+            "example": 137
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "ProVersionRedactionAuditDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Redaction audit entry UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID whose versions were redacted"
+          },
+          "field_path": {
+            "type": "string",
+            "description": "Dot-separated field path that was overwritten with the tombstone",
+            "example": "author.email"
+          },
+          "versions_touched": {
+            "type": "number",
+            "description": "How many versions the redaction touched",
+            "example": 23
+          },
+          "actor_id": {
+            "type": "string",
+            "description": "UUID of the administrator who performed the redaction"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actor_name": {
+            "type": "object",
+            "description": "Display name of the actor (joined); null when the user was deleted",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "content_id",
+          "field_path",
+          "versions_touched",
+          "actor_id",
+          "created_at"
+        ]
+      },
+      "ProVersionRedactionResultDto": {
+        "type": "object",
+        "properties": {
+          "versionsTouched": {
+            "type": "number",
+            "description": "Number of historical versions in which the field path was overwritten",
+            "example": 23
+          }
+        },
+        "required": [
+          "versionsTouched"
+        ]
+      },
+      "ProVersionRetentionPolicyDto": {
+        "type": "object",
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "description": "Organization the policy belongs to (primary key)"
+          },
+          "keep_last": {
+            "type": "object",
+            "description": "Keep at most this many versions per content item (newest first); null = unlimited. The current version is never pruned.",
+            "nullable": true,
+            "example": 20
+          },
+          "keep_published": {
+            "type": "boolean",
+            "description": "Never prune snapshots whose status is `published`"
+          },
+          "max_age_days": {
+            "type": "object",
+            "description": "Prune versions older than this many days; null = no age limit",
+            "nullable": true,
+            "example": 365
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "organization_id",
+          "keep_published",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProVersionSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "description": "Version number of this snapshot",
+            "example": 5
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle status the snapshot was taken in",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "description": "The stored field values. The shape is dynamic — driven by the content type JSON Schema.",
+            "additionalProperties": true
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "UUID of the authoring user"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "version",
+          "status",
+          "data",
+          "createdBy",
+          "createdAt"
+        ]
+      },
+      "ProVersionSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content-version row UUID"
+          },
+          "version": {
+            "type": "number",
+            "description": "Monotonic version number",
+            "example": 7
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle status this snapshot was taken in",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "UUID of the authoring user"
+          },
+          "createdByName": {
+            "type": "object",
+            "description": "Org-scoped display name for `createdBy` (names only — no emails); null when the user is unknown or outside the organization.",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fieldCount": {
+            "type": "number",
+            "description": "Number of top-level fields in the snapshot",
+            "example": 12
+          },
+          "changeCount": {
+            "type": "object",
+            "description": "Top-level fields that differ from the preceding version; null for the oldest version on the page.",
+            "nullable": true,
+            "example": 3
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "status",
+          "createdBy",
+          "createdAt",
+          "fieldCount"
+        ]
+      },
+      "ProVersionTextDiffDto": {
+        "type": "object",
+        "properties": {
+          "oldText": {
+            "type": "string",
+            "description": "Left-hand value rendered as text"
+          },
+          "newText": {
+            "type": "string",
+            "description": "Right-hand value rendered as text"
+          },
+          "segments": {
+            "description": "Ordered LCS op-list — the positionally correct basis for highlighting (IMP-PRO-VER-03).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProVersionTextDiffSegmentDto"
+            }
+          },
+          "addedWords": {
+            "description": "Inserted words, derived from `segments`; kept for API compatibility",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removedWords": {
+            "description": "Deleted words, derived from `segments`; kept for API compatibility",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "similarity": {
+            "type": "number",
+            "description": "LCS similarity: 2 × commonWords / totalWords, in [0, 1]",
+            "example": 0.82
+          }
+        },
+        "required": [
+          "oldText",
+          "newText",
+          "segments",
+          "addedWords",
+          "removedWords",
+          "similarity"
+        ]
+      },
+      "ProVersionTextDiffSegmentDto": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "description": "Run kind in the ordered op-list",
+            "enum": [
+              "equal",
+              "insert",
+              "delete"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "The words of this run, space-joined"
+          }
+        },
+        "required": [
+          "op",
+          "text"
+        ]
+      },
+      "ProWorkflowAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "isValid": {
+            "type": "boolean",
+            "description": "True when no issues were found"
+          },
+          "issues": {
+            "description": "Human-readable problems (missing initial/final state, dead ends, orphans)",
+            "example": [
+              "Orphan states (unreachable from initial): archived"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stateCount": {
+            "type": "number",
+            "description": "Number of states analysed",
+            "example": 4
+          },
+          "transitionCount": {
+            "type": "number",
+            "description": "Number of transitions analysed",
+            "example": 5
+          },
+          "reachableStates": {
+            "type": "number",
+            "description": "States reachable from the initial state",
+            "example": 4
+          },
+          "deadEndCount": {
+            "type": "number",
+            "description": "Non-final states without outgoing transitions",
+            "example": 0
+          },
+          "orphanCount": {
+            "type": "number",
+            "description": "States unreachable from the initial state",
+            "example": 0
+          },
+          "states": {
+            "description": "Per-state findings",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowStateAnalysisDto"
+            }
+          }
+        },
+        "required": [
+          "isValid",
+          "issues",
+          "stateCount",
+          "transitionCount",
+          "reachableStates",
+          "deadEndCount",
+          "orphanCount",
+          "states"
+        ]
+      },
+      "ProWorkflowAvailableTransitionDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Machine-readable action name",
+            "example": "approve"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized button label, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "target": {
+            "type": "string",
+            "description": "Target state id",
+            "example": "approved"
+          },
+          "targetName": {
+            "type": "object",
+            "description": "Localized name of the target state; empty object when the state is unknown",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "requiresComment": {
+            "type": "boolean",
+            "description": "A non-empty comment is mandatory"
+          },
+          "requiredRoles": {
+            "description": "Roles allowed to perform it; empty array = unrestricted",
+            "example": [
+              "admin",
+              "editor"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "action",
+          "label",
+          "target",
+          "targetName",
+          "requiresComment",
+          "requiredRoles"
+        ]
+      },
+      "ProWorkflowDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Workflow definition UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized workflow name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Editorial Review",
+              "de": "Redaktionsprüfung"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "content_type_ids": {
+            "description": "Content type ids this workflow applies to; empty array = all types",
+            "example": [
+              "news",
+              "blog-post"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "states": {
+            "description": "The workflow states",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowStateDto"
+            }
+          },
+          "transitions": {
+            "description": "Allowed transitions between states",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowTransitionDto"
+            }
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Auto-assigned to matching content types"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Inactive definitions are kept but not offered for new instances"
+          },
+          "version": {
+            "type": "number",
+            "description": "Structural version (IMP-PRO-WF-06); bumped on every states/transitions edit. Omitted by the list endpoint, which selects a narrower column set.",
+            "example": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "content_type_ids",
+          "states",
+          "transitions",
+          "is_default",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProWorkflowExportDto": {
+        "type": "object",
+        "properties": {
+          "_format": {
+            "type": "string",
+            "description": "Export envelope format marker (accepted back by the import endpoint)",
+            "example": "roadbeat-workflow-v1"
+          },
+          "_exportedAt": {
+            "type": "string",
+            "description": "When the export was produced",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized workflow name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "contentTypeIds": {
+            "description": "Content type ids the workflow applies to",
+            "example": [
+              "news"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowStateDto"
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowTransitionDto"
+            }
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether the exported definition was the org default"
+          }
+        },
+        "required": [
+          "_format",
+          "_exportedAt",
+          "name",
+          "contentTypeIds",
+          "states",
+          "transitions",
+          "isDefault"
+        ]
+      },
+      "ProWorkflowIncomingTransitionDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Machine-readable action name",
+            "example": "submit_for_review"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized button label, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "source": {
+            "type": "string",
+            "description": "Source state id",
+            "example": "draft"
+          }
+        },
+        "required": [
+          "action",
+          "label",
+          "source"
+        ]
+      },
+      "ProWorkflowInstanceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Workflow instance UUID"
+          },
+          "workflow_id": {
+            "type": "string",
+            "description": "Workflow definition UUID"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID this instance tracks"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "workflow_version": {
+            "type": "number",
+            "description": "Definition version this instance is pinned to (IMP-PRO-WF-06) — later structural edits do not affect it.",
+            "example": 1
+          },
+          "current_state": {
+            "type": "string",
+            "description": "Current state id",
+            "example": "in_review"
+          },
+          "assignee_id": {
+            "type": "object",
+            "description": "Responsible user UUID; null when unassigned",
+            "nullable": true
+          },
+          "history": {
+            "type": "array",
+            "description": "Append-only transition log. Entries carry `from`/`to`/`timestamp`/`userId` and optionally `comment` or `action` (`initialized`, `version_migration`).",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "workflow_name": {
+            "type": "object",
+            "description": "Localized name of the workflow definition (joined)",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Editorial Review"
+            }
+          },
+          "workflow_states": {
+            "description": "States of the instance’s pinned definition version",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowStateDto"
+            }
+          },
+          "workflow_transitions": {
+            "description": "Transitions of the instance’s pinned definition version",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowTransitionDto"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workflow_id",
+          "content_id",
+          "organization_id",
+          "workflow_version",
+          "current_state",
+          "history",
+          "workflow_name",
+          "workflow_states",
+          "workflow_transitions",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProWorkflowMigrationResultDto": {
+        "type": "object",
+        "properties": {
+          "migrated": {
+            "type": "number",
+            "description": "Number of in-flight instances moved to the definition’s current version",
+            "example": 3
+          }
+        },
+        "required": [
+          "migrated"
+        ]
+      },
+      "ProWorkflowOutgoingTransitionDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Machine-readable action name",
+            "example": "approve"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized button label, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "target": {
+            "type": "string",
+            "description": "Target state id",
+            "example": "approved"
+          }
+        },
+        "required": [
+          "action",
+          "label",
+          "target"
+        ]
+      },
+      "ProWorkflowPathStepDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source state id",
+            "example": "draft"
+          },
+          "to": {
+            "type": "string",
+            "description": "Target state id",
+            "example": "in_review"
+          },
+          "action": {
+            "type": "string",
+            "description": "Machine-readable action name",
+            "example": "submit_for_review"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized button label, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "action",
+          "label"
+        ]
+      },
+      "ProWorkflowSimulationPathDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "The initial state the walk started from",
+            "example": "draft"
+          },
+          "to": {
+            "type": "string",
+            "description": "Target state; defaults to the first final state when none was requested",
+            "example": "approved"
+          },
+          "steps": {
+            "description": "The shortest transition sequence",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowPathStepDto"
+            }
+          },
+          "length": {
+            "type": "number",
+            "description": "Number of steps in the path",
+            "example": 2
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "steps",
+          "length"
+        ]
+      },
+      "ProWorkflowSimulationStepDto": {
+        "type": "object",
+        "properties": {
+          "currentState": {
+            "type": "string",
+            "description": "The state the simulation is standing on",
+            "example": "in_review"
+          },
+          "stateName": {
+            "type": "object",
+            "description": "Localized name of the current state; empty object when `currentState` is not part of the definition.",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "isFinal": {
+            "type": "boolean",
+            "description": "Whether the current state is terminal"
+          },
+          "availableTransitions": {
+            "description": "Transitions leaving the current state, filtered by `userRole` when supplied",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowAvailableTransitionDto"
+            }
+          }
+        },
+        "required": [
+          "currentState",
+          "stateName",
+          "isFinal",
+          "availableTransitions"
+        ]
+      },
+      "ProWorkflowStateAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "stateId": {
+            "type": "string",
+            "description": "State id",
+            "example": "in_review"
+          },
+          "stateName": {
+            "type": "object",
+            "description": "Localized state name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "isInitial": {
+            "type": "boolean",
+            "description": "The workflow’s entry state"
+          },
+          "isFinal": {
+            "type": "boolean",
+            "description": "A terminal state"
+          },
+          "isReachable": {
+            "type": "boolean",
+            "description": "Reachable from the initial state (BFS)"
+          },
+          "isDeadEnd": {
+            "type": "boolean",
+            "description": "Non-final state with no outgoing transitions"
+          },
+          "outgoingTransitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowOutgoingTransitionDto"
+            }
+          },
+          "incomingTransitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowIncomingTransitionDto"
+            }
+          }
+        },
+        "required": [
+          "stateId",
+          "stateName",
+          "isInitial",
+          "isFinal",
+          "isReachable",
+          "isDeadEnd",
+          "outgoingTransitions",
+          "incomingTransitions"
+        ]
+      },
+      "ProWorkflowStateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "State id, unique within the workflow",
+            "example": "draft"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized state name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Draft",
+              "de": "Entwurf"
+            }
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex badge colour",
+            "example": "#6B7280"
+          },
+          "isInitial": {
+            "type": "boolean",
+            "description": "Entry state of the workflow (exactly one per definition)"
+          },
+          "isFinal": {
+            "type": "boolean",
+            "description": "Terminal state — instances in it no longer block deletion"
+          },
+          "allowsPublish": {
+            "type": "boolean",
+            "description": "Content in this state may be published even though the state is not final (IMP-PRO-WF-04). Final states always allow publishing."
+          },
+          "requiredRoles": {
+            "description": "Roles allowed to hold content in this state",
+            "example": [
+              "admin",
+              "editor"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "taskRules": {
+            "description": "Tasks auto-created when an instance enters this state (IMP-PRO-WF-07); pending tasks of the exited state are cancelled on transition.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowTaskRuleDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ProWorkflowTaskCountDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Number of pending tasks matching the filter",
+            "example": 4
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "ProWorkflowTaskDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Task UUID"
+          },
+          "workflow_instance_id": {
+            "type": "string",
+            "description": "Workflow instance UUID the task belongs to"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "type": {
+            "type": "string",
+            "description": "Task kind. Free-form; auto-created tasks use the state’s task-rule type.",
+            "example": "review"
+          },
+          "title": {
+            "type": "object",
+            "description": "Short summary",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Longer task description",
+            "nullable": true
+          },
+          "assignee_id": {
+            "type": "object",
+            "description": "Assigned user UUID; null when unassigned",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Task lifecycle state",
+            "enum": [
+              "pending",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "due_date": {
+            "type": "object",
+            "description": "SLA due date; null when the task has no deadline",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_by": {
+            "type": "object",
+            "description": "UUID of the completing user",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reminded_at": {
+            "type": "object",
+            "description": "When the overdue reminder was emitted (exactly-once claim, IMP-PRO-WF-08)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "escalated_at": {
+            "type": "object",
+            "description": "When the task was escalated past its SLA window (IMP-PRO-WF-08)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "content_id": {
+            "type": "string",
+            "description": "Content UUID of the instance (joined)"
+          },
+          "current_state": {
+            "type": "string",
+            "description": "Current state of the instance (joined)",
+            "example": "in_review"
+          },
+          "workflow_name": {
+            "type": "object",
+            "description": "Localized name of the workflow definition (joined). Present on the list endpoint only.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Editorial Review"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "workflow_instance_id",
+          "organization_id",
+          "type",
+          "status",
+          "created_at",
+          "content_id",
+          "current_state"
+        ]
+      },
+      "ProWorkflowTaskRuleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Task type created when an instance enters the state",
+            "example": "review"
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title",
+            "example": "Review this article"
+          },
+          "description": {
+            "type": "string",
+            "description": "Task description"
+          },
+          "assigneeRole": {
+            "type": "string",
+            "description": "Assign to the organization member with this role carrying the fewest pending tasks",
+            "example": "editor"
+          },
+          "dueInHours": {
+            "type": "number",
+            "description": "SLA: task is due this many hours after creation",
+            "example": 24
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ProWorkflowTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Template id",
+            "example": "editorial-review"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized template name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Simple Approval",
+              "de": "Einfache Genehmigung"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized template description, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "description": "Gallery grouping",
+            "example": "basic"
+          },
+          "states": {
+            "description": "States the template creates",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowStateDto"
+            }
+          },
+          "transitions": {
+            "description": "Transitions the template creates",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProWorkflowTransitionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "category",
+          "states",
+          "transitions"
+        ]
+      },
+      "ProWorkflowTransitionDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source state id",
+            "example": "draft"
+          },
+          "to": {
+            "type": "string",
+            "description": "Target state id",
+            "example": "in_review"
+          },
+          "action": {
+            "type": "string",
+            "description": "Machine-readable action name",
+            "example": "submit_for_review"
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized button label, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Submit for Review",
+              "de": "Zur Prüfung einreichen"
+            }
+          },
+          "requiredRoles": {
+            "description": "Only these roles may perform the transition (IMP-PRO-WF-03)",
+            "example": [
+              "admin",
+              "editor"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiresComment": {
+            "type": "boolean",
+            "description": "A non-empty comment is mandatory for this transition"
+          },
+          "noSelfApproval": {
+            "type": "boolean",
+            "description": "Four-eyes gate: the content author may not perform this transition — author ≠ approver."
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "action",
+          "label"
+        ]
       },
       "ReleaseItemDto": {
         "type": "object",

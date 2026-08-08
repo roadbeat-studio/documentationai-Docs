@@ -68,7 +68,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Plugin identity plus the two graceful-degradation flags: whether pro-ai is bound and whether the Studio Agent is usable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -78,11 +78,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationStatusDto"
                     }
                   }
                 }
@@ -117,7 +113,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Effective limits (0 = unlimited) and tier entitlements. All-permissive when the host binds no FeatureGateService.",
             "content": {
               "application/json": {
                 "schema": {
@@ -127,11 +123,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationLicenseDto"
                     }
                   }
                 }
@@ -166,7 +158,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The sidecar's health probe. Returns `{ online: false, error }` — not an HTTP error — when no adapter is bound or the probe fails.",
             "content": {
               "application/json": {
                 "schema": {
@@ -176,11 +168,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationEngineHealthDto"
                     }
                   }
                 }
@@ -215,7 +203,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Enabled connectors visible to the org (global ∪ org-owned), ordered by kind then name.",
             "content": {
               "application/json": {
                 "schema": {
@@ -225,11 +213,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationConnectorDto"
+                      }
                     }
                   }
                 }
@@ -273,7 +260,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The org-owned entry wins over a global one with the same key. 404 when no entry matches.",
             "content": {
               "application/json": {
                 "schema": {
@@ -283,11 +270,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationConnectorDto"
                     }
                   }
                 }
@@ -322,7 +305,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Idempotent upsert counts. Live engine entries win by key over the static seed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -332,11 +315,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationCatalogSeedResultDto"
                     }
                   }
                 }
@@ -381,7 +360,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The persisted org-scoped connector, with one action per derived operation.",
             "content": {
               "application/json": {
                 "schema": {
@@ -391,11 +370,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationConnectorDto"
                     }
                   }
                 }
@@ -450,7 +425,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The persisted org-scoped connector, one action per discovered MCP tool. The discovery bearer token is not persisted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -460,11 +435,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationConnectorDto"
                     }
                   }
                 }
@@ -509,7 +480,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The org's connections, newest first. Only the masked `keyHint` is exposed, never a secret.",
             "content": {
               "application/json": {
                 "schema": {
@@ -519,11 +490,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationConnectionDto"
+                      }
                     }
                   }
                 }
@@ -566,7 +536,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "For api_key/basic/none: the created connection. For oauth2: only `authorizeUrl` — redirect the browser there; the connection row is created by the callback.",
             "content": {
               "application/json": {
                 "schema": {
@@ -576,11 +546,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationConnectionCreateResultDto"
                     }
                   }
                 }
@@ -634,7 +600,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The connection. Secrets stay in the vault; only the masked `keyHint` is returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -644,11 +610,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationConnectionDto"
                     }
                   }
                 }
@@ -690,7 +652,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The row is deleted and its vault entry purged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -700,11 +662,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationRevokedDto"
                     }
                   }
                 }
@@ -748,7 +706,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The OAuth app config; `configured: false` with no other fields when none is set. The client secret is never returned — only `secretHint`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -758,11 +716,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationOAuthClientDto"
                     }
                   }
                 }
@@ -814,7 +768,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored config re-read after the write; the submitted client secret is vaulted and masked.",
             "content": {
               "application/json": {
                 "schema": {
@@ -824,11 +778,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationOAuthClientDto"
                     }
                   }
                 }
@@ -880,7 +830,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "`deleted: false` when nothing was configured for this connector.",
             "content": {
               "application/json": {
                 "schema": {
@@ -890,11 +840,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationOAuthClientDeletedDto"
                     }
                   }
                 }
@@ -996,7 +942,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The org's flows, most recently updated first. Metadata only — no step graph.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1006,11 +952,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationFlowSummaryDto"
+                      }
                     }
                   }
                 }
@@ -1053,7 +998,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created flow in 'draft' status with its version-1 definition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1063,11 +1008,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowDto"
                     }
                   }
                 }
@@ -1123,7 +1064,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A draft definition plus its validation verdict. Nothing is persisted — POST /pro/flows to save it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1133,11 +1074,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowGenerateResultDto"
                     }
                   }
                 }
@@ -1191,7 +1128,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The flow plus the definition of its head version.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1201,11 +1138,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowDto"
                     }
                   }
                 }
@@ -1257,7 +1190,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated flow; `headVersion` is bumped when a definition was sent.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1267,11 +1200,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowDto"
                     }
                   }
                 }
@@ -1323,7 +1252,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Versions, triggers and run history cascade with the flow.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1333,11 +1262,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowDeletedDto"
                     }
                   }
                 }
@@ -1381,7 +1306,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The flow in 'active' status with `engineRef` set. 503 when the engine could not compile it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1391,11 +1316,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowDto"
                     }
                   }
                 }
@@ -1439,7 +1360,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The flow in 'paused' status; its triggers stop firing.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1449,11 +1370,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowDto"
                     }
                   }
                 }
@@ -1497,7 +1414,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The run is queued, not executed inline — poll GET /pro/integrations/runs/:id. 429 when the org is over its runs/min or runs/day quota.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1507,11 +1424,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationRunEnqueuedDto"
                     }
                   }
                 }
@@ -1555,7 +1468,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Version metadata, newest first. Fetch a definition via /versions/:version.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1565,11 +1478,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationFlowVersionDto"
+                      }
                     }
                   }
                 }
@@ -1621,7 +1533,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The immutable definition stored for that version number.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1631,11 +1543,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationFlowVersionDefinitionDto"
                     }
                   }
                 }
@@ -1679,7 +1587,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The flow’s triggers in creation order. Webhook secrets appear only as the masked `secretHint`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1689,11 +1597,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationTriggerDto"
+                      }
                     }
                   }
                 }
@@ -1745,7 +1652,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created trigger. For `inbound_webhook` the response additionally carries `secretPlaintext` — the HMAC signing key in PLAINTEXT, returned exactly once and never readable again.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1755,11 +1662,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationTriggerCreatedDto"
                     }
                   }
                 }
@@ -1823,7 +1726,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated trigger. A schedule trigger’s `nextFireAt` is recomputed from the cron (null while disabled).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1833,11 +1736,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationTriggerDto"
                     }
                   }
                 }
@@ -1889,7 +1788,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Always true when the trigger existed; its vaulted HMAC secret is purged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1899,11 +1798,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationTriggerDeletedDto"
                     }
                   }
                 }
@@ -1971,7 +1866,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The run queued for the trigger’s flow. 404 for an unknown/inactive webhook, 401 on signature failure, 409 on a replayed nonce, 429 past 60 requests/minute per tracker.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1981,11 +1876,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationRunEnqueuedDto"
                     }
                   }
                 }
@@ -2030,7 +1921,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Runs newest first. `limit` is clamped to 1…200 and defaults to 50; there is no total count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2040,11 +1931,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationRunDto"
+                      }
                     }
                   }
                 }
@@ -2088,7 +1978,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The run plus its step records. Step payloads are sha256 hashes, never raw data.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2098,11 +1988,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationRunDetailDto"
                     }
                   }
                 }
@@ -2146,7 +2032,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The run re-read after re-queueing (status 'queued'); prior step records are cleared. 400 unless the run was failed or cancelled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2156,11 +2042,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationRunDto"
                     }
                   }
                 }
@@ -2204,7 +2086,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The cancelled run. 400 when the run is already in a terminal state; only queued/running/waiting_confirmation can be cancelled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2214,11 +2096,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationRunDto"
                     }
                   }
                 }
@@ -2262,7 +2140,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The re-queued run. The consents its preflight flagged are granted for the session, attributed to the caller. 400 unless the run was 'waiting_confirmation'.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2272,11 +2150,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationRunDto"
                     }
                   }
                 }
@@ -2311,7 +2185,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored policy, or the built-in defaults with `configured: false` when the org has never saved one.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2321,11 +2195,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationEgressPolicyDto"
                     }
                   }
                 }
@@ -2368,7 +2238,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The merged, persisted policy (omitted fields keep their previous value). 403 without the Business entitlement.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2378,11 +2248,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationEgressPolicyDto"
                     }
                   }
                 }
@@ -2427,7 +2293,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The whole ledger for the org (including revoked/expired rows), most recently granted first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2437,11 +2303,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationConsentDto"
+                      }
                     }
                   }
                 }
@@ -2484,7 +2349,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The newly granted consent, attributed to the caller. `lifetime` defaults to 'session'.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2494,11 +2359,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationConsentDto"
                     }
                   }
                 }
@@ -2552,7 +2413,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The row is marked revoked (append-only — nothing is deleted). 404 when already revoked or unknown.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2562,11 +2423,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationConsentRevokedDto"
                     }
                   }
                 }
@@ -2642,7 +2499,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Offset-paged entries. Paging is reported inside the payload as `rows`/`limit`/`offset` (not the envelope `meta`), and no total count is computed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2652,11 +2509,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationAuditPageDto"
                     }
                   }
                 }
@@ -2700,7 +2553,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A flat array capped at 10 000 entries, newest first — narrowed to one data subject when `userId` is given. 403 without the Business entitlement.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2710,11 +2563,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationAuditEntryDto"
+                      }
                     }
                   }
                 }
@@ -2759,7 +2611,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new session. An unrecognised `mode` falls back to 'assist'. 503 without pro-ai; 403 without the Business entitlement.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2769,11 +2621,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationAgentSessionDto"
                     }
                   }
                 }
@@ -2816,7 +2664,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The 100 most recent sessions for the org, newest first (no transcripts).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2826,11 +2674,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IntegrationAgentSessionDto"
+                      }
                     }
                   }
                 }
@@ -2874,7 +2721,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The session plus its full transcript and every recorded action, oldest first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2884,11 +2731,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationAgentSessionDetailDto"
                     }
                   }
                 }
@@ -2942,7 +2785,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One planner turn: the assistant reply, the actions it touched, and those still pending confirmation. When the org's daily agent-token budget is spent the turn returns immediately with `stopped: 'agent-token-budget'`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2952,11 +2795,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationAgentTurnDto"
                     }
                   }
                 }
@@ -3010,7 +2849,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The action re-read after execution ('executed' or 'failed'). 409 when it already ran, 400 when it is not pending or the session egress budget is spent.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3020,11 +2859,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationAgentActionDto"
                     }
                   }
                 }
@@ -3068,7 +2903,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The action in 'denied' status; it is never executed. 400 when it is not pending.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3078,11 +2913,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationAgentActionDto"
                     }
                   }
                 }
@@ -3117,7 +2948,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-org overrides merged over the §16 defaults — every field is always present.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3127,11 +2958,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationQuotaPolicyDto"
                     }
                   }
                 }
@@ -3174,7 +3001,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The merged, persisted policy (omitted fields keep their current value). A license-tier ceiling may still cap the effective runs/day and agent tokens.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3184,11 +3011,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationQuotaPolicyDto"
                     }
                   }
                 }
@@ -3233,7 +3056,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Metered counters for the current UTC day plus live run counts derived from pro_flow_runs. Compare against GET /quota.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3243,11 +3066,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationQuotaUsageDto"
                     }
                   }
                 }
@@ -3291,7 +3110,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The `kind: 'anomaly'` slice of the audit log, newest first — each `payload` is `{ type, detail }` and `egressTarget` names the host. Same envelope as GET /pro/integrations/audit.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3301,11 +3120,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/IntegrationAuditPageDto"
                     }
                   }
                 }
@@ -3392,7 +3207,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The locale catalog as a flat translation-key → string map. Unknown locales return `{}` so ngx-translate falls back to `en`. Public — no auth.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3402,11 +3217,14 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "conn.title": "Connectors",
+                        "common.cancel": "Cancel"
+                      }
                     }
                   }
                 }
@@ -3521,6 +3339,1949 @@
       "ImportOpenApiDto": {
         "type": "object",
         "properties": {}
+      },
+      "IntegrationAgentActionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Action ID (UUID)",
+            "format": "uuid"
+          },
+          "tool": {
+            "type": "string",
+            "description": "Tool name the planner called",
+            "example": "studio_create_draft"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Which part of the action space the tool came from",
+            "enum": [
+              "studio",
+              "flow",
+              "connector_action",
+              "mcp",
+              "ai"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state. 'pending' awaits human confirmation (HITL).",
+            "enum": [
+              "pending",
+              "confirmed",
+              "denied",
+              "running",
+              "executed",
+              "failed",
+              "skipped"
+            ]
+          },
+          "destructive": {
+            "type": "boolean",
+            "description": "Mutates state irreversibly — always requires confirmation"
+          },
+          "egress": {
+            "type": "boolean",
+            "description": "Sends data to an external system — always requires confirmation"
+          },
+          "args": {
+            "type": "object",
+            "description": "Resolved tool arguments, replayed verbatim on confirm. Shape follows the tool's own JSON Schema, so it is free-form; it may reference a `connectionId` but never contains credentials.",
+            "additionalProperties": true
+          },
+          "result": {
+            "type": "object",
+            "description": "Execution result summary, shaped by the tool that ran (e.g. `{ enqueued, runId }` for a flow tool, `{ task, result }` for an AI utility). Absent while pending.",
+            "additionalProperties": true
+          },
+          "error": {
+            "type": "object",
+            "description": "Error message when the action failed",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "tool",
+          "kind",
+          "status",
+          "destructive",
+          "egress",
+          "error",
+          "createdAt"
+        ]
+      },
+      "IntegrationAgentMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Message ID (UUID)",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "description": "Who produced the message",
+            "enum": [
+              "user",
+              "assistant",
+              "tool",
+              "system"
+            ]
+          },
+          "content": {
+            "type": "object",
+            "description": "Stored message body. User messages are `{ text, context }`; assistant messages are `{ text, toolCalls[] }`. Free-form because the planner transcript shape follows the gateway contract.",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "content",
+          "createdAt"
+        ]
+      },
+      "IntegrationAgentSessionDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Session ID (UUID)",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User who opened the session"
+          },
+          "title": {
+            "type": "object",
+            "description": "Operator-chosen title",
+            "nullable": true
+          },
+          "model": {
+            "type": "object",
+            "description": "Requested model; null uses the gateway default",
+            "nullable": true,
+            "example": "mistral-small3.2"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Planning mode. 'assist' proposes and pauses; 'auto' is recorded but egress and destructive tools ALWAYS require confirmation regardless (decision §19.5).",
+            "enum": [
+              "assist",
+              "auto"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Session status",
+            "example": "active"
+          },
+          "toolCallsUsed": {
+            "type": "number",
+            "description": "Tool calls consumed against the per-session cap (20)",
+            "example": 4
+          },
+          "egressBytesUsed": {
+            "type": "number",
+            "description": "Bytes sent externally, against the per-session cap (5 MiB)",
+            "example": 2048
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "messages": {
+            "description": "Full transcript, oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationAgentMessageDto"
+            }
+          },
+          "actions": {
+            "description": "Every action recorded in this session, oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationAgentActionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "userId",
+          "title",
+          "model",
+          "mode",
+          "status",
+          "toolCallsUsed",
+          "egressBytesUsed",
+          "createdAt",
+          "messages",
+          "actions"
+        ]
+      },
+      "IntegrationAgentSessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Session ID (UUID)",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Owning organization"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User who opened the session"
+          },
+          "title": {
+            "type": "object",
+            "description": "Operator-chosen title",
+            "nullable": true
+          },
+          "model": {
+            "type": "object",
+            "description": "Requested model; null uses the gateway default",
+            "nullable": true,
+            "example": "mistral-small3.2"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Planning mode. 'assist' proposes and pauses; 'auto' is recorded but egress and destructive tools ALWAYS require confirmation regardless (decision §19.5).",
+            "enum": [
+              "assist",
+              "auto"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Session status",
+            "example": "active"
+          },
+          "toolCallsUsed": {
+            "type": "number",
+            "description": "Tool calls consumed against the per-session cap (20)",
+            "example": 4
+          },
+          "egressBytesUsed": {
+            "type": "number",
+            "description": "Bytes sent externally, against the per-session cap (5 MiB)",
+            "example": 2048
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "userId",
+          "title",
+          "model",
+          "mode",
+          "status",
+          "toolCallsUsed",
+          "egressBytesUsed",
+          "createdAt"
+        ]
+      },
+      "IntegrationAgentTurnDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "Session the turn belongs to",
+            "format": "uuid"
+          },
+          "assistant": {
+            "type": "string",
+            "description": "The assistant's final natural-language reply for this turn"
+          },
+          "actions": {
+            "description": "Actions touched this turn — safe tools already executed plus any newly pending ones",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationAgentActionDto"
+            }
+          },
+          "pending": {
+            "description": "Subset of `actions` still awaiting human confirmation before they run",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationAgentActionDto"
+            }
+          },
+          "usage": {
+            "description": "Token spend for this turn",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationAgentUsageDto"
+              }
+            ]
+          },
+          "stopped": {
+            "type": "string",
+            "description": "Set when the turn ended early instead of on a final answer",
+            "enum": [
+              "awaiting-confirmation",
+              "max-tool-calls",
+              "max-iterations",
+              "agent-token-budget"
+            ]
+          }
+        },
+        "required": [
+          "sessionId",
+          "assistant",
+          "actions",
+          "pending",
+          "usage"
+        ]
+      },
+      "IntegrationAgentUsageDto": {
+        "type": "object",
+        "properties": {
+          "promptTokens": {
+            "type": "number",
+            "description": "Prompt tokens summed over the turn",
+            "example": 1840
+          },
+          "completionTokens": {
+            "type": "number",
+            "description": "Completion tokens summed over the turn",
+            "example": 260
+          },
+          "totalTokens": {
+            "type": "number",
+            "description": "Total tokens metered against the org agent-token budget",
+            "example": 2100
+          }
+        },
+        "required": [
+          "promptTokens",
+          "completionTokens",
+          "totalTokens"
+        ]
+      },
+      "IntegrationAuditEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Audit entry ID (bigserial, serialised as a string)",
+            "example": "148213"
+          },
+          "ts": {
+            "type": "string",
+            "description": "When the event was recorded",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": "object",
+            "description": "Acting user; null for system-initiated events",
+            "nullable": true
+          },
+          "kind": {
+            "type": "string",
+            "description": "Event category",
+            "enum": [
+              "flow_run",
+              "agent_action",
+              "egress",
+              "consent",
+              "connection",
+              "quota",
+              "anomaly"
+            ]
+          },
+          "subject": {
+            "type": "object",
+            "description": "What the event was about — flow id, connector key, consent id, anomaly type",
+            "nullable": true
+          },
+          "destructive": {
+            "type": "boolean",
+            "description": "Whether the recorded action mutates state irreversibly"
+          },
+          "egressTarget": {
+            "type": "object",
+            "description": "Host the egress decision applied to",
+            "nullable": true,
+            "example": "hooks.slack.com"
+          },
+          "payload": {
+            "type": "object",
+            "description": "Per-kind detail: decisions, counts, hashes and latencies — never raw PII. Shape varies by `kind` (e.g. flow_run: `{ runId, status, steps, egressSteps }`; egress: `{ allowed, reason, residency, mode }`).",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "ts",
+          "userId",
+          "kind",
+          "subject",
+          "destructive",
+          "egressTarget",
+          "payload"
+        ]
+      },
+      "IntegrationAuditPageDto": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "description": "Matching entries, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationAuditEntryDto"
+            }
+          },
+          "limit": {
+            "type": "number",
+            "description": "Effective page size (requested value clamped to 1…500, default 100)",
+            "example": 100
+          },
+          "offset": {
+            "type": "number",
+            "description": "Effective row offset (clamped to ≥ 0)",
+            "example": 0
+          }
+        },
+        "required": [
+          "rows",
+          "limit",
+          "offset"
+        ]
+      },
+      "IntegrationCatalogSeedResultDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Global connectors upserted in this run",
+            "example": 42
+          },
+          "fromEngine": {
+            "type": "number",
+            "description": "Entries taken from the live flow-engine sidecar's connector list (they win by key)",
+            "example": 30
+          },
+          "fromStatic": {
+            "type": "number",
+            "description": "Entries taken from the static native+generic seed",
+            "example": 12
+          }
+        },
+        "required": [
+          "total",
+          "fromEngine",
+          "fromStatic"
+        ]
+      },
+      "IntegrationConnectionCreateResultDto": {
+        "type": "object",
+        "properties": {
+          "authorizeUrl": {
+            "type": "string",
+            "description": "oauth2 only — the provider authorize URL (state + PKCE challenge embedded). Redirect the browser here; the connection is created by the callback.",
+            "example": "https://slack.com/oauth/v2/authorize?client_id=…&state=…&code_challenge=…"
+          },
+          "id": {
+            "type": "string",
+            "description": "Connection ID (UUID) — direct (non-oauth2) creates only",
+            "format": "uuid"
+          },
+          "connectorKey": {
+            "type": "string",
+            "description": "Catalog key of the connector",
+            "example": "slack"
+          },
+          "name": {
+            "type": "string",
+            "description": "Operator-chosen display name"
+          },
+          "authType": {
+            "type": "string",
+            "enum": [
+              "oauth2",
+              "api_key",
+              "basic",
+              "none",
+              "custom"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "expired",
+              "revoked"
+            ]
+          },
+          "dataResidency": {
+            "type": "string",
+            "enum": [
+              "eu",
+              "non_eu",
+              "self_hosted",
+              "unknown"
+            ]
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "keyHint": {
+            "type": "object",
+            "description": "Masked hint for the vaulted secret — never the secret itself",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "IntegrationConnectionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Connection ID (UUID)",
+            "format": "uuid"
+          },
+          "connectorKey": {
+            "type": "string",
+            "description": "Catalog key of the connector this connection authenticates",
+            "example": "slack"
+          },
+          "name": {
+            "type": "string",
+            "description": "Operator-chosen display name",
+            "example": "Acme Slack"
+          },
+          "authType": {
+            "type": "string",
+            "description": "Auth scheme backing the connection; oauth2 connections are refreshed on lease",
+            "enum": [
+              "oauth2",
+              "api_key",
+              "basic",
+              "none",
+              "custom"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state. 'expired' means the OAuth grant is gone (refresh failed definitively) and the connection needs re-authentication.",
+            "enum": [
+              "active",
+              "expired",
+              "revoked"
+            ]
+          },
+          "dataResidency": {
+            "type": "string",
+            "description": "Data-residency label inherited from the connector catalog entry (drives egress governance)",
+            "enum": [
+              "eu",
+              "non_eu",
+              "self_hosted",
+              "unknown"
+            ]
+          },
+          "scopes": {
+            "description": "OAuth scopes granted for this connection (empty for api-key/basic)",
+            "example": [
+              "chat:write",
+              "channels:read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "keyHint": {
+            "type": "object",
+            "description": "Non-reversible masked hint for the vaulted secret — never the secret itself. Null when the vault entry carries no hint.",
+            "example": "sk-1…wxyz",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "object",
+            "description": "When the OAuth access token expires; null for non-expiring credentials",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "type": "object",
+            "description": "When a flow last leased this credential",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "connectorKey",
+          "name",
+          "authType",
+          "status",
+          "dataResidency",
+          "scopes",
+          "keyHint",
+          "expiresAt",
+          "lastUsedAt",
+          "createdAt"
+        ]
+      },
+      "IntegrationConnectorActionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Action id, unique within the connector",
+            "example": "chat.postMessage"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable action name"
+          },
+          "description": {
+            "type": "string",
+            "description": "What the action does"
+          },
+          "inputSchema": {
+            "type": "object",
+            "description": "JSON Schema for the action parameters (shape depends on the connector source)",
+            "additionalProperties": true
+          },
+          "outputSchema": {
+            "type": "object",
+            "description": "JSON Schema for the action result (shape depends on the connector source)",
+            "additionalProperties": true
+          },
+          "egress": {
+            "type": "boolean",
+            "description": "Whether invoking this action sends data to an external system. Drives the egress chokepoint and the HITL confirmation gate."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "egress"
+        ]
+      },
+      "IntegrationConnectorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Catalog row ID (UUID)",
+            "format": "uuid"
+          },
+          "organizationId": {
+            "type": "object",
+            "description": "null = global/native connector shared by all orgs; set = org-owned (OpenAPI/MCP import)",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "description": "Stable connector key, unique per scope",
+            "example": "mcp:my-server"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name",
+            "example": "Slack"
+          },
+          "kind": {
+            "type": "string",
+            "description": "How the catalog entry was sourced",
+            "enum": [
+              "native",
+              "community",
+              "openapi",
+              "mcp",
+              "generic"
+            ]
+          },
+          "maturity": {
+            "type": "string",
+            "description": "Maturity badge surfaced in the catalog UI",
+            "enum": [
+              "native",
+              "community-reviewed",
+              "openapi-generated",
+              "generic"
+            ]
+          },
+          "dataResidency": {
+            "type": "string",
+            "description": "Where the connector sends data — drives eu_only / non-EU consent gating",
+            "enum": [
+              "eu",
+              "non_eu",
+              "self_hosted",
+              "unknown"
+            ]
+          },
+          "authType": {
+            "type": "string",
+            "description": "Auth scheme a Connection for this connector must use",
+            "enum": [
+              "oauth2",
+              "api_key",
+              "basic",
+              "none",
+              "custom"
+            ]
+          },
+          "actions": {
+            "description": "Effectful operations the connector exposes",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationConnectorActionDto"
+            }
+          },
+          "triggers": {
+            "description": "Events the connector can emit to start a flow",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationConnectorTriggerDto"
+            }
+          },
+          "spec": {
+            "type": "object",
+            "description": "Source manifest — the imported OpenAPI document, the MCP server config, or the engine node descriptor. Free-form and never contains secrets; `spec.oauth` may carry the provider-fixed authorize/token endpoints.",
+            "additionalProperties": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Catalog description"
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Icon URL for the catalog UI"
+          },
+          "categories": {
+            "description": "Catalog categories (searchable)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Disabled catalog entries are hidden from browse"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "key",
+          "name",
+          "kind",
+          "maturity",
+          "dataResidency",
+          "authType",
+          "actions",
+          "triggers",
+          "enabled",
+          "createdAt"
+        ]
+      },
+      "IntegrationConnectorTriggerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Trigger id, unique within the connector"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable trigger name"
+          },
+          "description": {
+            "type": "string",
+            "description": "What the trigger fires on"
+          },
+          "type": {
+            "type": "string",
+            "description": "Delivery mechanism",
+            "example": "polling"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "IntegrationConsentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Consent ID (UUID)",
+            "format": "uuid"
+          },
+          "subject": {
+            "type": "string",
+            "description": "What the consent applies to — connector key, tool name or flow id",
+            "example": "slack"
+          },
+          "consentClass": {
+            "type": "string",
+            "description": "Capability class the consent grants",
+            "enum": [
+              "read_org",
+              "write_org",
+              "network_call",
+              "pii_egress"
+            ]
+          },
+          "lifetime": {
+            "type": "string",
+            "description": "Validity window. '30d' sets `expiresAt`; the others do not.",
+            "enum": [
+              "once",
+              "session",
+              "30d",
+              "permanent"
+            ]
+          },
+          "grantedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "object",
+            "description": "Set only for the '30d' lifetime",
+            "format": "date-time",
+            "nullable": true
+          },
+          "revokedAt": {
+            "type": "object",
+            "description": "When the consent was revoked; null while it stands",
+            "format": "date-time",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Derived: not revoked and not expired — this is what the gates check"
+          }
+        },
+        "required": [
+          "id",
+          "subject",
+          "consentClass",
+          "lifetime",
+          "grantedAt",
+          "expiresAt",
+          "revokedAt",
+          "active"
+        ]
+      },
+      "IntegrationConsentRevokedDto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "description": "Always true when an unrevoked consent was found and revoked",
+            "example": true
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      },
+      "IntegrationEgressPolicyDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Policy mode. 'allowlist' permits only listed domains, 'blocklist' rejects listed ones, 'eu_only' requires an EU/self-hosted connector (or pii_egress consent).",
+            "enum": [
+              "allowlist",
+              "blocklist",
+              "eu_only"
+            ]
+          },
+          "domains": {
+            "description": "Domain entries; a host matches exactly or as a suffix (sub.example.com ⊇ example.com)",
+            "example": [
+              "hooks.slack.com",
+              "api.notion.com"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requireConsentNonEu": {
+            "type": "boolean",
+            "description": "Require pii_egress consent for non-EU / unknown-residency destinations in any mode"
+          },
+          "redactFields": {
+            "description": "Dot-paths stripped from every payload before it leaves the deployment",
+            "example": [
+              "author.email",
+              "contacts.phone"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "Present and false only on GET when the org has never saved a policy — the other fields are then the built-in defaults, not stored values. Absent once a policy exists.",
+            "example": false
+          }
+        },
+        "required": [
+          "mode",
+          "domains",
+          "requireConsentNonEu",
+          "redactFields"
+        ]
+      },
+      "IntegrationEngineHealthDto": {
+        "type": "object",
+        "properties": {
+          "online": {
+            "type": "boolean",
+            "description": "Whether the engine sidecar answered"
+          },
+          "latencyMs": {
+            "type": "number",
+            "description": "Round-trip time of the health probe in milliseconds",
+            "example": 12
+          },
+          "version": {
+            "type": "string",
+            "description": "Engine version reported by the sidecar"
+          },
+          "error": {
+            "type": "string",
+            "description": "Why the probe failed, or \"No flow engine adapter configured\" when none is bound"
+          }
+        },
+        "required": [
+          "online"
+        ]
+      },
+      "IntegrationFlowDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true when the flow was found and deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "IntegrationFlowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Flow ID (UUID)",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "description": "Flow name",
+            "example": "Publish to Slack"
+          },
+          "description": {
+            "type": "object",
+            "description": "Optional description",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state. Only 'active' flows are fired by triggers.",
+            "enum": [
+              "draft",
+              "active",
+              "paused",
+              "archived"
+            ]
+          },
+          "headVersion": {
+            "type": "number",
+            "description": "Version number of the current (head) definition",
+            "example": 3
+          },
+          "engine": {
+            "type": "string",
+            "description": "Flow engine the flow compiles to",
+            "example": "activepieces"
+          },
+          "engineRef": {
+            "type": "object",
+            "description": "Engine-side workflow id, set once the flow has been activated (compiled)",
+            "nullable": true
+          },
+          "authoredBy": {
+            "type": "string",
+            "description": "Whether a human or the Studio Agent authored the flow",
+            "enum": [
+              "human",
+              "agent"
+            ]
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ID of the user who created the flow"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "definition": {
+            "type": "object",
+            "description": "The portable FlowDefinition graph: `{ schemaVersion, name, inputs[], steps[], edges[] }`. Each step is one of connector_action / studio / ai / transform / condition / subflow with its own field set, carries a unique `key` and a five-phase `phase` (input|check|decide|act|report); edges are `{ from, to, when? }` and the graph must be a DAG. Null when the head version row is missing.",
+            "additionalProperties": true,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status",
+          "headVersion",
+          "engine",
+          "engineRef",
+          "authoredBy",
+          "createdBy",
+          "createdAt",
+          "updatedAt",
+          "definition"
+        ]
+      },
+      "IntegrationFlowGenerateResultDto": {
+        "type": "object",
+        "properties": {
+          "definition": {
+            "type": "object",
+            "description": "The portable FlowDefinition graph: `{ schemaVersion, name, inputs[], steps[], edges[] }`. Each step is one of connector_action / studio / ai / transform / condition / subflow with its own field set, carries a unique `key` and a five-phase `phase` (input|check|decide|act|report); edges are `{ from, to, when? }` and the graph must be a DAG. Best-effort: it may still be invalid — review it on the canvas before saving. Null when the model returned nothing parseable.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "valid": {
+            "type": "boolean",
+            "description": "True when the generated definition passed structural validation"
+          },
+          "errors": {
+            "description": "Validation errors for the generated definition (empty when valid)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "description": "The model's raw reply, truncated — only set when no JSON object could be extracted"
+          }
+        },
+        "required": [
+          "definition",
+          "valid",
+          "errors"
+        ]
+      },
+      "IntegrationFlowSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Flow ID (UUID)",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "description": "Flow name",
+            "example": "Publish to Slack"
+          },
+          "description": {
+            "type": "object",
+            "description": "Optional description",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state. Only 'active' flows are fired by triggers.",
+            "enum": [
+              "draft",
+              "active",
+              "paused",
+              "archived"
+            ]
+          },
+          "headVersion": {
+            "type": "number",
+            "description": "Version number of the current (head) definition",
+            "example": 3
+          },
+          "engine": {
+            "type": "string",
+            "description": "Flow engine the flow compiles to",
+            "example": "activepieces"
+          },
+          "engineRef": {
+            "type": "object",
+            "description": "Engine-side workflow id, set once the flow has been activated (compiled)",
+            "nullable": true
+          },
+          "authoredBy": {
+            "type": "string",
+            "description": "Whether a human or the Studio Agent authored the flow",
+            "enum": [
+              "human",
+              "agent"
+            ]
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ID of the user who created the flow"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status",
+          "headVersion",
+          "engine",
+          "engineRef",
+          "authoredBy",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "IntegrationFlowVersionDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "description": "The requested version number",
+            "example": 2
+          },
+          "definition": {
+            "type": "object",
+            "description": "The portable FlowDefinition graph: `{ schemaVersion, name, inputs[], steps[], edges[] }`. Each step is one of connector_action / studio / ai / transform / condition / subflow with its own field set, carries a unique `key` and a five-phase `phase` (input|check|decide|act|report); edges are `{ from, to, when? }` and the graph must be a DAG.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "version",
+          "definition"
+        ]
+      },
+      "IntegrationFlowVersionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "description": "Immutable version number (1-based, newest first)",
+            "example": 3
+          },
+          "changelog": {
+            "type": "object",
+            "description": "Change note recorded with this version",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ID of the user who authored this version"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "version",
+          "changelog",
+          "createdBy",
+          "createdAt"
+        ]
+      },
+      "IntegrationLicenseDto": {
+        "type": "object",
+        "properties": {
+          "limits": {
+            "description": "Effective per-org numeric ceilings (0 = unlimited)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationLicenseLimitsDto"
+              }
+            ]
+          },
+          "features": {
+            "description": "Effective tier entitlements. All true when the host binds no FeatureGateService — the plugin only loads under a Pro license, so \"no gate\" means \"add no further restrictions\".",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationLicenseFeaturesDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "limits",
+          "features"
+        ]
+      },
+      "IntegrationLicenseFeaturesDto": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "type": "boolean",
+            "description": "Studio Agent (Business tier)"
+          },
+          "aiFlowAuthoring": {
+            "type": "boolean",
+            "description": "Natural-language flow authoring (Business tier)"
+          },
+          "advancedGovernance": {
+            "type": "boolean",
+            "description": "Egress-policy editing and GDPR audit export (Business tier)"
+          },
+          "federation": {
+            "type": "boolean",
+            "description": "Multi-org federation / SSO-bound credentials (Enterprise tier)"
+          }
+        },
+        "required": [
+          "agent",
+          "aiFlowAuthoring",
+          "advancedGovernance",
+          "federation"
+        ]
+      },
+      "IntegrationLicenseLimitsDto": {
+        "type": "object",
+        "properties": {
+          "maxFlows": {
+            "type": "number",
+            "description": "Max non-archived flows per org; 0 = unlimited",
+            "example": 50
+          },
+          "maxConnections": {
+            "type": "number",
+            "description": "Max connections per org; 0 = unlimited",
+            "example": 25
+          },
+          "maxFlowRunsPerDay": {
+            "type": "number",
+            "description": "Daily flow-run ceiling per org; 0 = unlimited",
+            "example": 5000
+          },
+          "maxAgentTokensPerDay": {
+            "type": "number",
+            "description": "Daily agent-token ceiling per org; 0 = unlimited",
+            "example": 1000000
+          }
+        },
+        "required": [
+          "maxFlows",
+          "maxConnections",
+          "maxFlowRunsPerDay",
+          "maxAgentTokensPerDay"
+        ]
+      },
+      "IntegrationOAuthClientDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "True when a config existed and was deleted; false when nothing was configured",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "IntegrationOAuthClientDto": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "description": "False when this org has no OAuth app configured for the connector — every other field is then absent"
+          },
+          "connectorKey": {
+            "type": "string",
+            "description": "Connector the OAuth app belongs to",
+            "example": "slack"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "OAuth client ID (public half of the app credentials)"
+          },
+          "authorizeUrl": {
+            "type": "string",
+            "description": "Provider authorization endpoint"
+          },
+          "tokenUrl": {
+            "type": "string",
+            "description": "Provider token endpoint"
+          },
+          "scopes": {
+            "description": "Scopes requested during authorization",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "secretHint": {
+            "type": "object",
+            "description": "Non-reversible masked hint for the vaulted client secret — never the secret itself. Null when the vault entry carries no hint.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "configured",
+          "connectorKey"
+        ]
+      },
+      "IntegrationQuotaPolicyDto": {
+        "type": "object",
+        "properties": {
+          "runsPerMin": {
+            "type": "number",
+            "description": "Runs admitted per minute per org (interactive paths only). §16 Team default: 120.",
+            "example": 120
+          },
+          "runsPerDay": {
+            "type": "number",
+            "description": "Runs admitted per UTC day per org. §16 Team default: 5000. A license-tier ceiling may apply a tighter cap on top of this.",
+            "example": 5000
+          },
+          "maxConcurrentRuns": {
+            "type": "number",
+            "description": "Runs allowed to execute at once. Over-cap runs stay queued rather than being dropped. §16 Team default: 8.",
+            "example": 8
+          },
+          "egressBytesPerDay": {
+            "type": "number",
+            "description": "Outbound bytes allowed per UTC day. §16 Team default: 1 GiB.",
+            "example": 1073741824
+          },
+          "agentTokensPerDay": {
+            "type": "number",
+            "description": "Studio Agent LLM tokens allowed per UTC day. §16 Team default: 1000000. The effective cap is the tighter of this and the license ceiling.",
+            "example": 1000000
+          }
+        },
+        "required": [
+          "runsPerMin",
+          "runsPerDay",
+          "maxConcurrentRuns",
+          "egressBytesPerDay",
+          "agentTokensPerDay"
+        ]
+      },
+      "IntegrationQuotaUsageDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The UTC day the metered counters belong to (YYYY-MM-DD)",
+            "format": "date",
+            "example": "2026-08-08"
+          },
+          "egressBytes": {
+            "type": "number",
+            "description": "Outbound bytes metered today",
+            "example": 4194304
+          },
+          "agentTokens": {
+            "type": "number",
+            "description": "Agent LLM tokens metered today",
+            "example": 18420
+          },
+          "runsToday": {
+            "type": "number",
+            "description": "Runs created today (derived from pro_flow_runs)",
+            "example": 137
+          },
+          "runsLastMin": {
+            "type": "number",
+            "description": "Runs created in the last 60 seconds",
+            "example": 3
+          },
+          "concurrent": {
+            "type": "number",
+            "description": "Runs currently in 'running' state",
+            "example": 2
+          }
+        },
+        "required": [
+          "date",
+          "egressBytes",
+          "agentTokens",
+          "runsToday",
+          "runsLastMin",
+          "concurrent"
+        ]
+      },
+      "IntegrationRevokedDto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "description": "Always true when the row was found and deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      },
+      "IntegrationRunDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Run ID (UUID)",
+            "format": "uuid"
+          },
+          "flowId": {
+            "type": "string",
+            "description": "Flow this run belongs to",
+            "format": "uuid"
+          },
+          "flowVersion": {
+            "type": "number",
+            "description": "Pinned flow version the run executes",
+            "example": 3
+          },
+          "status": {
+            "type": "string",
+            "description": "Run state. 'waiting_confirmation' means the HITL preflight found ungranted egress/destructive consents — POST /runs/:id/confirm resumes it.",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "waiting_confirmation"
+            ]
+          },
+          "triggerType": {
+            "type": "string",
+            "description": "What started the run",
+            "enum": [
+              "content_event",
+              "schedule",
+              "inbound_webhook",
+              "manual",
+              "agent",
+              "connector_event"
+            ]
+          },
+          "initiatedBy": {
+            "type": "object",
+            "description": "User who started the run; null for system/event-triggered runs",
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "object",
+            "description": "When the worker claimed the run; null while queued",
+            "format": "date-time",
+            "nullable": true
+          },
+          "finishedAt": {
+            "type": "object",
+            "description": "When the run reached a terminal state; null while queued/running",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "steps": {
+            "description": "Recorded step timeline in execution order (empty while queued)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrationRunStepDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "flowVersion",
+          "status",
+          "triggerType",
+          "initiatedBy",
+          "startedAt",
+          "finishedAt",
+          "createdAt",
+          "steps"
+        ]
+      },
+      "IntegrationRunDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Run ID (UUID)",
+            "format": "uuid"
+          },
+          "flowId": {
+            "type": "string",
+            "description": "Flow this run belongs to",
+            "format": "uuid"
+          },
+          "flowVersion": {
+            "type": "number",
+            "description": "Pinned flow version the run executes",
+            "example": 3
+          },
+          "status": {
+            "type": "string",
+            "description": "Run state. 'waiting_confirmation' means the HITL preflight found ungranted egress/destructive consents — POST /runs/:id/confirm resumes it.",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "waiting_confirmation"
+            ]
+          },
+          "triggerType": {
+            "type": "string",
+            "description": "What started the run",
+            "enum": [
+              "content_event",
+              "schedule",
+              "inbound_webhook",
+              "manual",
+              "agent",
+              "connector_event"
+            ]
+          },
+          "initiatedBy": {
+            "type": "object",
+            "description": "User who started the run; null for system/event-triggered runs",
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "object",
+            "description": "When the worker claimed the run; null while queued",
+            "format": "date-time",
+            "nullable": true
+          },
+          "finishedAt": {
+            "type": "object",
+            "description": "When the run reached a terminal state; null while queued/running",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "flowVersion",
+          "status",
+          "triggerType",
+          "initiatedBy",
+          "startedAt",
+          "finishedAt",
+          "createdAt"
+        ]
+      },
+      "IntegrationRunEnqueuedDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "ID of the newly queued run",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      },
+      "IntegrationRunStepDto": {
+        "type": "object",
+        "properties": {
+          "stepKey": {
+            "type": "string",
+            "description": "Step key from the flow definition",
+            "example": "s1"
+          },
+          "stepType": {
+            "type": "string",
+            "description": "Step type from the flow definition",
+            "enum": [
+              "connector_action",
+              "studio",
+              "ai",
+              "transform",
+              "condition",
+              "subflow"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Step outcome; null when the executor recorded none",
+            "enum": [
+              "succeeded",
+              "failed",
+              "skipped"
+            ],
+            "nullable": true
+          },
+          "egress": {
+            "type": "boolean",
+            "description": "Whether this step sent data to an external system"
+          },
+          "inputHash": {
+            "type": "object",
+            "description": "sha256 of the step input — a hash, never the payload (privacy by design)",
+            "nullable": true
+          },
+          "outputHash": {
+            "type": "object",
+            "description": "sha256 of the step output — a hash, never the payload",
+            "nullable": true
+          },
+          "durationMs": {
+            "type": "object",
+            "description": "Step wall-clock duration in milliseconds",
+            "nullable": true,
+            "example": 412
+          },
+          "error": {
+            "type": "object",
+            "description": "Error message when the step failed",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "stepKey",
+          "stepType",
+          "status",
+          "egress",
+          "inputHash",
+          "outputHash",
+          "durationMs",
+          "error",
+          "createdAt"
+        ]
+      },
+      "IntegrationStatusDto": {
+        "type": "object",
+        "properties": {
+          "plugin": {
+            "type": "string",
+            "description": "Plugin id",
+            "example": "pro-integrations"
+          },
+          "version": {
+            "type": "string",
+            "description": "Plugin version",
+            "example": "1.0.0"
+          },
+          "status": {
+            "type": "string",
+            "description": "Always \"ok\" when the module answered",
+            "example": "ok"
+          },
+          "engine": {
+            "type": "string",
+            "description": "Name of the bound flow-engine adapter; null when no engine is configured",
+            "enum": [
+              "activepieces",
+              "n8n",
+              "windmill",
+              "native"
+            ],
+            "nullable": true
+          },
+          "aiAvailable": {
+            "type": "boolean",
+            "description": "Whether the pro-ai plugin's AI gateway is bound (Pro→Pro dependency)"
+          },
+          "agentEnabled": {
+            "type": "boolean",
+            "description": "Whether the Studio Agent is usable — needs both pro-ai and the Business entitlement"
+          }
+        },
+        "required": [
+          "plugin",
+          "version",
+          "status",
+          "engine",
+          "aiAvailable",
+          "agentEnabled"
+        ]
+      },
+      "IntegrationTriggerCreatedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Trigger ID (UUID)",
+            "format": "uuid"
+          },
+          "flowId": {
+            "type": "string",
+            "description": "Flow this trigger starts",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "description": "Trigger type",
+            "enum": [
+              "content_event",
+              "schedule",
+              "inbound_webhook",
+              "manual",
+              "connector_event"
+            ]
+          },
+          "config": {
+            "type": "object",
+            "description": "Per-type configuration. content_event: `{ event, contentTypes? }`. schedule: `{ cron }` (UTC). connector_event: `{ connector, mode: \"poll\"|\"engine\", url?, itemsPath?, idField?, pollIntervalSeconds? }`. inbound_webhook and manual take no config.",
+            "additionalProperties": true,
+            "example": {
+              "event": "content.afterPublish",
+              "contentTypes": [
+                "news"
+              ]
+            }
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "A disabled trigger is never fired"
+          },
+          "slug": {
+            "type": "object",
+            "description": "inbound_webhook only — the public path segment of `POST /api/v1/hooks-pro/:slug`",
+            "nullable": true
+          },
+          "secretHint": {
+            "type": "object",
+            "description": "inbound_webhook only — non-reversible masked hint for the vaulted HMAC secret. Never the secret; the plaintext is returned only once, at create time.",
+            "example": "whsec",
+            "nullable": true
+          },
+          "nextFireAt": {
+            "type": "object",
+            "description": "schedule / polling connector_event — next due fire time (UTC)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastFiredAt": {
+            "type": "object",
+            "description": "When the trigger last fired",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the trigger can actually fire right now. A connector_event trigger in 'engine' mode is stored and validated but not yet realized, so it reports false rather than looking armed (IMP-PRO-INTEG-07)."
+          },
+          "inactiveReason": {
+            "type": "string",
+            "description": "Set when `active` is false: why the trigger cannot fire yet"
+          },
+          "secretPlaintext": {
+            "type": "string",
+            "description": "inbound_webhook only — the generated HMAC signing secret, in PLAINTEXT and returned exactly once. It is vaulted server-side and can never be read again (only `secretHint` afterwards). Store it in the calling system now; sign requests as HMAC-SHA256 over `${x-roadbeat-timestamp}.${JSON.stringify(payload)}`.",
+            "example": "9f2c…a1"
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "type",
+          "config",
+          "enabled",
+          "slug",
+          "secretHint",
+          "nextFireAt",
+          "lastFiredAt",
+          "createdAt",
+          "active"
+        ]
+      },
+      "IntegrationTriggerDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true when the trigger was found and deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "IntegrationTriggerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Trigger ID (UUID)",
+            "format": "uuid"
+          },
+          "flowId": {
+            "type": "string",
+            "description": "Flow this trigger starts",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "description": "Trigger type",
+            "enum": [
+              "content_event",
+              "schedule",
+              "inbound_webhook",
+              "manual",
+              "connector_event"
+            ]
+          },
+          "config": {
+            "type": "object",
+            "description": "Per-type configuration. content_event: `{ event, contentTypes? }`. schedule: `{ cron }` (UTC). connector_event: `{ connector, mode: \"poll\"|\"engine\", url?, itemsPath?, idField?, pollIntervalSeconds? }`. inbound_webhook and manual take no config.",
+            "additionalProperties": true,
+            "example": {
+              "event": "content.afterPublish",
+              "contentTypes": [
+                "news"
+              ]
+            }
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "A disabled trigger is never fired"
+          },
+          "slug": {
+            "type": "object",
+            "description": "inbound_webhook only — the public path segment of `POST /api/v1/hooks-pro/:slug`",
+            "nullable": true
+          },
+          "secretHint": {
+            "type": "object",
+            "description": "inbound_webhook only — non-reversible masked hint for the vaulted HMAC secret. Never the secret; the plaintext is returned only once, at create time.",
+            "example": "whsec",
+            "nullable": true
+          },
+          "nextFireAt": {
+            "type": "object",
+            "description": "schedule / polling connector_event — next due fire time (UTC)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastFiredAt": {
+            "type": "object",
+            "description": "When the trigger last fired",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the trigger can actually fire right now. A connector_event trigger in 'engine' mode is stored and validated but not yet realized, so it reports false rather than looking armed (IMP-PRO-INTEG-07)."
+          },
+          "inactiveReason": {
+            "type": "string",
+            "description": "Set when `active` is false: why the trigger cannot fire yet"
+          }
+        },
+        "required": [
+          "id",
+          "flowId",
+          "type",
+          "config",
+          "enabled",
+          "slug",
+          "secretHint",
+          "nextFireAt",
+          "lastFiredAt",
+          "createdAt",
+          "active"
+        ]
       },
       "RegisterMcpDto": {
         "type": "object",

@@ -40,6 +40,7 @@
     "/api/v1/pro/assets/bulk/move": {
       "post": {
         "operationId": "AssetBulkController_bulkMove",
+        "summary": "Move many assets into a folder (or to the root)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -53,7 +54,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Move outcome. `affected` counts the rows updated; unknown or foreign IDs come back in `notFound`. `operationId` reverses the move via `ops/{id}/undo`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -63,11 +64,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkResultDto"
                     }
                   }
                 }
@@ -93,6 +90,7 @@
     "/api/v1/pro/assets/bulk/delete": {
       "post": {
         "operationId": "AssetBulkController_bulkDelete",
+        "summary": "Delete many assets — to the trash by default, or permanently with `permanent`",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -106,7 +104,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Delete outcome. Without `force`, assets still referenced by content are reported in `skipped` instead of being deleted. A soft delete is undoable via `operationId`; a permanent delete is not.",
             "content": {
               "application/json": {
                 "schema": {
@@ -116,11 +114,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkResultDto"
                     }
                   }
                 }
@@ -146,6 +140,7 @@
     "/api/v1/pro/assets/bulk/tags/add": {
       "post": {
         "operationId": "AssetBulkController_bulkAddTags",
+        "summary": "Add tags to many assets (merged, duplicates ignored)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -159,7 +154,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Tag outcome. Assets that already carried every tag are listed in `unchanged` rather than counted as affected.",
             "content": {
               "application/json": {
                 "schema": {
@@ -169,11 +164,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkResultDto"
                     }
                   }
                 }
@@ -199,6 +190,7 @@
     "/api/v1/pro/assets/bulk/tags/remove": {
       "post": {
         "operationId": "AssetBulkController_bulkRemoveTags",
+        "summary": "Remove tags from many assets",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -212,7 +204,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Tag outcome. Assets that carried none of the given tags are listed in `unchanged`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -222,11 +214,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkResultDto"
                     }
                   }
                 }
@@ -252,6 +240,7 @@
     "/api/v1/pro/assets/bulk/download": {
       "post": {
         "operationId": "AssetBulkController_bulkDownload",
+        "summary": "Get signed download URLs for many assets (for a client-side ZIP)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -265,7 +254,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-asset metadata with a 10-minute signed URL each, plus the combined size. Raw storage keys are never returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -275,11 +264,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkDownloadInfoDto"
                     }
                   }
                 }
@@ -358,6 +343,7 @@
     "/api/v1/pro/assets/bulk/info": {
       "post": {
         "operationId": "AssetBulkController_bulkInfo",
+        "summary": "Summarise a selection of assets before acting on it",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -371,7 +357,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Counts and size of the selection, broken down by MIME type and folder, plus which assets content still references.",
             "content": {
               "application/json": {
                 "schema": {
@@ -381,11 +367,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkInfoDto"
                     }
                   }
                 }
@@ -411,10 +393,11 @@
     "/api/v1/pro/assets/bulk/ops": {
       "get": {
         "operationId": "AssetBulkController_listOps",
+        "summary": "List recorded bulk operations (audit trail)",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The 50 most recent bulk operations of the organization, newest first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -424,11 +407,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProBulkOpLogDto"
+                      }
                     }
                   }
                 }
@@ -444,6 +426,7 @@
     "/api/v1/pro/assets/bulk/ops/{id}": {
       "get": {
         "operationId": "AssetBulkController_getOp",
+        "summary": "Get one recorded bulk operation, including its undo snapshot",
         "parameters": [
           {
             "name": "id",
@@ -456,7 +439,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested audit entry; 404 when unknown to the organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -466,11 +449,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkOpLogDto"
                     }
                   }
                 }
@@ -486,6 +465,7 @@
     "/api/v1/pro/assets/bulk/ops/{id}/undo": {
       "post": {
         "operationId": "AssetBulkController_undoOp",
+        "summary": "Reverse a recorded bulk operation",
         "parameters": [
           {
             "name": "id",
@@ -498,7 +478,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many items were restored. 400 when the operation was already undone or has no before-state (permanent deletes).",
             "content": {
               "application/json": {
                 "schema": {
@@ -508,11 +488,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkResultDto"
                     }
                   }
                 }
@@ -528,10 +504,11 @@
     "/api/v1/pro/assets/bulk/trash": {
       "get": {
         "operationId": "AssetBulkController_listTrash",
+        "summary": "List soft-deleted assets still inside the trash window",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Soft-deleted assets, most recently deleted first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -541,11 +518,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProBulkTrashItemDto"
+                      }
                     }
                   }
                 }
@@ -561,6 +537,7 @@
     "/api/v1/pro/assets/bulk/trash/restore": {
       "post": {
         "operationId": "AssetBulkController_restoreFromTrash",
+        "summary": "Restore soft-deleted assets out of the trash",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -574,7 +551,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many assets were restored. Already-purged or never-deleted IDs simply do not count towards `affected`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -584,11 +561,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProBulkResultDto"
                     }
                   }
                 }
@@ -614,10 +587,11 @@
     "/api/v1/pro/content/bulk/status": {
       "post": {
         "operationId": "ContentBulkController_bulkStatus",
+        "summary": "Apply a status transition (publish / unpublish / archive / delete) to many content items",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-item outcome. Transitions go through CE's content service, so versions and events match single-item actions. Selections above 50 items return `background: true` and continue asynchronously.",
             "content": {
               "application/json": {
                 "schema": {
@@ -627,11 +601,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProContentBulkResultDto"
                     }
                   }
                 }
@@ -647,10 +617,11 @@
     "/api/v1/pro/content/bulk/delete": {
       "post": {
         "operationId": "ContentBulkController_bulkDelete",
+        "summary": "Delete many content items (shorthand for the `delete` transition)",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-item outcome, identical in shape to `status`. Selections above 50 items return `background: true`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -660,11 +631,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProContentBulkResultDto"
                     }
                   }
                 }
@@ -684,7 +651,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All environments of the organization — production first, then by sort order — each enriched with its mapped content count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -694,11 +661,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProEnvironmentDto"
+                      }
                     }
                   }
                 }
@@ -741,7 +707,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created environment. Marking it production clears the flag on the previous production environment.",
             "content": {
               "application/json": {
                 "schema": {
@@ -751,11 +717,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentDto"
                     }
                   }
                 }
@@ -800,7 +762,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Environment, alias and content-mapping counts for the organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -810,11 +772,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentStatsDto"
                     }
                   }
                 }
@@ -858,7 +816,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Operation logs newest first, capped by `limit` (default 50).",
             "content": {
               "application/json": {
                 "schema": {
@@ -868,11 +826,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProSyncLogDto"
+                      }
                     }
                   }
                 }
@@ -916,7 +873,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested operation log.",
             "content": {
               "application/json": {
                 "schema": {
@@ -926,11 +883,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSyncLogDto"
                     }
                   }
                 }
@@ -965,7 +918,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All aliases of the organization, alphabetically, with their target environment.",
             "content": {
               "application/json": {
                 "schema": {
@@ -975,11 +928,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProEnvironmentAliasDto"
+                      }
                     }
                   }
                 }
@@ -1022,7 +974,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created alias. `environment_name`/`environment_slug` are not joined in on create.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1032,11 +984,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentAliasDto"
                     }
                   }
                 }
@@ -1090,7 +1038,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested alias with its target environment name and slug.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1100,11 +1048,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentAliasDto"
                     }
                   }
                 }
@@ -1156,7 +1100,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The alias after the switch. Re-pointing at the current target is a no-op and returns the joined read shape unchanged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1166,11 +1110,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentAliasDto"
                     }
                   }
                 }
@@ -1261,7 +1201,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested environment, including its mapped content count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1271,11 +1211,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentDto"
                     }
                   }
                 }
@@ -1327,7 +1263,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated environment.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1337,11 +1273,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentDto"
                     }
                   }
                 }
@@ -1423,7 +1355,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The three seeded environments — or the existing ones unchanged when the organization already has any.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1433,11 +1365,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProEnvironmentDto"
+                      }
                     }
                   }
                 }
@@ -1481,7 +1412,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Content mapped into the environment, most recently updated first, with its promotion provenance. The content `data` payload is not included.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1491,11 +1422,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProEnvironmentContentItemDto"
+                      }
                     }
                   }
                 }
@@ -1539,7 +1469,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Counts of newly created mappings versus requested IDs that were skipped.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1549,11 +1479,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAssignContentResultDto"
                     }
                   }
                 }
@@ -1645,7 +1571,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Outcome of the promotion, including reference-closure counts. A target edited since the last promotion fails with 409 unless `force` is set.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1655,11 +1581,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPromoteContentResultDto"
                     }
                   }
                 }
@@ -1714,7 +1636,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Aggregate sync counts plus the ID of the sync log recording the run.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1724,11 +1646,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSyncEnvironmentsResultDto"
                     }
                   }
                 }
@@ -1783,7 +1701,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One entry per (content type, slug, locale) present in either environment, ordered only_a → only_b → different_version → same_version.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1793,11 +1711,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProEnvironmentComparisonDto"
+                      }
                     }
                   }
                 }
@@ -1842,7 +1759,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The resolved environment ID; 404 when nothing matches.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1852,11 +1769,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAliasResolutionDto"
                     }
                   }
                 }
@@ -1891,7 +1804,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The seeded `master` alias — the existing aliases when any are present, or an empty array when the organization has no production environment yet.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1901,11 +1814,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProEnvironmentAliasDto"
+                      }
                     }
                   }
                 }
@@ -1959,7 +1871,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new sandbox environment plus clone counts. Cloned content slugs get a `--<sandbox-slug>` suffix; collisions are skipped and reported in the sync log.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1969,11 +1881,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProEnvironmentCloneResultDto"
                     }
                   }
                 }
@@ -2014,10 +1922,11 @@
     "/api/v1/pro/export/jobs": {
       "get": {
         "operationId": "ExportController_listJobs",
+        "summary": "List export jobs",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All export jobs of the organization, newest first, each with the creating user's name. Inline `file_content` is included verbatim, so responses can be large.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2027,11 +1936,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProExportJobDto"
+                      }
                     }
                   }
                 }
@@ -2045,6 +1953,7 @@
       },
       "post": {
         "operationId": "ExportController_createJob",
+        "summary": "Create an export job (does not run it)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2058,7 +1967,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created job in `pending` state; POST `jobs/{id}/process` to run it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2068,11 +1977,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportJobDto"
                     }
                   }
                 }
@@ -2098,6 +2003,7 @@
     "/api/v1/pro/export/jobs/{id}": {
       "get": {
         "operationId": "ExportController_getJob",
+        "summary": "Get one export job",
         "parameters": [
           {
             "name": "id",
@@ -2110,7 +2016,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested job. Poll this to watch a background export reach `completed`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2120,11 +2026,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportJobDto"
                     }
                   }
                 }
@@ -2138,6 +2040,7 @@
       },
       "delete": {
         "operationId": "ExportController_deleteJob",
+        "summary": "Delete an export job and its stored result",
         "parameters": [
           {
             "name": "id",
@@ -2150,7 +2053,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deletion acknowledgement; a job that is currently processing cannot be deleted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2160,11 +2063,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportDeletedDto"
                     }
                   }
                 }
@@ -2180,6 +2079,7 @@
     "/api/v1/pro/export/jobs/{id}/process": {
       "post": {
         "operationId": "ExportController_processJob",
+        "summary": "Run an export job (returns immediately)",
         "parameters": [
           {
             "name": "id",
@@ -2192,7 +2092,7 @@
         ],
         "responses": {
           "202": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The job as it stood when the run was accepted — rendering happens in the background, so poll the job for its final status, `record_count` and `file_size`. A job that is already processing errors.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2202,11 +2102,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportJobDto"
                     }
                   }
                 }
@@ -2264,6 +2160,7 @@
     "/api/v1/pro/export/templates/{id}/run": {
       "post": {
         "operationId": "ExportController_runTemplate",
+        "summary": "Run a template now, creating and processing a job synchronously",
         "parameters": [
           {
             "name": "id",
@@ -2276,7 +2173,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The finished job — named \"<template> — <date>\" and already processed, so `record_count` and the payload location are populated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2286,11 +2183,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportJobDto"
                     }
                   }
                 }
@@ -2306,10 +2199,11 @@
     "/api/v1/pro/export/templates": {
       "get": {
         "operationId": "ExportController_listTemplates",
+        "summary": "List export templates",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All templates of the organization — defaults first, then by name.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2319,11 +2213,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProExportTemplateDto"
+                      }
                     }
                   }
                 }
@@ -2337,6 +2230,7 @@
       },
       "post": {
         "operationId": "ExportController_createTemplate",
+        "summary": "Create an export template",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2350,7 +2244,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created template. Marking it default clears the flag on the previous default for the same format.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2360,11 +2254,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportTemplateDto"
                     }
                   }
                 }
@@ -2390,6 +2280,7 @@
     "/api/v1/pro/export/templates/{id}": {
       "get": {
         "operationId": "ExportController_getTemplate",
+        "summary": "Get one export template",
         "parameters": [
           {
             "name": "id",
@@ -2402,7 +2293,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested template.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2412,11 +2303,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportTemplateDto"
                     }
                   }
                 }
@@ -2430,6 +2317,7 @@
       },
       "put": {
         "operationId": "ExportController_updateTemplate",
+        "summary": "Update an export template",
         "parameters": [
           {
             "name": "id",
@@ -2452,7 +2340,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The template re-read after the update. Setting `isDefault` clears the flag on the previous default for the effective format (IMP-PRO-EXPORT-05).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2462,11 +2350,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportTemplateDto"
                     }
                   }
                 }
@@ -2490,6 +2374,7 @@
       },
       "delete": {
         "operationId": "ExportController_deleteTemplate",
+        "summary": "Delete an export template",
         "parameters": [
           {
             "name": "id",
@@ -2502,7 +2387,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deletion acknowledgement; jobs the template produced are left in place.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2512,11 +2397,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportDeletedDto"
                     }
                   }
                 }
@@ -2532,10 +2413,11 @@
     "/api/v1/pro/export/schedules": {
       "get": {
         "operationId": "ExportController_listSchedules",
+        "summary": "List export schedules",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All schedules of the organization, newest first. Delivery credentials are vaulted and never returned — only `secret_ref` is.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2545,11 +2427,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProExportScheduleDto"
+                      }
                     }
                   }
                 }
@@ -2563,6 +2444,7 @@
       },
       "post": {
         "operationId": "ExportController_createSchedule",
+        "summary": "Create a recurring export schedule",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2576,7 +2458,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created schedule with its first `next_fire_at` computed from the cron. Any `deliverySecret` is vaulted, and creation is refused rather than storing it unencrypted when no vault key is configured.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2586,11 +2468,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportScheduleDto"
                     }
                   }
                 }
@@ -2616,6 +2494,7 @@
     "/api/v1/pro/export/schedules/{id}": {
       "get": {
         "operationId": "ExportController_getSchedule",
+        "summary": "Get one export schedule",
         "parameters": [
           {
             "name": "id",
@@ -2628,7 +2507,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested schedule, including its next and last fire times.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2638,11 +2517,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportScheduleDto"
                     }
                   }
                 }
@@ -2656,6 +2531,7 @@
       },
       "put": {
         "operationId": "ExportController_updateSchedule",
+        "summary": "Update an export schedule",
         "parameters": [
           {
             "name": "id",
@@ -2678,7 +2554,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated schedule. `next_fire_at` is re-armed from now, or nulled when the schedule is disabled.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2688,11 +2564,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportScheduleDto"
                     }
                   }
                 }
@@ -2716,6 +2588,7 @@
       },
       "delete": {
         "operationId": "ExportController_deleteSchedule",
+        "summary": "Delete an export schedule (and purge its vaulted credential)",
         "parameters": [
           {
             "name": "id",
@@ -2728,7 +2601,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deletion acknowledgement; the schedule's delivery credential is revoked too.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2738,11 +2611,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportDeletedDto"
                     }
                   }
                 }
@@ -2758,6 +2627,7 @@
     "/api/v1/pro/export/schedules/{id}/runs": {
       "get": {
         "operationId": "ExportController_listScheduleRuns",
+        "summary": "List the run history of a schedule",
         "parameters": [
           {
             "name": "id",
@@ -2770,7 +2640,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The 20 most recent runs, newest first, including failures and delivery targets.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2780,11 +2650,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProExportScheduleRunDto"
+                      }
                     }
                   }
                 }
@@ -2800,6 +2669,7 @@
     "/api/v1/pro/export/schedules/{id}/run": {
       "post": {
         "operationId": "ExportController_runScheduleNow",
+        "summary": "Force-run a schedule now (does not change its next fire time)",
         "parameters": [
           {
             "name": "id",
@@ -2812,7 +2682,7 @@
         ],
         "responses": {
           "202": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement that the run was started in the background. Poll `schedules/{id}/runs` for the outcome and the delivery target.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2822,11 +2692,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProExportScheduleStartedDto"
                     }
                   }
                 }
@@ -2842,10 +2708,11 @@
     "/api/v1/pro/import/jobs": {
       "get": {
         "operationId": "ImportController_listJobs",
+        "summary": "List import jobs",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All import jobs of the organization, newest first, each with the creating user's name. Inline `file_content` is included verbatim, so responses can be large.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2855,11 +2722,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProImportJobDto"
+                      }
                     }
                   }
                 }
@@ -2873,6 +2739,7 @@
       },
       "post": {
         "operationId": "ImportController_createJob",
+        "summary": "Create an import job (does not start it)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2886,7 +2753,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created job in `pending` state. Unknown content types and a `duplicateKey` no mapping produces are rejected here rather than at run time.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2896,11 +2763,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportJobDto"
                     }
                   }
                 }
@@ -2926,6 +2789,7 @@
     "/api/v1/pro/import/jobs/{id}": {
       "get": {
         "operationId": "ImportController_getJob",
+        "summary": "Get one import job, including its progress stats and error log",
         "parameters": [
           {
             "name": "id",
@@ -2938,7 +2802,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested job. Poll this while a job is processing to watch `stats` advance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2948,11 +2812,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportJobDto"
                     }
                   }
                 }
@@ -2966,6 +2826,7 @@
       },
       "delete": {
         "operationId": "ImportController_deleteJob",
+        "summary": "Delete an import job (imported content is left in place)",
         "parameters": [
           {
             "name": "id",
@@ -2978,7 +2839,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deletion acknowledgement. Deleting a job that is currently processing is refused — cancel it first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2988,11 +2849,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportJobDeletedDto"
                     }
                   }
                 }
@@ -3008,6 +2865,7 @@
     "/api/v1/pro/import/jobs/{id}/process": {
       "post": {
         "operationId": "ImportController_processJob",
+        "summary": "Start processing a pending import job (returns immediately)",
         "parameters": [
           {
             "name": "id",
@@ -3020,7 +2878,7 @@
         ],
         "responses": {
           "202": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The job just after it was claimed (status `processing`). Rows are imported in the background — poll the job to follow `stats`. A job that is not `pending` errors, so a duplicate POST cannot double-import.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3030,11 +2888,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportJobDto"
                     }
                   }
                 }
@@ -3050,6 +2904,7 @@
     "/api/v1/pro/import/jobs/{id}/cancel": {
       "post": {
         "operationId": "ImportController_cancelJob",
+        "summary": "Cancel a pending or processing import job",
         "parameters": [
           {
             "name": "id",
@@ -3062,7 +2917,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The job after the cancel request. A pending job goes straight to `cancelled`; a processing one is flipped to `cancelling` and finalises within one progress batch.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3072,11 +2927,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportJobDto"
                     }
                   }
                 }
@@ -3092,6 +2943,7 @@
     "/api/v1/pro/import/jobs/{id}/retry": {
       "post": {
         "operationId": "ImportController_retryJob",
+        "summary": "Re-run a completed or failed import job",
         "parameters": [
           {
             "name": "id",
@@ -3114,7 +2966,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Final counters of the synchronous re-run. `failedOnly` (default) skips rows already imported; `failedOnly: false` drops the tracking rows and re-imports everything.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3124,11 +2976,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportStatsDto"
                     }
                   }
                 }
@@ -3154,6 +3002,7 @@
     "/api/v1/pro/import/jobs/{id}/rollback": {
       "post": {
         "operationId": "ImportController_rollbackJob",
+        "summary": "Roll back an import, deleting the content (and assets) it created",
         "parameters": [
           {
             "name": "id",
@@ -3166,7 +3015,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "What the rollback removed. Any per-item failure leaves the job in `rollback_partial` and the rollback re-invocable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3176,11 +3025,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportRollbackResultDto"
                     }
                   }
                 }
@@ -3196,6 +3041,7 @@
     "/api/v1/pro/import/preview": {
       "post": {
         "operationId": "ImportController_preview",
+        "summary": "Dry-run the field mapping on the first records of a file",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3209,7 +3055,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Per-row mapping and validation results for the previewed slice, plus the total record count and any auto-detected source options. Nothing is written.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3219,11 +3065,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProImportPreviewResultDto"
                     }
                   }
                 }
@@ -3263,7 +3105,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created token record plus a ready-to-use `previewUrl` — the only response that carries the token secret.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3273,11 +3115,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewTokenDto"
                     }
                   }
                 }
@@ -3320,7 +3158,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Page of tokens (newest first) plus the total matching count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3330,11 +3168,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewTokenListDto"
                     }
                   }
                 }
@@ -3378,7 +3212,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested token record; 404 when unknown to the organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3388,11 +3222,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewTokenDto"
                     }
                   }
                 }
@@ -3434,7 +3264,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Revocation acknowledgement — the token stops validating immediately.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3444,11 +3274,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewRevokedDto"
                     }
                   }
                 }
@@ -3483,7 +3309,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Number of token rows removed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3493,11 +3319,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewCleanupResultDto"
                     }
                   }
                 }
@@ -3549,7 +3371,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The draft content, if the token scope allows it. 401 without a valid token, 404 when out of scope or absent.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3559,11 +3381,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewContentDto"
                     }
                   }
                 }
@@ -3608,7 +3426,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The draft content matching the slug (and locale, when given or pinned on the token).",
             "content": {
               "application/json": {
                 "schema": {
@@ -3618,11 +3436,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewContentDto"
                     }
                   }
                 }
@@ -3667,7 +3481,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Page of content the token scope permits (most recently updated first) plus the total count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3677,11 +3491,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewContentListDto"
                     }
                   }
                 }
@@ -3711,7 +3521,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created link including its public `url`. The password hash is never returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3721,11 +3531,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProShareableLinkDto"
                     }
                   }
                 }
@@ -3803,7 +3609,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Page of shareable links (newest first) plus the total matching count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3813,11 +3619,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProShareableLinkListDto"
                     }
                   }
                 }
@@ -3861,7 +3663,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested link with its access and (hashed) visitor counters.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3871,11 +3673,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProShareableLinkDto"
                     }
                   }
                 }
@@ -3917,7 +3715,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deletion acknowledgement — the link row and its analytics are removed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3927,11 +3725,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewDeletedDto"
                     }
                   }
                 }
@@ -3975,7 +3769,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Revocation acknowledgement — the link's expiry is moved to now, the row is kept.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3985,11 +3779,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewRevokedDto"
                     }
                   }
                 }
@@ -4041,7 +3831,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The previewed content plus the reviewer-facing link settings. Consumes one access slot. 401 when the link is invalid, expired, exhausted, or the password is wrong.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4051,11 +3841,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSharedPreviewAccessDto"
                     }
                   }
                 }
@@ -4094,7 +3880,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "ID and timestamp of the stored comment. Commenting does not consume a link access slot.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4104,11 +3890,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewCommentCreatedDto"
                     }
                   }
                 }
@@ -4147,7 +3929,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Comments on the link, newest first; empty array when none were left.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4157,11 +3939,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProPreviewCommentDto"
+                      }
                     }
                   }
                 }
@@ -4196,7 +3977,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Token and shareable-link counters for the organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4206,11 +3987,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewStatsDto"
                     }
                   }
                 }
@@ -4245,7 +4022,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Rows removed per table — tokens older than 7 days, links older than 30 days.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4255,11 +4032,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProPreviewHousekeepingResultDto"
                     }
                   }
                 }
@@ -4290,10 +4063,11 @@
     "/api/v1/pro/saved-views": {
       "get": {
         "operationId": "SavedViewsController_list",
+        "summary": "List saved views visible to the caller (own + shared)",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Own views plus views shared with the caller's organization or role — pinned first, then by name. Entries whose config drifted from the content-type schema carry a `drift` block.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4303,11 +4077,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProSavedViewDto"
+                      }
                     }
                   }
                 }
@@ -4321,6 +4094,7 @@
       },
       "post": {
         "operationId": "SavedViewsController_create",
+        "summary": "Create a saved view",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4334,7 +4108,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created view as stored, with defaults applied (`icon: bookmark`, `color: brand`, `share_scope: org`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -4344,11 +4118,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDto"
                     }
                   }
                 }
@@ -4374,10 +4144,11 @@
     "/api/v1/pro/saved-views/pinned": {
       "get": {
         "operationId": "SavedViewsController_listPinned",
+        "summary": "List only pinned views (for the quick-bar)",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Visible pinned views ordered by `pin_order` then name. Drift is not computed on this path.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4387,11 +4158,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProSavedViewDto"
+                      }
                     }
                   }
                 }
@@ -4407,10 +4177,11 @@
     "/api/v1/pro/saved-views/default": {
       "get": {
         "operationId": "SavedViewsController_getDefault",
+        "summary": "Get the caller's default view",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The default view. `data` is null when the caller set none, or when the previously chosen view is no longer visible to them.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4420,11 +4191,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDto"
                     }
                   }
                 }
@@ -4438,10 +4205,11 @@
       },
       "delete": {
         "operationId": "SavedViewsController_clearDefault",
+        "summary": "Clear the caller's default view",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement — the caller's content list falls back to the unfiltered default.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4451,11 +4219,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDefaultClearedDto"
                     }
                   }
                 }
@@ -4471,6 +4235,7 @@
     "/api/v1/pro/saved-views/{id}/default": {
       "post": {
         "operationId": "SavedViewsController_setDefault",
+        "summary": "Make a view the caller's default (replaces any previous default)",
         "parameters": [
           {
             "name": "id",
@@ -4483,7 +4248,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement. The view must be visible to the caller; a user has at most one default.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4493,11 +4258,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDefaultSetDto"
                     }
                   }
                 }
@@ -4513,6 +4274,7 @@
     "/api/v1/pro/saved-views/{id}": {
       "get": {
         "operationId": "SavedViewsController_getById",
+        "summary": "Get a single saved view",
         "parameters": [
           {
             "name": "id",
@@ -4525,7 +4287,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The requested view, with a `drift` block when its config no longer matches the content-type schema. 404 when not visible to the caller.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4535,11 +4297,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDto"
                     }
                   }
                 }
@@ -4553,6 +4311,7 @@
       },
       "put": {
         "operationId": "SavedViewsController_update",
+        "summary": "Update a saved view (owner only)",
         "parameters": [
           {
             "name": "id",
@@ -4575,7 +4334,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated view. An empty body returns the record unchanged; a non-owner gets 403.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4585,11 +4344,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDto"
                     }
                   }
                 }
@@ -4613,6 +4368,7 @@
       },
       "delete": {
         "operationId": "SavedViewsController_delete",
+        "summary": "Delete a saved view (owner only)",
         "parameters": [
           {
             "name": "id",
@@ -4625,7 +4381,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deletion acknowledgement; 404 when the view is unknown or not owned by the caller.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4635,11 +4391,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDeletedDto"
                     }
                   }
                 }
@@ -4655,6 +4407,7 @@
     "/api/v1/pro/saved-views/{id}/apply": {
       "post": {
         "operationId": "SavedViewsController_apply",
+        "summary": "Record that a view was applied (usage tracking)",
         "parameters": [
           {
             "name": "id",
@@ -4667,7 +4420,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The view with its incremented `use_count` and refreshed `last_used_at`. A per-user counter is updated alongside it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4677,11 +4430,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDto"
                     }
                   }
                 }
@@ -4697,6 +4446,7 @@
     "/api/v1/pro/saved-views/{id}/duplicate": {
       "post": {
         "operationId": "SavedViewsController_duplicate",
+        "summary": "Duplicate a visible view into a private copy of your own",
         "parameters": [
           {
             "name": "id",
@@ -4709,7 +4459,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new copy, named \"<source> (copy)\", owned by the caller and reset to unshared and unpinned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4719,11 +4469,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewDto"
                     }
                   }
                 }
@@ -4739,6 +4485,7 @@
     "/api/v1/pro/saved-views/pinned/reorder": {
       "put": {
         "operationId": "SavedViewsController_reorderPinned",
+        "summary": "Reorder the pinned quick-bar (atomic, own views only)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4752,7 +4499,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement. All pin orders are written in one transaction — an unknown or foreign ID rolls the whole batch back with 404 (IMP-PRO-SV-03).",
             "content": {
               "application/json": {
                 "schema": {
@@ -4762,11 +4509,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProSavedViewReorderedDto"
                     }
                   }
                 }
@@ -4931,6 +4674,2488 @@
       "PreviewImportDto": {
         "type": "object",
         "properties": {}
+      },
+      "ProAliasResolutionDto": {
+        "type": "object",
+        "properties": {
+          "environmentId": {
+            "type": "string",
+            "description": "Environment ID the input resolved to. The input may be an alias name, an alias ID, an environment ID, or an environment slug."
+          }
+        },
+        "required": [
+          "environmentId"
+        ]
+      },
+      "ProAssignContentResultDto": {
+        "type": "object",
+        "properties": {
+          "assigned": {
+            "type": "number",
+            "description": "Mappings actually inserted (rows sourced from an org-constrained SELECT, so foreign IDs never count)",
+            "example": 8
+          },
+          "skipped": {
+            "type": "number",
+            "description": "Requested IDs that were not mapped — already mapped, foreign, or nonexistent",
+            "example": 2
+          },
+          "total": {
+            "type": "number",
+            "description": "Number of content IDs in the request",
+            "example": 10
+          }
+        },
+        "required": [
+          "assigned",
+          "skipped",
+          "total"
+        ]
+      },
+      "ProBulkAssetUsageDto": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "description": "Asset referenced by content"
+          },
+          "contentIds": {
+            "description": "Content items referencing the asset (from `asset_usages` + `content_assets`)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetId",
+          "contentIds"
+        ]
+      },
+      "ProBulkDownloadAssetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset ID"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original upload filename",
+            "example": "cover.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type",
+            "example": "image/jpeg"
+          },
+          "size": {
+            "type": "number",
+            "description": "Size in bytes",
+            "example": 204800
+          },
+          "url": {
+            "type": "object",
+            "description": "Short-lived signed download URL (10 minutes). Null when the host has no storage provider or signing failed. Raw storage keys are never returned (IMP-PRO-BULK-05).",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "mimeType",
+          "size"
+        ]
+      },
+      "ProBulkDownloadInfoDto": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "description": "One entry per resolved asset, each with its signed URL",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProBulkDownloadAssetDto"
+            }
+          },
+          "totalSize": {
+            "type": "number",
+            "description": "Sum of all resolved asset sizes in bytes",
+            "example": 1048576
+          },
+          "notFound": {
+            "description": "Requested IDs not found in this organization; omitted when empty",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assets",
+          "totalSize"
+        ]
+      },
+      "ProBulkErrorDto": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "description": "ID of the item that failed. Named `assetId` for both asset and content operations — the content bulk service reuses the asset result shape."
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure message. Storage failures are prefixed with `storage`.",
+            "example": "storage delete failed for org/abc.jpg: connection reset"
+          }
+        },
+        "required": [
+          "assetId",
+          "error"
+        ]
+      },
+      "ProBulkInfoDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Asset IDs in the request",
+            "example": 10
+          },
+          "found": {
+            "type": "number",
+            "description": "How many of those exist in this organization",
+            "example": 9
+          },
+          "totalSize": {
+            "type": "number",
+            "description": "Combined size of the found assets in bytes",
+            "example": 1048576
+          },
+          "mimeTypes": {
+            "type": "object",
+            "description": "Asset count per MIME type; unknown types are keyed `unknown`",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "image/jpeg": 7,
+              "application/pdf": 2
+            }
+          },
+          "folders": {
+            "type": "object",
+            "description": "Asset count per folder ID; unfiled assets are keyed `root`",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "root": 3,
+              "f_a1b2c3": 6
+            }
+          },
+          "inUse": {
+            "description": "Assets referenced by content — surfaced so the UI can warn before a destructive delete (IMP-PRO-BULK-02)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProBulkAssetUsageDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "found",
+          "totalSize",
+          "mimeTypes",
+          "folders",
+          "inUse"
+        ]
+      },
+      "ProBulkOpLogDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Audit-log entry ID — the handle for undo"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "actor_id": {
+            "type": "string",
+            "description": "User who ran the operation"
+          },
+          "operation": {
+            "type": "string",
+            "description": "Which bulk action was run",
+            "enum": [
+              "move",
+              "delete",
+              "delete.permanent",
+              "tags.add",
+              "tags.remove",
+              "content.publish",
+              "content.unpublish",
+              "content.archive",
+              "content.delete"
+            ]
+          },
+          "entity": {
+            "type": "string",
+            "description": "Kind of record the operation touched",
+            "enum": [
+              "asset",
+              "content"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "description": "Per-ID outcome recorded at the time — typically `{ affected, notFound, skipped }`, plus `failed` for content operations. Shape varies by operation.",
+            "additionalProperties": true
+          },
+          "before_state": {
+            "type": "array",
+            "description": "Before-state snapshot used by undo: one object per changed item, carrying only the fields the operation altered (`{ id, folderId? , tags?, status? }`). Empty for a permanent delete, which cannot be undone.",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "undone_at": {
+            "type": "object",
+            "description": "When the operation was undone; null while it is still reversible",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "actor_id",
+          "operation",
+          "entity",
+          "result",
+          "before_state",
+          "created_at"
+        ]
+      },
+      "ProBulkResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation completed without per-item errors"
+          },
+          "affected": {
+            "type": "number",
+            "description": "Items actually changed — not the number requested",
+            "example": 8
+          },
+          "errors": {
+            "description": "Per-item failures; omitted entirely when there were none",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProBulkErrorDto"
+            }
+          },
+          "skipped": {
+            "description": "Assets left alone because content still references them (non-forced delete only, IMP-PRO-BULK-02); omitted when empty",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProBulkAssetUsageDto"
+            }
+          },
+          "notFound": {
+            "description": "Requested IDs that do not exist in this organization (IMP-PRO-BULK-03); omitted when empty",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unchanged": {
+            "description": "IDs the operation left as-is — the tags were already present or already absent; omitted when empty",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "operationId": {
+            "type": "string",
+            "description": "Audit-log ID; POST it to `ops/{id}/undo` to reverse the operation. Empty string when the log write itself failed, absent on undo/restore responses."
+          }
+        },
+        "required": [
+          "success",
+          "affected"
+        ]
+      },
+      "ProBulkTrashItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset ID"
+          },
+          "originalName": {
+            "type": "string",
+            "description": "Original upload filename",
+            "example": "cover.jpg"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type",
+            "example": "image/jpeg"
+          },
+          "size": {
+            "type": "number",
+            "description": "Size in bytes",
+            "example": 204800
+          },
+          "deletedAt": {
+            "type": "string",
+            "description": "When the asset was soft-deleted. The storage object survives until the retention window expires and the purge runs.",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "originalName",
+          "mimeType",
+          "size",
+          "deletedAt"
+        ]
+      },
+      "ProContentBulkResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the operation completed without per-item errors"
+          },
+          "affected": {
+            "type": "number",
+            "description": "Items actually changed — not the number requested",
+            "example": 8
+          },
+          "errors": {
+            "description": "Per-item failures; omitted entirely when there were none",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProBulkErrorDto"
+            }
+          },
+          "skipped": {
+            "description": "Assets left alone because content still references them (non-forced delete only, IMP-PRO-BULK-02); omitted when empty",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProBulkAssetUsageDto"
+            }
+          },
+          "notFound": {
+            "description": "Requested IDs that do not exist in this organization (IMP-PRO-BULK-03); omitted when empty",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unchanged": {
+            "description": "IDs the operation left as-is — the tags were already present or already absent; omitted when empty",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "operationId": {
+            "type": "string",
+            "description": "Audit-log ID; POST it to `ops/{id}/undo` to reverse the operation. Empty string when the log write itself failed, absent on undo/restore responses."
+          },
+          "background": {
+            "type": "boolean",
+            "description": "True when more than 50 items were accepted: the transitions continue in the background, so `affected` is 0 and the real outcome lands in the audit log entry."
+          }
+        },
+        "required": [
+          "success",
+          "affected"
+        ]
+      },
+      "ProEnvironmentAliasDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Alias ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "alias": {
+            "type": "string",
+            "description": "The stable pointer name consumers use instead of an environment ID",
+            "example": "master"
+          },
+          "environment_id": {
+            "type": "string",
+            "description": "Environment the alias currently points at"
+          },
+          "description": {
+            "type": "object",
+            "description": "Free-text description",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "environment_name": {
+            "type": "string",
+            "description": "Name of the target environment. Joined in by the read endpoints; absent on create and on a switch that actually moved the pointer.",
+            "example": "Production"
+          },
+          "environment_slug": {
+            "type": "string",
+            "description": "Slug of the target environment (same availability as `environment_name`)",
+            "example": "production"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "alias",
+          "environment_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProEnvironmentCloneResultDto": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "description": "The newly created sandbox environment",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProEnvironmentDto"
+              }
+            ]
+          },
+          "syncLogId": {
+            "type": "string",
+            "description": "ID of the `pro_sync_logs` row recording the clone"
+          },
+          "clonedContentTypes": {
+            "type": "number",
+            "description": "Content types visible to the new environment. Content types are org-level and shared, so nothing is duplicated — this is a reporting count.",
+            "example": 6
+          },
+          "clonedContent": {
+            "type": "number",
+            "description": "Content items actually copied into the sandbox (0 unless `includeContent`; slug collisions are skipped)",
+            "example": 120
+          }
+        },
+        "required": [
+          "environment",
+          "syncLogId",
+          "clonedContentTypes",
+          "clonedContent"
+        ]
+      },
+      "ProEnvironmentComparisonDto": {
+        "type": "object",
+        "properties": {
+          "contentTypeId": {
+            "type": "string",
+            "description": "Content type the compared entry belongs to"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content slug — part of the comparison key"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Content locale — part of the comparison key",
+            "example": "de-DE"
+          },
+          "envA": {
+            "description": "The entry in environment A; null when it exists only in B",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProEnvironmentComparisonSideDto"
+              }
+            ]
+          },
+          "envB": {
+            "description": "The entry in environment B; null when it exists only in A",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProEnvironmentComparisonSideDto"
+              }
+            ]
+          },
+          "diff": {
+            "type": "string",
+            "description": "How the two sides relate. Results are sorted in this enum order.",
+            "enum": [
+              "only_a",
+              "only_b",
+              "different_version",
+              "same_version"
+            ]
+          },
+          "brokenRefsA": {
+            "type": "number",
+            "description": "Reference IDs in the environment-A entry whose target is not mapped into environment A (broken references); absent when the entry exists only in B",
+            "example": 0
+          },
+          "brokenRefsB": {
+            "type": "number",
+            "description": "Same count for the environment-B entry; absent when the entry exists only in A",
+            "example": 0
+          }
+        },
+        "required": [
+          "contentTypeId",
+          "slug",
+          "locale",
+          "diff"
+        ]
+      },
+      "ProEnvironmentComparisonSideDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content ID on this side of the comparison"
+          },
+          "version": {
+            "type": "number",
+            "description": "Content version number",
+            "example": 3
+          },
+          "status": {
+            "type": "string",
+            "description": "Editorial status",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "contentId",
+          "version",
+          "status",
+          "updatedAt"
+        ]
+      },
+      "ProEnvironmentContentItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content item ID"
+          },
+          "content_type_id": {
+            "type": "string",
+            "description": "Content type ID of the item"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content slug within this environment"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Content locale",
+            "example": "de-DE"
+          },
+          "status": {
+            "type": "string",
+            "description": "Editorial status of the item",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "version": {
+            "type": "number",
+            "description": "Current content version number",
+            "example": 3
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_content_id": {
+            "type": "object",
+            "description": "Content ID this copy was promoted/cloned from; null for items assigned directly to the environment",
+            "nullable": true
+          },
+          "promoted_from_env": {
+            "type": "object",
+            "description": "Environment ID the item was promoted from; null when never promoted",
+            "nullable": true
+          },
+          "promoted_at": {
+            "type": "object",
+            "description": "Time of the last promotion into this environment",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "content_type_id",
+          "slug",
+          "locale",
+          "status",
+          "version",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProEnvironmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Environment ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name",
+            "example": "Staging"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Org-unique slug, lowercase alphanumeric with hyphens",
+            "example": "staging"
+          },
+          "description": {
+            "type": "object",
+            "description": "Free-text description",
+            "nullable": true
+          },
+          "is_production": {
+            "type": "boolean",
+            "description": "Whether this is the organization's single production environment"
+          },
+          "color": {
+            "type": "string",
+            "description": "UI accent color (hex)",
+            "example": "#6366f1"
+          },
+          "api_url": {
+            "type": "object",
+            "description": "Delivery API base URL of this environment, when it has its own",
+            "nullable": true
+          },
+          "settings": {
+            "type": "object",
+            "description": "Free-form per-environment settings blob",
+            "additionalProperties": true
+          },
+          "sort_order": {
+            "type": "number",
+            "description": "Manual ordering weight (ascending)",
+            "example": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "contentCount": {
+            "type": "number",
+            "description": "Content items mapped into this environment. Added by the list and detail reads; absent on create/update/seed responses.",
+            "example": 128
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "slug",
+          "is_production",
+          "color",
+          "settings",
+          "sort_order",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProEnvironmentStatsDto": {
+        "type": "object",
+        "properties": {
+          "environments": {
+            "type": "number",
+            "description": "Environments defined for the organization",
+            "example": 3
+          },
+          "aliases": {
+            "type": "number",
+            "description": "Aliases defined for the organization",
+            "example": 1
+          },
+          "totalMappedContent": {
+            "type": "number",
+            "description": "Content-to-environment mappings across all environments",
+            "example": 512
+          }
+        },
+        "required": [
+          "environments",
+          "aliases",
+          "totalMappedContent"
+        ]
+      },
+      "ProExportDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true. Deleting a job that is currently processing is refused, and an unknown ID errors, before this is returned."
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ProExportFieldMappingDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source path in the content record",
+            "example": "data.headline.en"
+          },
+          "target": {
+            "type": "string",
+            "description": "Column/key name in the exported output",
+            "example": "title"
+          },
+          "transform": {
+            "type": "string",
+            "description": "Value transform applied on the way out",
+            "enum": [
+              "lowercase",
+              "uppercase",
+              "trim",
+              "date",
+              "truncate",
+              "json_stringify"
+            ]
+          },
+          "truncateLength": {
+            "type": "number",
+            "description": "Character limit for the `truncate` transform",
+            "example": 200
+          }
+        },
+        "required": [
+          "source",
+          "target"
+        ]
+      },
+      "ProExportFiltersDto": {
+        "type": "object",
+        "properties": {
+          "contentTypeId": {
+            "type": "string",
+            "description": "Restrict to one content type"
+          },
+          "status": {
+            "type": "string",
+            "description": "Restrict to one editorial status",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "description": "Restrict to one locale",
+            "example": "de-DE"
+          },
+          "createdAfter": {
+            "type": "string",
+            "description": "Only items created at or after this time",
+            "format": "date-time"
+          },
+          "createdBefore": {
+            "type": "string",
+            "description": "Only items created before this time",
+            "format": "date-time"
+          },
+          "updatedAfter": {
+            "type": "string",
+            "description": "Only items updated at or after this time",
+            "format": "date-time"
+          },
+          "updatedBefore": {
+            "type": "string",
+            "description": "Only items updated before this time",
+            "format": "date-time"
+          },
+          "search": {
+            "type": "string",
+            "description": "Free-text search term applied to the selection"
+          }
+        }
+      },
+      "ProExportJobDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Export job ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Job label",
+            "example": "News archive — 2026-08-08"
+          },
+          "format": {
+            "type": "string",
+            "description": "Output format",
+            "enum": [
+              "json",
+              "csv",
+              "ndjson"
+            ]
+          },
+          "filters": {
+            "description": "Selection filters; null when the job exports everything",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProExportFiltersDto"
+              }
+            ]
+          },
+          "fields": {
+            "description": "Whitelist of fields to include; null means every field",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "field_mappings": {
+            "description": "Source → target renames and transforms; null means pass-through",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProExportFieldMappingDto"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Job state. `expired` means the retention window passed and the payload was dropped — re-run the export (IMP-PRO-EXPORT-03).",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "expired"
+            ]
+          },
+          "file_content": {
+            "type": "object",
+            "description": "The rendered export, inline for small results. Null while pending, once expired, or when the result exceeded the inline limit and went to object storage.",
+            "nullable": true
+          },
+          "file_key": {
+            "type": "object",
+            "description": "Storage key when the result exceeded `EXPORT_INLINE_MAX_BYTES`; `file_content` is then null (IMP-PRO-EXPORT-04)",
+            "nullable": true
+          },
+          "file_size": {
+            "type": "object",
+            "description": "Size of the rendered export in bytes; null until it completes",
+            "nullable": true,
+            "example": 524288
+          },
+          "record_count": {
+            "type": "object",
+            "description": "Content items written; null until it completes",
+            "nullable": true,
+            "example": 1240
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "User who created the job"
+          },
+          "started_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expires_at": {
+            "type": "object",
+            "description": "Retention cutoff — the payload is dropped and the job flipped to `expired` past this time; null until it completes",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user_name": {
+            "type": "object",
+            "description": "Name of the creating user, joined in by the job reads; absent on the create response and null when the user was deleted",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "format",
+          "status",
+          "created_by_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProExportScheduleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Schedule ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "template_id": {
+            "type": "string",
+            "description": "Template the schedule runs"
+          },
+          "name": {
+            "type": "string",
+            "description": "Schedule name",
+            "example": "Weekly S3 drop"
+          },
+          "cron": {
+            "type": "string",
+            "description": "5-field cron expression, evaluated in UTC",
+            "example": "0 3 * * 1"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the schedule fires; a disabled one has no next fire time"
+          },
+          "delivery_type": {
+            "type": "string",
+            "description": "Where a finished export is delivered",
+            "enum": [
+              "none",
+              "s3",
+              "webhook"
+            ]
+          },
+          "delivery_config": {
+            "type": "object",
+            "description": "Non-secret delivery settings — `endpoint`, `bucket`, `region`, `prefix` for S3, `url` for a webhook. Free-form because it varies by delivery type; credentials are never in here.",
+            "additionalProperties": true
+          },
+          "secret_ref": {
+            "type": "object",
+            "description": "Reference to the vaulted delivery credential. The secret itself never leaves the AES-256-GCM vault and is never returned. Null when delivery needs no credential.",
+            "nullable": true
+          },
+          "next_fire_at": {
+            "type": "object",
+            "description": "Next occurrence, advanced by compare-and-swap so exactly one node runs each fire; null while disabled",
+            "format": "date-time",
+            "nullable": true
+          },
+          "last_fired_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "User who created the schedule — scheduled runs are attributed to them"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "template_id",
+          "name",
+          "cron",
+          "enabled",
+          "delivery_type",
+          "delivery_config",
+          "created_by_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProExportScheduleRunDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Run ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "schedule_id": {
+            "type": "string",
+            "description": "Schedule this run belongs to"
+          },
+          "job_id": {
+            "type": "object",
+            "description": "Export job the run produced; null when it failed before creating one",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Run outcome",
+            "enum": [
+              "running",
+              "succeeded",
+              "failed"
+            ]
+          },
+          "record_count": {
+            "type": "object",
+            "description": "Records exported by this run; null unless it succeeded",
+            "nullable": true,
+            "example": 1240
+          },
+          "delivered_to": {
+            "type": "object",
+            "description": "Human-readable destination — the S3 object URL or webhook URL; null for `none` delivery or a failed run",
+            "nullable": true
+          },
+          "error_message": {
+            "type": "object",
+            "description": "Failure message when status is `failed`",
+            "nullable": true
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "schedule_id",
+          "status",
+          "started_at"
+        ]
+      },
+      "ProExportScheduleStartedDto": {
+        "type": "object",
+        "properties": {
+          "started": {
+            "type": "boolean",
+            "description": "Always true — the run was started in the background. Poll `schedules/{id}/runs` for its outcome."
+          }
+        },
+        "required": [
+          "started"
+        ]
+      },
+      "ProExportTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Template ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Template name",
+            "example": "Weekly news drop"
+          },
+          "description": {
+            "type": "object",
+            "description": "Free-text description",
+            "nullable": true
+          },
+          "format": {
+            "type": "string",
+            "description": "Output format",
+            "enum": [
+              "json",
+              "csv",
+              "ndjson"
+            ]
+          },
+          "filters": {
+            "description": "Selection filters; `{}` when the template exports everything",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProExportFiltersDto"
+              }
+            ]
+          },
+          "fields": {
+            "description": "Whitelist of fields to include; null means every field",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "field_mappings": {
+            "description": "Source → target renames and transforms; null means pass-through",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProExportFieldMappingDto"
+            }
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether this is the default template for its format (at most one per format)"
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "User who created the template"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "format",
+          "filters",
+          "is_default",
+          "created_by_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProImportErrorDto": {
+        "type": "object",
+        "properties": {
+          "rowIndex": {
+            "type": "number",
+            "description": "Zero-based position of the offending row in the source file",
+            "example": 42
+          },
+          "record": {
+            "type": "object",
+            "description": "The raw source record that failed, as parsed from the file",
+            "additionalProperties": true
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure message; schema failures list the field-level AJV errors",
+            "example": "Schema validation failed: /headline must be string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ProImportJobDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true; a job that is currently processing cannot be deleted and errors instead"
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ProImportJobDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Import job ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Job label chosen by the operator",
+            "example": "News backlog 2025"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source format of the uploaded file",
+            "enum": [
+              "json",
+              "csv",
+              "xml",
+              "markdown",
+              "wordpress",
+              "contentful",
+              "strapi"
+            ]
+          },
+          "content_type_id": {
+            "type": "string",
+            "description": "Content type every imported row is created as"
+          },
+          "status": {
+            "type": "string",
+            "description": "Job state. `cancelling` is a cooperative request the row loop honours within one progress batch; `rollback_partial` means some deletions failed and rollback can be re-invoked.",
+            "enum": [
+              "pending",
+              "validating",
+              "processing",
+              "completed",
+              "failed",
+              "rolled_back",
+              "rollback_partial",
+              "cancelling",
+              "cancelled"
+            ]
+          },
+          "config": {
+            "type": "object",
+            "description": "Import configuration exactly as submitted — `fieldMappings` (target field → source path or a transform object), `slugField`, `skipDuplicates`, `duplicateKey`, `validationMode`, and the source-specific options (`csvDelimiter`, `recordSelector`, `wxrPostTypes`, `markdownBundle`). Free-form because the mapping keys mirror the target content type.",
+            "additionalProperties": true
+          },
+          "stats": {
+            "description": "Progress counters, rewritten every 100 rows while processing; null until the first batch. After a rollback it also carries a `rollback` sub-object.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProImportStatsDto"
+              }
+            ]
+          },
+          "error_log": {
+            "description": "Per-row failures recorded by the last run; null before the job ran",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProImportErrorDto"
+            }
+          },
+          "file_key": {
+            "type": "object",
+            "description": "Storage key of the uploaded file; null for inline imports",
+            "nullable": true
+          },
+          "file_content": {
+            "type": "object",
+            "description": "The inline source document, up to 5 MB — returned verbatim by the job reads, so expect large payloads. Null when a `file_key` was used.",
+            "nullable": true
+          },
+          "locale": {
+            "type": "string",
+            "description": "Locale assigned to every imported item",
+            "example": "en"
+          },
+          "created_by_id": {
+            "type": "string",
+            "description": "User who created the job"
+          },
+          "started_at": {
+            "type": "object",
+            "description": "When processing was claimed; null while pending",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user_name": {
+            "type": "object",
+            "description": "Name of the creating user, joined in by the list and detail reads; absent on the create response and null when the user was deleted",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "source",
+          "content_type_id",
+          "status",
+          "config",
+          "locale",
+          "created_by_id",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProImportMappedContentDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "object",
+            "description": "Slug taken from `config.slugField`; null when unset — the real import then derives one from a title-like field",
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "description": "The mapped content payload that would be written, keyed by the target content type's fields",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ProImportPreviewRecordDto": {
+        "type": "object",
+        "properties": {
+          "rowIndex": {
+            "type": "number",
+            "description": "Zero-based position of the row in the source file",
+            "example": 0
+          },
+          "raw": {
+            "type": "object",
+            "description": "The record exactly as the parser read it from the file",
+            "additionalProperties": true
+          },
+          "mapped": {
+            "description": "Result of applying the field mappings. Async transforms (`asset`, `relation`) are NOT resolved during preview — the raw value stays in place.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProImportMappedContentDto"
+              }
+            ]
+          },
+          "valid": {
+            "type": "boolean",
+            "description": "Whether the mapped payload validates against the content type's JSON Schema"
+          },
+          "errors": {
+            "description": "Field-level validation or mapping errors; omitted when the row is valid",
+            "example": [
+              "/headline must be string"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "rowIndex",
+          "raw",
+          "mapped",
+          "valid"
+        ]
+      },
+      "ProImportPreviewResultDto": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "description": "The first `limit` records (default 10, max 50), mapped and validated",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProImportPreviewRecordDto"
+            }
+          },
+          "totalInFile": {
+            "type": "number",
+            "description": "Records the parser found in the whole file, not just the previewed slice",
+            "example": 500
+          },
+          "fieldMappingPreview": {
+            "type": "array",
+            "description": "Shorthand list of the mapped `data` payloads, in the same order as `records`",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "detectedDelimiter": {
+            "type": "string",
+            "description": "CSV sources only: the delimiter in use — the configured one, or the auto-detected one when `csvDelimiter` was left unset (IMP-PRO-IMPORT-05)",
+            "example": ";"
+          },
+          "availablePostTypes": {
+            "description": "WordPress (WXR) sources only: the post types actually present in the upload, so the picker offers the file's own types (IMP-PRO-IMPORT-06)",
+            "example": [
+              "post",
+              "page"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "records",
+          "totalInFile",
+          "fieldMappingPreview"
+        ]
+      },
+      "ProImportRollbackErrorDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content item whose deletion failed"
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure message"
+          }
+        },
+        "required": [
+          "contentId",
+          "error"
+        ]
+      },
+      "ProImportRollbackResultDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "number",
+            "description": "Content items deleted",
+            "example": 486
+          },
+          "assetsDeleted": {
+            "type": "number",
+            "description": "Assets the import had downloaded and that rollback removed. Assets still referenced by other content are kept.",
+            "example": 24
+          },
+          "errors": {
+            "description": "Content items that could not be deleted. Their tracking rows survive, so rollback can be re-invoked; the job lands in `rollback_partial` (IMP-PRO-IMPORT-03).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProImportRollbackErrorDto"
+            }
+          }
+        },
+        "required": [
+          "deleted",
+          "assetsDeleted",
+          "errors"
+        ]
+      },
+      "ProImportStatsDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Records found in the source file",
+            "example": 500
+          },
+          "imported": {
+            "type": "number",
+            "description": "Content items created. Cumulative across retries — rows already tracked from an earlier run count here without being re-imported.",
+            "example": 486
+          },
+          "skipped": {
+            "type": "number",
+            "description": "Rows deliberately not imported — duplicates, schema-invalid rows under `validationMode: skipInvalid`, or an unresolved relation with `onMiss: skip`",
+            "example": 12
+          },
+          "failed": {
+            "type": "number",
+            "description": "Rows that errored",
+            "example": 2
+          }
+        },
+        "required": [
+          "total",
+          "imported",
+          "skipped",
+          "failed"
+        ]
+      },
+      "ProPreviewCleanupResultDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "number",
+            "description": "Tokens deleted — expired or revoked and older than 7 days",
+            "example": 3
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ProPreviewCommentCreatedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the stored comment"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt"
+        ]
+      },
+      "ProPreviewCommentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Comment ID"
+          },
+          "author_name": {
+            "type": "object",
+            "description": "Name the reviewer gave, truncated to 100 characters; null when anonymous",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "description": "Comment text, truncated to 2000 characters"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "created_at"
+        ]
+      },
+      "ProPreviewContentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content item ID"
+          },
+          "contentTypeId": {
+            "type": "string",
+            "description": "Content type ID"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content slug"
+          },
+          "locale": {
+            "type": "object",
+            "description": "Content locale",
+            "nullable": true,
+            "example": "de-DE"
+          },
+          "status": {
+            "type": "string",
+            "description": "Editorial status. Omitted on shareable-link access when the link was created without `showMetadata`.",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "description": "The content payload as stored, shaped by the content type's schema. On shareable-link access, paths listed in the link's `redactFields` are stripped server-side.",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Omitted on shareable-link access without `showMetadata`",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Omitted on shareable-link access without `showMetadata`",
+            "format": "date-time"
+          },
+          "_preview": {
+            "type": "boolean",
+            "description": "Marker that this payload came from the preview path, never the delivery API",
+            "example": true
+          },
+          "_previewScope": {
+            "type": "string",
+            "description": "Scope of the token that authorised the read",
+            "enum": [
+              "content",
+              "content_type",
+              "organization"
+            ]
+          },
+          "_previewToken": {
+            "type": "string",
+            "description": "First 8 characters of the token, for support correlation",
+            "example": "a1b2c3d4..."
+          }
+        },
+        "required": [
+          "id",
+          "contentTypeId",
+          "slug",
+          "data",
+          "_preview",
+          "_previewScope",
+          "_previewToken"
+        ]
+      },
+      "ProPreviewContentListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Content readable under the token, most recently updated first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProPreviewContentDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total items readable under the token",
+            "example": 42
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "ProPreviewDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true; deleting an unknown ID is a no-op"
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ProPreviewHousekeepingResultDto": {
+        "type": "object",
+        "properties": {
+          "tokensDeleted": {
+            "type": "number",
+            "description": "Expired/revoked tokens deleted",
+            "example": 3
+          },
+          "linksDeleted": {
+            "type": "number",
+            "description": "Expired shareable links deleted",
+            "example": 1
+          }
+        },
+        "required": [
+          "tokensDeleted",
+          "linksDeleted"
+        ]
+      },
+      "ProPreviewRevokedDto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "description": "Always true; revoking an unknown ID is a no-op"
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      },
+      "ProPreviewStatsDto": {
+        "type": "object",
+        "properties": {
+          "totalTokens": {
+            "type": "number",
+            "description": "Preview tokens ever created for the organization",
+            "example": 42
+          },
+          "activeTokens": {
+            "type": "number",
+            "description": "Tokens neither expired nor revoked",
+            "example": 5
+          },
+          "expiredTokens": {
+            "type": "number",
+            "description": "Tokens past their expiry",
+            "example": 35
+          },
+          "revokedTokens": {
+            "type": "number",
+            "description": "Tokens explicitly revoked",
+            "example": 2
+          },
+          "totalSharedLinks": {
+            "type": "number",
+            "description": "Shareable links ever created",
+            "example": 12
+          },
+          "activeSharedLinks": {
+            "type": "number",
+            "description": "Links neither expired nor exhausted",
+            "example": 3
+          },
+          "totalAccesses": {
+            "type": "number",
+            "description": "Sum of all link access counts",
+            "example": 87
+          },
+          "uniqueVisitors": {
+            "type": "number",
+            "description": "Sum of hashed unique-visitor counts across links with tracking enabled",
+            "example": 24
+          }
+        },
+        "required": [
+          "totalTokens",
+          "activeTokens",
+          "expiredTokens",
+          "revokedTokens",
+          "totalSharedLinks",
+          "activeSharedLinks",
+          "totalAccesses",
+          "uniqueVisitors"
+        ]
+      },
+      "ProPreviewTokenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Preview token ID (the token secret itself is never returned)"
+          },
+          "scope": {
+            "type": "string",
+            "description": "What the token may read",
+            "enum": [
+              "content",
+              "content_type",
+              "organization"
+            ]
+          },
+          "contentId": {
+            "type": "object",
+            "description": "Content the token is bound to; set for `content` scope",
+            "nullable": true
+          },
+          "contentTypeId": {
+            "type": "object",
+            "description": "Content type the token is bound to; set for `content_type` scope",
+            "nullable": true
+          },
+          "locale": {
+            "type": "object",
+            "description": "Locale the token is restricted to; null means any locale",
+            "nullable": true,
+            "example": "de-DE"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Expiry timestamp",
+            "format": "date-time"
+          },
+          "isExpired": {
+            "type": "boolean",
+            "description": "Whether `expiresAt` is already in the past"
+          },
+          "isRevoked": {
+            "type": "boolean",
+            "description": "Whether the token was explicitly revoked"
+          },
+          "useCount": {
+            "type": "number",
+            "description": "Successful validations so far",
+            "example": 4
+          },
+          "lastUsedAt": {
+            "type": "object",
+            "description": "Last successful validation; null when never used",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "previewUrl": {
+            "type": "string",
+            "description": "Ready-to-use preview URL carrying the token secret",
+            "example": "/api/v1/pro/preview/content?token=…"
+          }
+        },
+        "required": [
+          "id",
+          "scope",
+          "expiresAt",
+          "isExpired",
+          "isRevoked",
+          "useCount",
+          "createdAt",
+          "previewUrl"
+        ]
+      },
+      "ProPreviewTokenListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Tokens on this page, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProPreviewTokenDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total tokens matching the filter",
+            "example": 42
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "ProPromoteContentResultDto": {
+        "type": "object",
+        "properties": {
+          "promoted": {
+            "type": "boolean",
+            "description": "Always true — a failed promotion raises instead"
+          },
+          "targetContentId": {
+            "type": "string",
+            "description": "Content ID of the copy in the target environment (created or updated)"
+          },
+          "syncLogId": {
+            "type": "string",
+            "description": "ID of the `pro_sync_logs` row recording this promotion"
+          },
+          "previousStatus": {
+            "type": "string",
+            "description": "Status the target copy had before the promotion; null when the copy was newly created",
+            "enum": [
+              "draft",
+              "published",
+              "unpublished",
+              "archived"
+            ],
+            "nullable": true
+          },
+          "newStatus": {
+            "type": "string",
+            "description": "Status of the target copy after promotion — promoted content always lands as draft",
+            "enum": [
+              "draft"
+            ],
+            "example": "draft"
+          },
+          "forced": {
+            "type": "boolean",
+            "description": "Whether `force` was needed because the target had been edited after the last promotion"
+          },
+          "cascaded": {
+            "type": "number",
+            "description": "Referenced entries promoted alongside the root as part of the reference closure (0 unless `includeReferences`)",
+            "example": 0
+          },
+          "remappedReferences": {
+            "type": "number",
+            "description": "Entries whose copied `data` had reference IDs rewritten to target-environment IDs",
+            "example": 0
+          },
+          "skippedReferences": {
+            "type": "number",
+            "description": "Referenced entries left untouched — the target copy had newer edits and no `force` was given",
+            "example": 0
+          }
+        },
+        "required": [
+          "promoted",
+          "targetContentId",
+          "syncLogId",
+          "newStatus",
+          "forced",
+          "cascaded",
+          "remappedReferences",
+          "skippedReferences"
+        ]
+      },
+      "ProSavedViewDefaultClearedDto": {
+        "type": "object",
+        "properties": {
+          "cleared": {
+            "type": "boolean",
+            "description": "Always true; clearing when no default was set is a no-op"
+          }
+        },
+        "required": [
+          "cleared"
+        ]
+      },
+      "ProSavedViewDefaultSetDto": {
+        "type": "object",
+        "properties": {
+          "default": {
+            "type": "boolean",
+            "description": "Always true — the view is now the caller's default"
+          }
+        },
+        "required": [
+          "default"
+        ]
+      },
+      "ProSavedViewDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true; a non-owned or unknown ID yields 404 instead"
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ProSavedViewDriftDto": {
+        "type": "object",
+        "properties": {
+          "staleColumns": {
+            "description": "Column keys in the view's config that the content type no longer declares",
+            "example": [
+              "legacySubtitle"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "staleFilters": {
+            "description": "Filter keys that no longer match a field of the content type",
+            "example": [
+              "oldCategory"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "staleColumns",
+          "staleFilters"
+        ]
+      },
+      "ProSavedViewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Saved view ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "User who created the view and is its only editor"
+          },
+          "name": {
+            "type": "string",
+            "description": "View name as shown in the picker",
+            "example": "Unpublished news"
+          },
+          "description": {
+            "type": "object",
+            "description": "Free-text description",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon key rendered next to the name",
+            "example": "bookmark"
+          },
+          "color": {
+            "type": "string",
+            "description": "Colour token for the view chip",
+            "example": "brand"
+          },
+          "config": {
+            "type": "object",
+            "description": "Persisted list state — `viewMode`, `sortBy`, `sortOrder`, `pageSize`, `search`, `columns[]`, `filters{}` and `contentTypeId`. Free-form by design: the filter block mirrors whatever fields the content type declares.",
+            "additionalProperties": true
+          },
+          "is_shared": {
+            "type": "boolean",
+            "description": "Whether other users can see the view at all; false keeps it private"
+          },
+          "share_scope": {
+            "type": "string",
+            "description": "Who a shared view reaches — the whole organization, or only holders of `share_role` (IMP-PRO-SV-02)",
+            "enum": [
+              "org",
+              "role"
+            ]
+          },
+          "share_role": {
+            "type": "object",
+            "description": "Role the view is shared with; required when `share_scope` is `role`",
+            "nullable": true,
+            "example": "editor"
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "description": "Whether the view appears in the quick-bar"
+          },
+          "pin_order": {
+            "type": "number",
+            "description": "Position in the quick-bar (ascending)",
+            "example": 0
+          },
+          "use_count": {
+            "type": "number",
+            "description": "Times the view was applied. On a shared view this counter aggregates all users; per-user counts live in `pro_saved_view_user_state`.",
+            "example": 17
+          },
+          "last_used_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "drift": {
+            "description": "Schema-drift report (IMP-PRO-SV-04) — present only when the config references fields the content type no longer has. Computed on read, never stored, and omitted on write responses.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProSavedViewDriftDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "user_id",
+          "name",
+          "icon",
+          "color",
+          "config",
+          "is_shared",
+          "share_scope",
+          "is_pinned",
+          "pin_order",
+          "use_count",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProSavedViewReorderedDto": {
+        "type": "object",
+        "properties": {
+          "reordered": {
+            "type": "boolean",
+            "description": "Always true — the reorder is transactional, so any rejected ID fails the whole batch with 404 instead"
+          }
+        },
+        "required": [
+          "reordered"
+        ]
+      },
+      "ProShareableLinkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Shareable link ID"
+          },
+          "contentId": {
+            "type": "string",
+            "description": "Content the link previews"
+          },
+          "url": {
+            "type": "string",
+            "description": "Public preview URL including the link token",
+            "example": "/api/v1/pro/preview/shared/a1b2c3d4e5f6…"
+          },
+          "hasPassword": {
+            "type": "boolean",
+            "description": "Whether a password is required (the hash is never returned)"
+          },
+          "maxAccesses": {
+            "type": "object",
+            "description": "Access cap; null means unlimited within the expiry window",
+            "nullable": true,
+            "example": 25
+          },
+          "accessCount": {
+            "type": "number",
+            "description": "Successful accesses so far",
+            "example": 7
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isExpired": {
+            "type": "boolean",
+            "description": "Whether `expiresAt` is already in the past"
+          },
+          "isExhausted": {
+            "type": "boolean",
+            "description": "Whether `accessCount` has reached `maxAccesses`"
+          },
+          "locale": {
+            "type": "object",
+            "description": "Locale the preview is pinned to; null means the content default",
+            "nullable": true,
+            "example": "de-DE"
+          },
+          "showMetadata": {
+            "type": "boolean",
+            "description": "Whether status and created/updated timestamps are exposed to the reviewer"
+          },
+          "customMessage": {
+            "type": "object",
+            "description": "Note shown to the reviewer on the preview page",
+            "nullable": true
+          },
+          "redactFields": {
+            "description": "Dot-paths stripped from `data` server-side before the preview is returned (IMP-PRO-PREV-07)",
+            "example": [
+              "internalNotes",
+              "author.email"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "watermark": {
+            "type": "object",
+            "description": "Watermark text rendered by the public preview page; null means none",
+            "nullable": true
+          },
+          "visitorTracking": {
+            "type": "boolean",
+            "description": "Whether opt-in visitor analytics are enabled. Only per-link salted hashes are stored — never raw IPs (IMP-PRO-PREV-01)."
+          },
+          "uniqueVisitors": {
+            "type": "number",
+            "description": "Distinct visitors counted via those hashes",
+            "example": 3
+          },
+          "lastAccessedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "contentId",
+          "url",
+          "hasPassword",
+          "accessCount",
+          "expiresAt",
+          "isExpired",
+          "isExhausted",
+          "showMetadata",
+          "redactFields",
+          "visitorTracking",
+          "uniqueVisitors",
+          "createdAt"
+        ]
+      },
+      "ProShareableLinkListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Links on this page, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProShareableLinkDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total links matching the filter",
+            "example": 12
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "ProSharedPreviewAccessDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "description": "The previewed content, already redacted and metadata-filtered",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProPreviewContentDto"
+              }
+            ]
+          },
+          "customMessage": {
+            "type": "object",
+            "description": "Note the link creator left for the reviewer",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When the link stops working",
+            "format": "date-time"
+          },
+          "accessesRemaining": {
+            "type": "object",
+            "description": "Accesses left before exhaustion; null when the link is uncapped",
+            "nullable": true,
+            "example": 18
+          },
+          "visitorTracking": {
+            "type": "boolean",
+            "description": "Whether hashed visitor analytics are on. The consuming page MUST show a data-processing notice when true (IMP-PRO-PREV-01)."
+          },
+          "watermark": {
+            "type": "object",
+            "description": "Watermark text to overlay on the preview; null means none",
+            "nullable": true
+          }
+        },
+        "required": [
+          "content",
+          "expiresAt",
+          "visitorTracking"
+        ]
+      },
+      "ProSyncEnvironmentsResultDto": {
+        "type": "object",
+        "properties": {
+          "syncLogId": {
+            "type": "string",
+            "description": "ID of the `pro_sync_logs` row recording this sync"
+          },
+          "synced": {
+            "type": "number",
+            "description": "Items promoted successfully",
+            "example": 118
+          },
+          "failed": {
+            "type": "number",
+            "description": "Items whose promotion threw (logged, not fatal)",
+            "example": 2
+          },
+          "total": {
+            "type": "number",
+            "description": "Source-environment items matching the type/status filters",
+            "example": 120
+          }
+        },
+        "required": [
+          "syncLogId",
+          "synced",
+          "failed",
+          "total"
+        ]
+      },
+      "ProSyncLogDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Sync log ID (UUID text)"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization ID"
+          },
+          "action": {
+            "type": "string",
+            "description": "Operation that produced the log",
+            "enum": [
+              "promote",
+              "sync",
+              "clone"
+            ]
+          },
+          "from_environment_id": {
+            "type": "string",
+            "description": "Source environment ID"
+          },
+          "to_environment_id": {
+            "type": "string",
+            "description": "Target environment ID"
+          },
+          "initiated_by": {
+            "type": "object",
+            "description": "User who started the operation; null once that user is erased — the log survives (IMP-PRO-ENV-07)",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Operation state",
+            "enum": [
+              "pending",
+              "running",
+              "completed",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "items_total": {
+            "type": "number",
+            "description": "Items the operation set out to process",
+            "example": 120
+          },
+          "items_synced": {
+            "type": "number",
+            "description": "Items copied successfully",
+            "example": 118
+          },
+          "items_failed": {
+            "type": "number",
+            "description": "Items that failed or were skipped",
+            "example": 2
+          },
+          "content_type_filter": {
+            "description": "Content type IDs the operation was restricted to; null means all types",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": "object",
+            "description": "Failure message when status is `failed`; also carries the forced-overwrite note on a successful forced promotion",
+            "nullable": true
+          },
+          "started_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "action",
+          "from_environment_id",
+          "to_environment_id",
+          "status",
+          "items_total",
+          "items_synced",
+          "items_failed",
+          "created_at"
+        ]
       },
       "PromoteContentDto": {
         "type": "object",

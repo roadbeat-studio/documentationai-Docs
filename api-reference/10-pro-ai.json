@@ -53,7 +53,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Plugin identity, health, and how the credential-vault KEK was sourced.",
             "content": {
               "application/json": {
                 "schema": {
@@ -63,11 +63,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiStatusDto"
                     }
                   }
                 }
@@ -102,7 +98,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The effective residency mode, whether non-EU egress is structurally impossible, and per provider whether routing can ever reach it (residency gate + consent).",
             "content": {
               "application/json": {
                 "schema": {
@@ -112,11 +108,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiEgressPostureDto"
                     }
                   }
                 }
@@ -148,6 +140,7 @@
       "post": {
         "operationId": "AiController_chat",
         "summary": "Streaming chat completion (SSE; supports tool calls)",
+        "description": "Server-Sent Events, **not** a JSON body — so the standard `{ data }` envelope does not apply and no typed response schema is declared. `Content-Type: text/event-stream`; each event is `data: <ChatChunk JSON>`, where a chunk carries `delta` / `toolCalls` / `finishReason` / `usage` / `model`. The FIRST chunk carries only `provenance` (IMP-AI-07: which provider, residency, model, and whether the payload was redacted) before any tokens flow. The stream ends with `data: [DONE]`; a mid-stream failure emits `event: error` with `{ message }` and then closes.",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -230,7 +223,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One vector per input, with the model, dimensionality, token usage, and provenance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -240,11 +233,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiEmbedResponseDto"
                     }
                   }
                 }
@@ -299,7 +288,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Translations keyed by target locale — `translations` for plain text, `richTextTranslations` for ProseMirror docs. A request carrying `contentId` instead returns only `jobId`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -309,11 +298,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiTranslateResponseDto"
                     }
                   }
                 }
@@ -368,7 +353,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The suggestion plus the original text for a diff preview. List actions (`headline`, `social`) also return `suggestions`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -378,11 +363,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiWriteAssistResponseDto"
                     }
                   }
                 }
@@ -437,7 +418,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The generated payload with its AJV validation verdict. `valid: false` still returns the last attempt's output plus the errors, so the caller may re-prompt — never persist it as-is.",
             "content": {
               "application/json": {
                 "schema": {
@@ -447,11 +428,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiStructuredGenResponseDto"
                     }
                   }
                 }
@@ -506,7 +483,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The generated text for the requested vision action, with model, usage, and provenance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -516,11 +493,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiVisionResponseDto"
                     }
                   }
                 }
@@ -575,7 +548,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The transcript, with the model, detected language, usage, and provenance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -585,11 +558,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiTranscribeResponseDto"
                     }
                   }
                 }
@@ -644,7 +613,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Scored labels for topic/sentiment; for `task: 'extract'` an empty `labels` array plus the `extracted` field map.",
             "content": {
               "application/json": {
                 "schema": {
@@ -654,11 +623,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiClassifyResponseDto"
                     }
                   }
                 }
@@ -712,7 +677,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Hits ranked by cosine similarity, plus the provenance of the query-embedding call.",
             "content": {
               "application/json": {
                 "schema": {
@@ -722,11 +687,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiSemanticSearchResponseDto"
                     }
                   }
                 }
@@ -770,7 +731,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Hits ranked by cosine similarity to the stored vector. No `provenance` — this is a pure index lookup with no model call. Empty when the item is not indexed yet.",
             "content": {
               "application/json": {
                 "schema": {
@@ -780,11 +741,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiSemanticSearchResponseDto"
                     }
                   }
                 }
@@ -828,7 +785,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Advisory candidates and the effective cosine threshold. No `provenance` — the stored vector is reused, so no inference runs.",
             "content": {
               "application/json": {
                 "schema": {
@@ -838,11 +795,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiNearDuplicatesResponseDto"
                     }
                   }
                 }
@@ -877,7 +830,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Advisory candidates, the effective cosine threshold, and the provenance of the draft-embedding call. Nothing is ever blocked automatically.",
             "content": {
               "application/json": {
                 "schema": {
@@ -887,11 +840,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiNearDuplicatesResponseDto"
                     }
                   }
                 }
@@ -926,7 +875,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Scored category flags, the PII match count, the applied threshold, and the org `enforcement` policy the caller should apply. Advisory — this endpoint never blocks.",
             "content": {
               "application/json": {
                 "schema": {
@@ -936,11 +885,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiModerateResponseDto"
                     }
                   }
                 }
@@ -975,7 +920,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Selected facet values plus the content type's allowed vocabulary. Selections are hard-filtered to the vocabulary, so free-text drift is impossible.",
             "content": {
               "application/json": {
                 "schema": {
@@ -985,11 +930,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiSuggestFacetsResponseDto"
                     }
                   }
                 }
@@ -1033,7 +974,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The drafted teaser with its AJV verdict. `valid: false` still returns the last attempt plus the errors — a human confirms via diff either way.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1043,11 +984,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiTeaserDraftResponseDto"
                     }
                   }
                 }
@@ -1092,7 +1029,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The enqueued job id; poll `GET /pro/ai/jobs/{id}` for progress and output.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1102,11 +1039,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiJobSubmittedDto"
                     }
                   }
                 }
@@ -1160,7 +1093,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The `pro_ai_jobs` row, scoped to the caller's organization.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1170,11 +1103,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiJobDto"
                     }
                   }
                 }
@@ -1209,7 +1138,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Providers ordered by priority then creation time, annotated with `residencyAllowed` / `retentionBlocked`. The vaulted API key is never returned — only the masked `keyHint`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1219,11 +1148,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProAiProviderDto"
+                      }
                     }
                   }
                 }
@@ -1266,7 +1194,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created provider. `residencyAllowed` / `retentionBlocked` are absent here — they are computed only by the list endpoint.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1276,11 +1204,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiProviderDto"
                     }
                   }
                 }
@@ -1344,7 +1268,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The updated provider, with the masked key hint after any rotation.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1354,11 +1278,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiProviderDto"
                     }
                   }
                 }
@@ -1410,7 +1330,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deleted (the vaulted key is revoked first). The service returns no payload, so the envelope carries no `data` — the body is `{}`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1468,7 +1388,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Probe result from the provider adapter — reachability, latency, and queue depth.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1478,11 +1398,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiProviderHealthDto"
                     }
                   }
                 }
@@ -1517,7 +1433,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored route table, or `{}` when none is configured.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1527,11 +1443,11 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "description": "The per-org route table (`pro_ai_routes.config`): task name → routing entry. Task keys are open ('chat', 'embed', 'translate', 'writeAssist', 'generateStructured', 'vision', 'transcribe', 'classify', 'moderate', 'suggestFacets', 'summarizeForTeaser', 'dedup', …); `{}` when the org has never saved a config.",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/ProAiTaskRouteDto"
+                      }
                     }
                   }
                 }
@@ -1574,7 +1490,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The saved route table, echoed back verbatim.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1584,11 +1500,11 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "description": "The per-org route table (`pro_ai_routes.config`): task name → routing entry. Task keys are open ('chat', 'embed', 'translate', 'writeAssist', 'generateStructured', 'vision', 'transcribe', 'classify', 'moderate', 'suggestFacets', 'summarizeForTeaser', 'dedup', …); `{}` when the org has never saved a config.",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/ProAiTaskRouteDto"
+                      }
                     }
                   }
                 }
@@ -1633,7 +1549,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Org-owned prompts and shipped global defaults (`organization_id: null`), ordered by key, locale, then version descending.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1643,11 +1559,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProAiPromptDto"
+                      }
                     }
                   }
                 }
@@ -1690,7 +1605,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored prompt, with the `version` the server assigned (previous max + 1).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1700,11 +1615,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiPromptDto"
                     }
                   }
                 }
@@ -1749,7 +1660,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many shipped default prompts were inserted. Idempotent — `0` on a re-run.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1759,11 +1670,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiSeedResultDto"
                     }
                   }
                 }
@@ -1808,7 +1715,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The rendered template (org override wins over the global default, requested locale over `en`, highest version). `text` is null when no template matches the key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1818,11 +1725,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiPromptRenderDto"
                     }
                   }
                 }
@@ -1876,7 +1779,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The prompt row (org-owned or a global default).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1886,11 +1789,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiPromptDto"
                     }
                   }
                 }
@@ -1932,7 +1831,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Deleted. The service returns no payload, so the envelope carries no `data` — the body is `{}`. A global default (or an unknown id) yields 404 instead.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1981,7 +1880,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Stored rules (enabled and disabled), ordered by `applies_to` then id. Empty when the org has configured none — the built-in default (emails/phones/IBANs, cloud-only) is then active at call time but is not listed until `seed-defaults` materializes it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1991,11 +1890,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProAiRedactionRuleDto"
+                      }
                     }
                   }
                 }
@@ -2038,7 +1936,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Only the new rule id — re-read `GET /pro/ai/redaction` for the stored row.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2048,11 +1946,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiCreatedIdDto"
                     }
                   }
                 }
@@ -2097,7 +1991,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "`inserted: 1` when the built-in default rule was written, `0` when the org already had rules. Idempotent.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2107,11 +2001,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiSeedResultDto"
                     }
                   }
                 }
@@ -2155,7 +2045,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many rules were removed — `0` when the id did not match in this org.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2165,11 +2055,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiDeleteCountDto"
                     }
                   }
                 }
@@ -2204,7 +2090,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Every consent row for the org, newest first, of **all** classes (both `cloud_egress` and `retention_override`). A record is active while `revoked_at` is null.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2214,11 +2100,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProAiConsentDto"
+                      }
                     }
                   }
                 }
@@ -2261,7 +2146,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "`granted: true` when a new `cloud_egress` consent was recorded; `false` when an active consent already existed (no-op).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2271,11 +2156,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiConsentGrantResultDto"
                     }
                   }
                 }
@@ -2329,7 +2210,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many active `cloud_egress` consents were stamped as revoked.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2339,11 +2220,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiConsentRevokeResultDto"
                     }
                   }
                 }
@@ -2378,7 +2255,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Consent rows of class `retention_override` only, newest first (same table and shape as the cloud-egress ledger).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2388,11 +2265,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProAiConsentDto"
+                      }
                     }
                   }
                 }
@@ -2435,7 +2311,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "`granted: true` when a new `retention_override` acknowledgement was recorded; `false` when one was already active.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2445,11 +2321,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiConsentGrantResultDto"
                     }
                   }
                 }
@@ -2503,7 +2375,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many active `retention_override` acknowledgements were stamped as revoked.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2513,11 +2385,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiConsentRevokeResultDto"
                     }
                   }
                 }
@@ -2625,7 +2493,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A self-contained page object (`rows`/`total`/`page`/`perPage`) — this endpoint does **not** use the platform `{ data, meta }` pagination. Rows carry prompt/output sha256 hashes and a `has_raw` flag, never the raw text.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2635,11 +2503,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiAuditQueryResultDto"
                     }
                   }
                 }
@@ -2683,7 +2547,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Up to 10 000 rows, newest first. Unlike the audit query this **includes** `raw_prompt` / `raw_output` — the data subject's own text — which are NULL unless the org's time-boxed retention window still covers the row.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2693,11 +2557,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProAiAuditExportRecordDto"
+                      }
                     }
                   }
                 }
@@ -2732,7 +2595,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "When the raw-retention window closes, or null when it is closed (the default).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2742,11 +2605,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiLogSettingsDto"
                     }
                   }
                 }
@@ -2789,7 +2648,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new deadline — `rawRetentionUntil` is now + `rawRetentionHours`, or null when the window was closed (`disable: true` or no hours given).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2799,11 +2658,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiLogSettingsDto"
                     }
                   }
                 }
@@ -2881,7 +2736,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Aggregation over `pro_ai_usage_log` for the window (default: last 30 days) — totals plus per-caller, per-model, and per-day buckets.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2891,11 +2746,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiUsageDashboardDto"
                     }
                   }
                 }
@@ -2930,7 +2781,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All budgets for the org (org-shared rows first, then per-user), with their limits and current period spend.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2940,11 +2791,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProAiBudgetDto"
+                      }
                     }
                   }
                 }
@@ -2987,7 +2837,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Only the budget id — the id sent in the request when updating, or the newly inserted id. Re-read `GET /pro/ai/budgets` for the stored row.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2997,11 +2847,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiCreatedIdDto"
                     }
                   }
                 }
@@ -3055,7 +2901,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many budget rows were removed — `0` when the id did not match in this org.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3065,11 +2911,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiDeleteCountDto"
                     }
                   }
                 }
@@ -3104,7 +2946,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The static tool catalog (`ai_translate`, `ai_summarize`, `ai_classify`, `ai_extract`, `ai_alt_text`) with each tool's JSON Schema and consent class.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3114,11 +2956,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProAiMcpToolListDto"
                     }
                   }
                 }
@@ -3163,7 +3001,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The dispatched gateway result. Its shape depends on `tool`, so it is documented as an open object rather than a single schema: `ai_translate` → `ProAiTranslateResponseDto`, `ai_summarize` → `ProAiWriteAssistResponseDto`, `ai_classify` / `ai_extract` → `ProAiClassifyResponseDto`, `ai_alt_text` → `ProAiVisionResponseDto` (all documented under the `pro-ai` tag). An unknown tool name yields 400.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3173,11 +3011,8 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "additionalProperties": true
                     }
                   }
                 }
@@ -3231,7 +3066,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "A flat translation catalog: message key → translated string (keys are dotted, e.g. `page.title`, `tab.providers`). Documented as an open string map because the key set is the catalog itself, not a fixed schema. Unknown locales return `{}` so ngx-translate falls back to `en`. Cached for 24 h.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3241,11 +3076,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
                       "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "additionalProperties": {
+                        "type": "string"
+                      }
                     }
                   }
                 }
@@ -3360,6 +3194,1825 @@
       "McpCallDto": {
         "type": "object",
         "properties": {}
+      },
+      "ProAiAuditExportRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Log row id (`BIGSERIAL`, returned by the raw query without coercion).",
+            "example": 918233
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user_id": {
+            "type": "object",
+            "nullable": true
+          },
+          "caller": {
+            "type": "object",
+            "nullable": true,
+            "example": "editor"
+          },
+          "task": {
+            "type": "object",
+            "nullable": true,
+            "example": "translate"
+          },
+          "provider_type": {
+            "type": "object",
+            "nullable": true,
+            "example": "augmentor"
+          },
+          "model": {
+            "type": "object",
+            "nullable": true,
+            "example": "mistral-small-3.1"
+          },
+          "residency": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "eu",
+              "non_eu",
+              "self_hosted",
+              "unknown"
+            ]
+          },
+          "tokens_in": {
+            "type": "object",
+            "nullable": true,
+            "example": 812
+          },
+          "tokens_out": {
+            "type": "object",
+            "nullable": true,
+            "example": 154
+          },
+          "cost": {
+            "type": "object",
+            "nullable": true,
+            "example": 0.00214
+          },
+          "latency_ms": {
+            "type": "object",
+            "nullable": true,
+            "example": 940
+          },
+          "success": {
+            "type": "object",
+            "nullable": true,
+            "example": true
+          },
+          "redacted": {
+            "type": "object",
+            "nullable": true,
+            "example": false
+          },
+          "prompt_hash": {
+            "type": "object",
+            "description": "sha256 hex of the serialized prompt.",
+            "nullable": true
+          },
+          "output_hash": {
+            "type": "object",
+            "description": "sha256 hex of the model output.",
+            "nullable": true
+          },
+          "raw_prompt": {
+            "type": "object",
+            "description": "The raw prompt text, retained only while the org raw-retention window covers this row; NULL otherwise.",
+            "nullable": true
+          },
+          "raw_output": {
+            "type": "object",
+            "description": "The raw model output, retained under the same window; NULL otherwise.",
+            "nullable": true
+          },
+          "raw_expires_at": {
+            "type": "object",
+            "description": "When the raw text becomes eligible for the hourly purge.",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "ts",
+          "user_id",
+          "caller",
+          "task",
+          "provider_type",
+          "model",
+          "residency",
+          "tokens_in",
+          "tokens_out",
+          "cost",
+          "latency_ms",
+          "success",
+          "redacted",
+          "prompt_hash",
+          "output_hash",
+          "raw_prompt",
+          "raw_output",
+          "raw_expires_at"
+        ]
+      },
+      "ProAiAuditQueryResultDto": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "description": "Matching audit rows, newest first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiAuditRecordDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total matching rows, ignoring pagination.",
+            "example": 4213
+          },
+          "page": {
+            "type": "number",
+            "description": "Page returned (1-based).",
+            "example": 1
+          },
+          "perPage": {
+            "type": "number",
+            "description": "Rows per page (default 50, capped at 200).",
+            "example": 50
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "page",
+          "perPage"
+        ]
+      },
+      "ProAiAuditRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Log row id. The column is `BIGSERIAL`, returned by the raw query without coercion, so the JSON value follows the driver's bigint handling.",
+            "example": 918233
+          },
+          "ts": {
+            "type": "string",
+            "description": "When the call was metered.",
+            "format": "date-time"
+          },
+          "user_id": {
+            "type": "object",
+            "description": "User the call is attributed to.",
+            "nullable": true
+          },
+          "caller": {
+            "type": "object",
+            "description": "Who initiated the call ('editor', 'agent', 'mcp', 'flow:<id>', …).",
+            "nullable": true,
+            "example": "editor"
+          },
+          "task": {
+            "type": "object",
+            "description": "Gateway task.",
+            "nullable": true,
+            "example": "writeAssist"
+          },
+          "provider_type": {
+            "type": "object",
+            "description": "Provider type that served the call.",
+            "nullable": true,
+            "example": "augmentor"
+          },
+          "model": {
+            "type": "object",
+            "description": "Resolved model id.",
+            "nullable": true,
+            "example": "mistral-small-3.1"
+          },
+          "residency": {
+            "type": "string",
+            "description": "Provider residency at call time.",
+            "nullable": true,
+            "enum": [
+              "eu",
+              "non_eu",
+              "self_hosted",
+              "unknown"
+            ],
+            "example": "self_hosted"
+          },
+          "tokens_in": {
+            "type": "object",
+            "description": "Prompt tokens.",
+            "nullable": true,
+            "example": 812
+          },
+          "tokens_out": {
+            "type": "object",
+            "description": "Completion tokens.",
+            "nullable": true,
+            "example": 154
+          },
+          "cost": {
+            "type": "object",
+            "description": "Computed cost (NUMERIC(12,5)).",
+            "nullable": true,
+            "example": 0.00214
+          },
+          "latency_ms": {
+            "type": "object",
+            "description": "End-to-end latency in milliseconds.",
+            "nullable": true,
+            "example": 940
+          },
+          "success": {
+            "type": "object",
+            "description": "Whether the call succeeded.",
+            "nullable": true,
+            "example": true
+          },
+          "redacted": {
+            "type": "object",
+            "description": "Whether PII redaction modified the payload.",
+            "nullable": true,
+            "example": false
+          },
+          "prompt_hash": {
+            "type": "object",
+            "description": "sha256 hex of the serialized prompt (privacy-preserving; never the text).",
+            "nullable": true
+          },
+          "output_hash": {
+            "type": "object",
+            "description": "sha256 hex of the model output.",
+            "nullable": true
+          },
+          "has_raw": {
+            "type": "boolean",
+            "description": "True when raw prompt/output text is still retained for this row (only inside an open, time-boxed retention window). The raw text itself is not returned by this endpoint.",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "ts",
+          "user_id",
+          "caller",
+          "task",
+          "provider_type",
+          "model",
+          "residency",
+          "tokens_in",
+          "tokens_out",
+          "cost",
+          "latency_ms",
+          "success",
+          "redacted",
+          "prompt_hash",
+          "output_hash",
+          "has_raw"
+        ]
+      },
+      "ProAiBudgetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id."
+          },
+          "user_id": {
+            "type": "object",
+            "description": "null = org-shared budget; set = per-user budget.",
+            "nullable": true
+          },
+          "period": {
+            "type": "string",
+            "description": "Budget period.",
+            "enum": [
+              "day",
+              "month"
+            ],
+            "example": "month"
+          },
+          "token_limit": {
+            "type": "object",
+            "description": "Token ceiling (BIGINT); null = no token limit.",
+            "nullable": true,
+            "example": 5000000
+          },
+          "cost_limit": {
+            "type": "object",
+            "description": "Cost ceiling (NUMERIC(12,2)); null = no cost limit.",
+            "nullable": true,
+            "example": 250
+          },
+          "spent_tokens": {
+            "type": "number",
+            "description": "Tokens spent in the current period (BIGINT).",
+            "example": 1204889
+          },
+          "spent_cost": {
+            "type": "number",
+            "description": "Cost spent in the current period (NUMERIC(12,2)).",
+            "example": 61.4
+          },
+          "alert_at_pct": {
+            "type": "number",
+            "description": "Percent of the limit at which admins are alerted.",
+            "example": 80
+          },
+          "resets_at": {
+            "type": "object",
+            "description": "When the hourly sweep zeroes spend and advances the period.",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "user_id",
+          "period",
+          "token_limit",
+          "cost_limit",
+          "spent_tokens",
+          "spent_cost",
+          "alert_at_pct"
+        ]
+      },
+      "ProAiClassifyLabelDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Label id.",
+            "example": "politics"
+          },
+          "score": {
+            "type": "number",
+            "description": "Confidence in [0..1].",
+            "example": 0.82
+          }
+        },
+        "required": [
+          "label",
+          "score"
+        ]
+      },
+      "ProAiClassifyResponseDto": {
+        "type": "object",
+        "properties": {
+          "labels": {
+            "description": "Classification labels with confidence, highest first. Always an empty array for `task: 'extract'`.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiClassifyLabelDto"
+            }
+          },
+          "extracted": {
+            "type": "object",
+            "description": "Extracted field/entity map for `task: 'extract'` — keys are the requested `fields` (or whatever entities the model found), so the shape is request-dependent. `{}` when nothing parsed.",
+            "additionalProperties": true
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProAiProvenanceDto"
+          }
+        },
+        "required": [
+          "labels"
+        ]
+      },
+      "ProAiConsentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id."
+          },
+          "provider_type": {
+            "type": "string",
+            "description": "Provider type the consent covers.",
+            "example": "openai"
+          },
+          "consent_class": {
+            "type": "string",
+            "description": "Consent class. 'cloud_egress' = permission to use a non-EU provider; 'retention_override' = acknowledgement to use a non-zero-retention cloud provider in eu_only.",
+            "enum": [
+              "cloud_egress",
+              "retention_override"
+            ],
+            "example": "cloud_egress"
+          },
+          "granted_by": {
+            "type": "object",
+            "description": "User id that granted the consent.",
+            "nullable": true
+          },
+          "granted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "type": "object",
+            "description": "Set when revoked; a consent is active while this is null.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "note": {
+            "type": "object",
+            "description": "Free-text justification recorded with the grant.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "provider_type",
+          "consent_class",
+          "granted_by",
+          "granted_at",
+          "revoked_at",
+          "note"
+        ]
+      },
+      "ProAiConsentGrantResultDto": {
+        "type": "object",
+        "properties": {
+          "providerType": {
+            "type": "string",
+            "description": "The provider type, echoed back.",
+            "example": "openai"
+          },
+          "granted": {
+            "type": "boolean",
+            "description": "True when a new consent row was written; false when an active consent already existed.",
+            "example": true
+          }
+        },
+        "required": [
+          "providerType",
+          "granted"
+        ]
+      },
+      "ProAiConsentRevokeResultDto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "number",
+            "description": "Number of previously-active consent rows stamped with `revoked_at`.",
+            "example": 1
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      },
+      "ProAiCreatedIdDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID of the created (or updated) row.",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ProAiDeleteCountDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "number",
+            "description": "Number of rows deleted (0 when nothing matched).",
+            "example": 1
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ProAiDuplicateCandidateDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content id of the hit."
+          },
+          "contentTypeId": {
+            "type": "object",
+            "description": "Content type id of the hit; null when the content row has none.",
+            "nullable": true
+          },
+          "similarity": {
+            "type": "number",
+            "description": "Cosine similarity in [0..1] (1 = identical vector).",
+            "example": 0.87
+          },
+          "lexicalSimilarity": {
+            "type": "number",
+            "description": "Word-shingle Jaccard overlap of the two text digests, when both digests were loadable.",
+            "example": 0.71
+          },
+          "nearExact": {
+            "type": "boolean",
+            "description": "True for near-verbatim copies (lexical overlap ≥ 0.6) — kept even below the cosine threshold.",
+            "example": false
+          }
+        },
+        "required": [
+          "contentId",
+          "contentTypeId",
+          "similarity",
+          "nearExact"
+        ]
+      },
+      "ProAiEgressPostureDto": {
+        "type": "object",
+        "properties": {
+          "residencyMode": {
+            "type": "string",
+            "description": "The org/instance default residency mode (per-task routes may narrow it further).",
+            "enum": [
+              "local_only",
+              "eu_only",
+              "any"
+            ],
+            "example": "eu_only"
+          },
+          "noNonEuEgress": {
+            "type": "boolean",
+            "description": "True when the default mode structurally prevents any non-EU egress (`local_only` or `eu_only`) — the \"content never leaves the EU\" guarantee.",
+            "example": true
+          },
+          "providers": {
+            "description": "Per-provider standing in the org egress posture.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiEgressProviderPostureDto"
+            }
+          }
+        },
+        "required": [
+          "residencyMode",
+          "noNonEuEgress",
+          "providers"
+        ]
+      },
+      "ProAiEgressProviderPostureDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Provider type.",
+            "example": "mistral"
+          },
+          "name": {
+            "type": "string",
+            "description": "Provider display name.",
+            "example": "Mistral (EU)"
+          },
+          "residency": {
+            "type": "string",
+            "description": "Mapped residency of the provider.",
+            "enum": [
+              "self_hosted",
+              "eu",
+              "non_eu"
+            ],
+            "example": "eu"
+          },
+          "allowedByResidency": {
+            "type": "boolean",
+            "description": "Whether the active residency mode allows this provider at all.",
+            "example": true
+          },
+          "consented": {
+            "type": "boolean",
+            "description": "Non-EU providers only: whether the org has granted egress consent.",
+            "example": false
+          },
+          "reachable": {
+            "type": "boolean",
+            "description": "Whether routing can currently select this provider (residency gate AND consent).",
+            "example": true
+          },
+          "noRetention": {
+            "type": "boolean",
+            "description": "Whether the endpoint guarantees no training/retention (`pro_ai_providers.no_retention`).",
+            "example": true
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "residency",
+          "allowedByResidency",
+          "reachable",
+          "noRetention"
+        ]
+      },
+      "ProAiEmbedResponseDto": {
+        "type": "object",
+        "properties": {
+          "embeddings": {
+            "type": "array",
+            "description": "One vector per input, in input order (a single string input yields one vector).",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "example": [
+              [
+                0.0123,
+                -0.0456,
+                0.0789
+              ]
+            ]
+          },
+          "model": {
+            "type": "string",
+            "description": "Embed model that produced the vectors.",
+            "example": "multilingual-e5-large"
+          },
+          "dimensions": {
+            "type": "number",
+            "description": "Vector dimensionality.",
+            "example": 1024
+          },
+          "usage": {
+            "$ref": "#/components/schemas/ProAiTokenUsageDto"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProAiProvenanceDto"
+          }
+        },
+        "required": [
+          "embeddings",
+          "model",
+          "dimensions"
+        ]
+      },
+      "ProAiJobDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id."
+          },
+          "task": {
+            "type": "string",
+            "description": "Job task.",
+            "example": "translate"
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state.",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed"
+            ],
+            "example": "queued"
+          },
+          "input": {
+            "type": "object",
+            "description": "The submitted job input (JSONB) — its shape depends on `task`.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "output": {
+            "type": "object",
+            "description": "The job result (JSONB), written on completion — shape depends on `task`.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "error": {
+            "type": "object",
+            "description": "Failure message (truncated to 2000 chars).",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "object",
+            "description": "User id that submitted the job.",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "task",
+          "status",
+          "created_at"
+        ]
+      },
+      "ProAiJobSubmittedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the enqueued job.",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "description": "Always `queued` — the worker picks the job up asynchronously.",
+            "example": "queued"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "ProAiLogSettingsDto": {
+        "type": "object",
+        "properties": {
+          "rawRetentionUntil": {
+            "type": "object",
+            "description": "Until when raw prompt/output text is retained for this org; null when the window is closed (the default — only hashes are stored).",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "rawRetentionUntil"
+        ]
+      },
+      "ProAiMcpToolDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tool name to pass to `POST /pro/ai/mcp/call`.",
+            "example": "ai_translate"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable tool description (also states that input text is untrusted data)."
+          },
+          "inputSchema": {
+            "type": "object",
+            "description": "JSON Schema for the tool arguments (the MCP Gateway maps it to Zod). Per-tool shape, so it is documented as an open object.",
+            "additionalProperties": true
+          },
+          "consentClass": {
+            "type": "string",
+            "description": "MCP consent class, mirroring the gateway's consent ledger.",
+            "example": "network_call"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "inputSchema",
+          "consentClass"
+        ]
+      },
+      "ProAiMcpToolListDto": {
+        "type": "object",
+        "properties": {
+          "tools": {
+            "description": "The AI capabilities this plugin exposes as MCP tools.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiMcpToolDto"
+            }
+          }
+        },
+        "required": [
+          "tools"
+        ]
+      },
+      "ProAiModerateResponseDto": {
+        "type": "object",
+        "properties": {
+          "flags": {
+            "description": "Scored category flags (empty when there was no text to inspect).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiModerationFlagDto"
+            }
+          },
+          "reviewRecommended": {
+            "type": "boolean",
+            "description": "True when any flag is at/above the threshold (PII always is).",
+            "example": false
+          },
+          "piiMatches": {
+            "type": "number",
+            "description": "PII findings in publicly-delivered content — pattern matches in the text digest plus configured `field_paths` that carry a value.",
+            "example": 0
+          },
+          "threshold": {
+            "type": "number",
+            "description": "The review threshold applied (request override → per-org route config → 0.5).",
+            "example": 0.5
+          },
+          "enforcement": {
+            "type": "string",
+            "description": "Org escalation policy the caller (publish UI) should apply to flagged content. Advisory by default — this endpoint never blocks on its own.",
+            "enum": [
+              "advisory",
+              "soft_block",
+              "hard_block"
+            ],
+            "example": "advisory"
+          },
+          "provenance": {
+            "description": "Absent when no text was inspected (no model call was made).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProAiProvenanceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "flags",
+          "reviewRecommended",
+          "piiMatches",
+          "threshold",
+          "enforcement"
+        ]
+      },
+      "ProAiModerationFlagDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Flagged category. Model categories are hate/harassment/sexual/violence/illegal; 'pii_in_public_field' is added by the local PII scan.",
+            "enum": [
+              "hate",
+              "harassment",
+              "sexual",
+              "violence",
+              "illegal",
+              "pii_in_public_field"
+            ],
+            "example": "harassment"
+          },
+          "score": {
+            "type": "number",
+            "description": "Score in [0..1]. Always 1 for 'pii_in_public_field'.",
+            "example": 0.62
+          }
+        },
+        "required": [
+          "category",
+          "score"
+        ]
+      },
+      "ProAiNearDuplicatesResponseDto": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "description": "Advisory candidates above the effective threshold (or near-verbatim). Nothing is ever blocked or removed automatically — a human confirms.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiDuplicateCandidateDto"
+            }
+          },
+          "threshold": {
+            "type": "number",
+            "description": "The cosine threshold actually applied (request override → per-org route-table `dedup` → `AI_DEDUP_THRESHOLD` → 0.9).",
+            "example": 0.9
+          },
+          "provenance": {
+            "description": "Present only on the draft path, where the digest is embedded (an inference ran).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProAiProvenanceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "candidates",
+          "threshold"
+        ]
+      },
+      "ProAiPromptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "object",
+            "description": "Owning organization; null = shipped global default (protected from deletion).",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "description": "Prompt key.",
+            "example": "writeAssist.headline"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Locale of this template.",
+            "example": "en"
+          },
+          "version": {
+            "type": "number",
+            "description": "Version within (org, key, locale) — the highest version wins at resolution time.",
+            "example": 1
+          },
+          "template": {
+            "type": "string",
+            "description": "The template text; `{{var}}` placeholders are substituted at render time."
+          },
+          "variables": {
+            "description": "Declared placeholder names (JSONB array).",
+            "example": [
+              "text",
+              "locale"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "signature": {
+            "type": "object",
+            "description": "Optional Ed25519 signature (base64) over the template, for shipped/global prompts.",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "key",
+          "locale",
+          "version",
+          "template",
+          "variables",
+          "signature",
+          "created_at"
+        ]
+      },
+      "ProAiPromptRenderDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "object",
+            "description": "The rendered prompt, or null when no template exists for the requested key (unknown placeholders are left intact rather than blanked).",
+            "nullable": true
+          }
+        }
+      },
+      "ProAiProvenanceDto": {
+        "type": "object",
+        "properties": {
+          "providerType": {
+            "type": "string",
+            "description": "Provider type that served the call (`pro_ai_providers.type`).",
+            "enum": [
+              "augmentor",
+              "ollama",
+              "mistral",
+              "azure-openai",
+              "openai",
+              "anthropic",
+              "gemini",
+              "openai-compatible"
+            ],
+            "example": "augmentor"
+          },
+          "residency": {
+            "type": "string",
+            "description": "Mapped data residency of the provider. 'self_hosted' means the call never left the instance.",
+            "enum": [
+              "self_hosted",
+              "eu",
+              "non_eu"
+            ],
+            "example": "self_hosted"
+          },
+          "model": {
+            "type": "string",
+            "description": "Resolved model id that produced the result.",
+            "example": "mistral-small-3.1"
+          },
+          "redacted": {
+            "type": "boolean",
+            "description": "True when PII redaction modified the payload before a cloud call.",
+            "example": false
+          },
+          "fallback": {
+            "type": "boolean",
+            "description": "True when routing fell back from a higher-priority provider.",
+            "example": false
+          }
+        },
+        "required": [
+          "providerType",
+          "residency",
+          "redacted",
+          "fallback"
+        ]
+      },
+      "ProAiProviderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Provider id.",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "description": "Provider type (`pro_ai_providers.type`).",
+            "enum": [
+              "augmentor",
+              "ollama",
+              "mistral",
+              "azure-openai",
+              "openai",
+              "anthropic",
+              "gemini",
+              "openai-compatible"
+            ],
+            "example": "augmentor"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name (unique per org + scope).",
+            "example": "Augmentor (local)"
+          },
+          "baseUrl": {
+            "type": "object",
+            "description": "Endpoint base URL; null when the adapter default is used.",
+            "nullable": true,
+            "example": "http://augmentor:8000/v1"
+          },
+          "residency": {
+            "type": "string",
+            "description": "Configured data residency of the endpoint.",
+            "enum": [
+              "eu",
+              "non_eu",
+              "self_hosted",
+              "unknown"
+            ],
+            "example": "self_hosted"
+          },
+          "noRetention": {
+            "type": "boolean",
+            "description": "Whether the endpoint guarantees no training/retention.",
+            "example": true
+          },
+          "priority": {
+            "type": "number",
+            "description": "Routing priority — lower is preferred.",
+            "example": 100
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the provider may be selected by routing.",
+            "example": true
+          },
+          "scope": {
+            "type": "string",
+            "description": "'org' = org-shared provider (`user_id IS NULL`); 'user' = the caller's own BYO key.",
+            "enum": [
+              "org",
+              "user"
+            ],
+            "example": "org"
+          },
+          "keyHint": {
+            "type": "object",
+            "description": "Masked hint for the vaulted API key (never the key itself); null when no key is stored or no hint was recorded.",
+            "nullable": true,
+            "example": "supe…-key"
+          },
+          "modelCount": {
+            "type": "number",
+            "description": "Number of models configured for this provider.",
+            "example": 3
+          },
+          "residencyAllowed": {
+            "type": "boolean",
+            "description": "Whether the instance residency mode permits this provider (false = hard-blocked). Set by the list endpoint; absent on single-provider responses.",
+            "example": true
+          },
+          "retentionBlocked": {
+            "type": "boolean",
+            "description": "True in `eu_only` mode for an allowed cloud provider without `noRetention` and without a zero-retention override — blocked until an override is acknowledged. Set by the list endpoint; absent on single-provider responses.",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "baseUrl",
+          "residency",
+          "noRetention",
+          "priority",
+          "enabled",
+          "scope",
+          "keyHint",
+          "modelCount"
+        ]
+      },
+      "ProAiProviderHealthDto": {
+        "type": "object",
+        "properties": {
+          "online": {
+            "type": "boolean",
+            "description": "Whether the endpoint answered.",
+            "example": true
+          },
+          "latencyMs": {
+            "type": "number",
+            "description": "Round-trip latency of the probe in milliseconds.",
+            "example": 42
+          },
+          "queueDepth": {
+            "type": "number",
+            "description": "Pending requests, when the backend reports it (e.g. Augmentor / Ollama).",
+            "example": 0
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure reason when `online` is false."
+          }
+        },
+        "required": [
+          "online"
+        ]
+      },
+      "ProAiRedactionRuleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "applies_to": {
+            "type": "string",
+            "description": "'cloud' = redact only when the resolved provider is not self-hosted; 'all' = always redact.",
+            "enum": [
+              "cloud",
+              "all"
+            ],
+            "example": "cloud"
+          },
+          "patterns": {
+            "description": "Regex strings matched against outgoing text (invalid patterns are skipped at call time).",
+            "example": [
+              "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "field_paths": {
+            "description": "Dot-paths stripped from structured content payloads.",
+            "example": [
+              "author.email"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the rule is active.",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "applies_to",
+          "patterns",
+          "field_paths",
+          "enabled"
+        ]
+      },
+      "ProAiSchemaErrorDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "JSON Pointer to the offending instance location (empty for document-level errors).",
+            "example": "/headline"
+          },
+          "message": {
+            "type": "string",
+            "description": "AJV error message.",
+            "example": "must NOT have more than 110 characters"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "AJV keyword that failed, or 'json' when the model output was not JSON at all.",
+            "example": "maxLength"
+          }
+        },
+        "required": [
+          "path",
+          "message",
+          "keyword"
+        ]
+      },
+      "ProAiSeedResultDto": {
+        "type": "object",
+        "properties": {
+          "inserted": {
+            "type": "number",
+            "description": "Number of rows inserted by this call (0 when everything was already seeded).",
+            "example": 1
+          }
+        },
+        "required": [
+          "inserted"
+        ]
+      },
+      "ProAiSemanticHitDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content id of the hit."
+          },
+          "contentTypeId": {
+            "type": "object",
+            "description": "Content type id of the hit; null when the content row has none.",
+            "nullable": true
+          },
+          "similarity": {
+            "type": "number",
+            "description": "Cosine similarity in [0..1] (1 = identical vector).",
+            "example": 0.87
+          }
+        },
+        "required": [
+          "contentId",
+          "contentTypeId",
+          "similarity"
+        ]
+      },
+      "ProAiSemanticSearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "hits": {
+            "description": "Hits ordered by descending similarity (max `k`, default 10, capped at 50).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiSemanticHitDto"
+            }
+          },
+          "provenance": {
+            "description": "Where the query embedding ran. Present for `GET /pro/ai/search`; absent for `/similar`, which is a pure index lookup with no inference.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProAiProvenanceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "hits"
+        ]
+      },
+      "ProAiStatusDto": {
+        "type": "object",
+        "properties": {
+          "plugin": {
+            "type": "string",
+            "description": "Plugin id.",
+            "example": "pro-ai"
+          },
+          "version": {
+            "type": "string",
+            "description": "Plugin version.",
+            "example": "1.0.0"
+          },
+          "status": {
+            "type": "string",
+            "description": "Health state.",
+            "example": "ok"
+          },
+          "vaultKeyMode": {
+            "type": "string",
+            "description": "How the credential-vault KEK was sourced. 'env' = a real key from `PRO_AI_VAULT_KEK`; 'insecure-dev' = the deterministic dev fallback (never in production — the plugin refuses to boot there without a valid KEK).",
+            "enum": [
+              "env",
+              "insecure-dev"
+            ],
+            "example": "env"
+          }
+        },
+        "required": [
+          "plugin",
+          "version",
+          "status",
+          "vaultKeyMode"
+        ]
+      },
+      "ProAiStructuredGenResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "The generated content payload, shaped by the content type's JSON Schema (fetched from the Schema Registry sync) — so its properties vary per type and are not fixed here. On a failed run this is the last attempt's output, or the raw model text when it was not JSON at all.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "valid": {
+            "type": "boolean",
+            "description": "Whether `data` validated against the content type's JSON Schema (AJV, 2020-12).",
+            "example": true
+          },
+          "errors": {
+            "description": "AJV errors from the last attempt; present only when `valid` is false.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiSchemaErrorDto"
+            }
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProAiProvenanceDto"
+          }
+        },
+        "required": [
+          "data",
+          "valid"
+        ]
+      },
+      "ProAiSuggestFacetsResponseDto": {
+        "type": "object",
+        "properties": {
+          "facets": {
+            "type": "object",
+            "description": "fieldId → selected values. Hard-filtered to `vocabulary[fieldId]`, so free-text drift is impossible. `{}` when the type has no enumerated facets or there was no text.",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "example": {
+              "topic": [
+                "politics"
+              ],
+              "region": [
+                "de-BY"
+              ]
+            }
+          },
+          "vocabulary": {
+            "type": "object",
+            "description": "fieldId → the content type's allowed values, extracted from its JSON Schema enums (for the confirm UI).",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "provenance": {
+            "description": "Absent when no inference was spent (empty vocabulary or no text).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProAiProvenanceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "facets",
+          "vocabulary"
+        ]
+      },
+      "ProAiTaskRouteDto": {
+        "type": "object",
+        "properties": {
+          "tier": {
+            "type": "string",
+            "description": "Model tier to select.",
+            "enum": [
+              "cheap",
+              "heavy"
+            ],
+            "example": "cheap"
+          },
+          "residency": {
+            "type": "string",
+            "description": "Residency mode for this task, narrowing the instance default.",
+            "enum": [
+              "local_only",
+              "eu_only",
+              "any"
+            ],
+            "example": "local_only"
+          },
+          "model": {
+            "type": "string",
+            "description": "Force a concrete model id.",
+            "example": "mistral-small-3.1"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Force a provider type as the preferred backend.",
+            "example": "augmentor"
+          },
+          "fallback": {
+            "description": "Ordered fallback chain; each entry is `providerType` or `providerType/model`.",
+            "example": [
+              "mistral",
+              "openai-compatible/llama3.1"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ProAiTeaserDraftResponseDto": {
+        "type": "object",
+        "properties": {
+          "teaser": {
+            "type": "object",
+            "description": "Drafted teaser fields, shaped by the content type's `teaser_schema` (default contract: `headline` ≤ 110 chars, `description` ≤ 500) — so the properties vary per type. On a failed run this is the last attempt's output, or the raw model text when it was not JSON.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "valid": {
+            "type": "boolean",
+            "description": "Whether `teaser` validated against the teaser schema (AJV, one feedback retry).",
+            "example": true
+          },
+          "errors": {
+            "description": "AJV errors from the last attempt; present only when `valid` is false.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiSchemaErrorDto"
+            }
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProAiProvenanceDto"
+          }
+        },
+        "required": [
+          "teaser",
+          "valid"
+        ]
+      },
+      "ProAiTokenUsageDto": {
+        "type": "object",
+        "properties": {
+          "promptTokens": {
+            "type": "number",
+            "description": "Prompt (input) tokens.",
+            "example": 812
+          },
+          "completionTokens": {
+            "type": "number",
+            "description": "Completion (output) tokens.",
+            "example": 154
+          },
+          "totalTokens": {
+            "type": "number",
+            "description": "Total tokens billed for the call.",
+            "example": 966
+          }
+        }
+      },
+      "ProAiTranscribeResponseDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The transcript."
+          },
+          "model": {
+            "type": "string",
+            "description": "Transcription model that produced the text.",
+            "example": "whisper-large-v3"
+          },
+          "language": {
+            "type": "string",
+            "description": "Detected or requested source language, when the provider reports it.",
+            "example": "de"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/ProAiTokenUsageDto"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProAiProvenanceDto"
+          }
+        },
+        "required": [
+          "text",
+          "model"
+        ]
+      },
+      "ProAiTranslateResponseDto": {
+        "type": "object",
+        "properties": {
+          "translations": {
+            "type": "object",
+            "description": "Plain-text translations keyed by target locale (present when `text` was given).",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "de": "Guten Morgen",
+              "fr": "Bonjour"
+            }
+          },
+          "richTextTranslations": {
+            "type": "object",
+            "description": "Rich-text translations keyed by target locale (present when `richText` was given). Each value is a ProseMirror/TipTap `doc` node with the original structure, marks, and attributes preserved.",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "jobId": {
+            "type": "string",
+            "description": "Batch job id — returned instead of translations when the request carried a `contentId` (the content-wide translation runs as a `pro_ai_jobs` job; poll `GET /pro/ai/jobs/{id}`).",
+            "format": "uuid"
+          },
+          "provenance": {
+            "description": "Where the translation ran; absent on the batch-job path.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProAiProvenanceDto"
+              }
+            ]
+          }
+        }
+      },
+      "ProAiUsageDashboardDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Start of the window actually used (defaults to 30 days ago).",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "description": "End of the window actually used (defaults to now).",
+            "format": "date-time"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ProAiUsageSummaryDto"
+          },
+          "byCaller": {
+            "description": "Per-caller buckets, most expensive first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiUsageGroupDto"
+            }
+          },
+          "byModel": {
+            "description": "Per-model buckets, most expensive first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiUsageGroupDto"
+            }
+          },
+          "byDay": {
+            "description": "Daily series, oldest first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProAiUsageDayDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "summary",
+          "byCaller",
+          "byModel",
+          "byDay"
+        ]
+      },
+      "ProAiUsageDayDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "description": "Calendar day (server time zone).",
+            "example": "2026-07-31"
+          },
+          "requests": {
+            "type": "number",
+            "description": "Calls on this day.",
+            "example": 61
+          },
+          "tokens": {
+            "type": "number",
+            "description": "Prompt + completion tokens on this day.",
+            "example": 48220
+          },
+          "cost": {
+            "type": "number",
+            "description": "Summed cost on this day.",
+            "example": 0.6194
+          }
+        },
+        "required": [
+          "day",
+          "requests",
+          "tokens",
+          "cost"
+        ]
+      },
+      "ProAiUsageGroupDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Bucket key — the caller or model id; '?' when the log row had none.",
+            "example": "editor"
+          },
+          "requests": {
+            "type": "number",
+            "description": "Calls in this bucket.",
+            "example": 512
+          },
+          "tokens": {
+            "type": "number",
+            "description": "Prompt + completion tokens in this bucket.",
+            "example": 430907
+          },
+          "cost": {
+            "type": "number",
+            "description": "Summed cost in this bucket.",
+            "example": 5.2213
+          }
+        },
+        "required": [
+          "key",
+          "requests",
+          "tokens",
+          "cost"
+        ]
+      },
+      "ProAiUsageSummaryDto": {
+        "type": "object",
+        "properties": {
+          "requests": {
+            "type": "number",
+            "description": "Metered calls in the window.",
+            "example": 1284
+          },
+          "tokensIn": {
+            "type": "number",
+            "description": "Summed prompt tokens.",
+            "example": 940112
+          },
+          "tokensOut": {
+            "type": "number",
+            "description": "Summed completion tokens.",
+            "example": 210884
+          },
+          "cost": {
+            "type": "number",
+            "description": "Summed cost in the instance currency (numeric — coerced to a JS number).",
+            "example": 12.4715
+          },
+          "redacted": {
+            "type": "number",
+            "description": "Calls whose payload was PII-redacted before egress.",
+            "example": 37
+          },
+          "fallbacks": {
+            "type": "number",
+            "description": "Calls that fell back to a non-preferred provider.",
+            "example": 4
+          },
+          "failures": {
+            "type": "number",
+            "description": "Calls that failed (`success = false`).",
+            "example": 6
+          }
+        },
+        "required": [
+          "requests",
+          "tokensIn",
+          "tokensOut",
+          "cost",
+          "redacted",
+          "fallbacks",
+          "failures"
+        ]
+      },
+      "ProAiVisionResponseDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The generated text for the requested action (alt text, caption, OCR, tags, description)."
+          },
+          "model": {
+            "type": "string",
+            "description": "Vision model that produced the text.",
+            "example": "pixtral-12b"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/ProAiTokenUsageDto"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProAiProvenanceDto"
+          }
+        },
+        "required": [
+          "text",
+          "model"
+        ]
+      },
+      "ProAiWriteAssistResponseDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "The requested action, echoed back.",
+            "enum": [
+              "improve",
+              "fix",
+              "shorten",
+              "expand",
+              "tone",
+              "summarize",
+              "headline",
+              "dek",
+              "seo",
+              "social",
+              "continue"
+            ],
+            "example": "improve"
+          },
+          "original": {
+            "type": "string",
+            "description": "The input text, verbatim — for a diff preview against `result`. Never auto-applied."
+          },
+          "result": {
+            "type": "string",
+            "description": "Primary suggestion (full replacement text, or the first option for list actions)."
+          },
+          "suggestions": {
+            "description": "All parsed options for list actions (`headline`, `social`).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProAiProvenanceDto"
+          }
+        },
+        "required": [
+          "action",
+          "original",
+          "result"
+        ]
       },
       "PutRoutesDto": {
         "type": "object",

@@ -41,7 +41,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Custom layouts joined with their CE `content_type_layouts` row, most recently updated first — so each item also carries the CE name, version and default/active flags.",
             "content": {
               "application/json": {
                 "schema": {
@@ -51,11 +51,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProCustomLayoutListItemDto"
+                      }
                     }
                   }
                 }
@@ -98,7 +97,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created layout. The CE `content_type_layouts` row and this row are written in one transaction, and the initial definition is recorded as version history entry 1.",
             "content": {
               "application/json": {
                 "schema": {
@@ -108,11 +107,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProCustomLayoutDto"
                     }
                   }
                 }
@@ -167,7 +162,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The custom layout row, including its draft and version history.",
             "content": {
               "application/json": {
                 "schema": {
@@ -177,11 +172,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProCustomLayoutDto"
                     }
                   }
                 }
@@ -234,7 +225,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The layout after the update — re-read, so `updated_at` is the new precondition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -244,11 +235,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProCustomLayoutDto"
                     }
                   }
                 }
@@ -341,7 +328,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The layout after publishing: the draft is cleared, `published_at` refreshed and a new patch version prepended to `version_history`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -351,11 +338,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProCustomLayoutDto"
                     }
                   }
                 }
@@ -400,7 +383,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Published versions, newest first, capped at 50 entries; empty array for a layout that was never published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -410,11 +393,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProLayoutVersionEntryDto"
+                      }
                     }
                   }
                 }
@@ -468,7 +450,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The layout with the restored definition as its draft — the live CE definition is untouched until the draft is published.",
             "content": {
               "application/json": {
                 "schema": {
@@ -478,11 +460,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProCustomLayoutDto"
                     }
                   }
                 }
@@ -527,7 +505,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new copy — a fresh layout id (`<original>--copy-<timestamp>`), version 1.0.0 and \"(Copy)\"-suffixed names.",
             "content": {
               "application/json": {
                 "schema": {
@@ -537,11 +515,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProCustomLayoutDto"
                     }
                   }
                 }
@@ -586,7 +560,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The imported layout. `layout_id` and `content_type_id` are taken from the definition unless overridden in the request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -596,11 +570,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProCustomLayoutDto"
                     }
                   }
                 }
@@ -655,7 +625,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The published layout/v1 definition, sanitized: org-specific asset URLs and ids are stripped because an export leaves its tenant (IMP-PRO-LAYOUT-07). `{}` when the CE row carries no definition.",
             "content": {
               "application/json": {
                 "schema": {
@@ -665,11 +635,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutDefinitionDto"
                     }
                   }
                 }
@@ -714,7 +680,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored configuration with a masked token hint, plus a data-sovereignty warning when the remote is a known non-EU forge.",
             "content": {
               "application/json": {
                 "schema": {
@@ -724,11 +690,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGitConfigResultDto"
                     }
                   }
                 }
@@ -773,7 +735,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Current configuration, last sync marker and layout count. `configured: false` with null fields when Git was never set up.",
             "content": {
               "application/json": {
                 "schema": {
@@ -783,11 +745,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGitStatusDto"
                     }
                   }
                 }
@@ -822,7 +780,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Sync tally plus the per-file outcome of every `*.layout.json` found, so a partial pull is legible. Incoming definitions land as drafts, never as published layouts.",
             "content": {
               "application/json": {
                 "schema": {
@@ -832,11 +790,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGitSyncResultDto"
                     }
                   }
                 }
@@ -871,7 +825,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Number of layouts written and the resulting commit; `upToDate: true` with a null commit hash when the export already matched the repository.",
             "content": {
               "application/json": {
                 "schema": {
@@ -881,11 +835,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGitPushResultDto"
                     }
                   }
                 }
@@ -920,7 +870,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Most-installed first. Cross-org entries never expose source-org fields or the raw definition; `status`/`reviewNote` appear only on the caller’s own submissions.",
             "content": {
               "application/json": {
                 "schema": {
@@ -930,11 +880,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProLayoutGalleryEntryDto"
+                      }
                     }
                   }
                 }
@@ -973,7 +922,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The new submission plus the JSON paths the sanitizer stripped, so the submitter can see what was removed before review.",
             "content": {
               "application/json": {
                 "schema": {
@@ -983,11 +932,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGallerySubmissionDto"
                     }
                   }
                 }
@@ -1036,7 +981,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The entry id and the state it moved to.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1046,11 +991,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGalleryReviewResultDto"
                     }
                   }
                 }
@@ -1099,7 +1040,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "UUID of the local layout created in the caller’s organization. Only an organization’s first install bumps the entry’s download counter.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1109,11 +1050,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGalleryInstallResultDto"
                     }
                   }
                 }
@@ -1162,7 +1099,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Aggregates recomputed from the rating rows after the vote (an organization’s repeat vote replaces its previous one).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1172,11 +1109,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProLayoutGalleryRatingDto"
                     }
                   }
                 }
@@ -1202,6 +1135,7 @@
     "/api/v1/pro/media/jobs": {
       "get": {
         "operationId": "VideoProcessingController_listJobs",
+        "summary": "List video processing jobs (optionally filtered)",
         "parameters": [
           {
             "name": "status",
@@ -1230,7 +1164,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Jobs of the organization, newest first, capped at 100 rows.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1240,11 +1174,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProVideoJobDto"
+                      }
                     }
                   }
                 }
@@ -1258,6 +1191,7 @@
       },
       "post": {
         "operationId": "VideoProcessingController_createJob",
+        "summary": "Queue a video processing job for an asset",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1271,7 +1205,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The queued job in status `pending`. `transcode_profile` holds the resolved profile — or a `ladder` array when several profile ids were passed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1281,11 +1215,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVideoJobDto"
                     }
                   }
                 }
@@ -1311,6 +1241,7 @@
     "/api/v1/pro/media/jobs/{id}": {
       "get": {
         "operationId": "VideoProcessingController_getJob",
+        "summary": "Get a video processing job by ID",
         "parameters": [
           {
             "name": "id",
@@ -1323,7 +1254,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The job row; 404 when unknown.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1333,11 +1264,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVideoJobDto"
                     }
                   }
                 }
@@ -1351,6 +1278,7 @@
       },
       "delete": {
         "operationId": "VideoProcessingController_deleteJob",
+        "summary": "Delete a video processing job",
         "parameters": [
           {
             "name": "id",
@@ -1374,6 +1302,7 @@
     "/api/v1/pro/media/jobs/{id}/retry": {
       "post": {
         "operationId": "VideoProcessingController_retryJob",
+        "summary": "Retry a failed video processing job",
         "parameters": [
           {
             "name": "id",
@@ -1386,7 +1315,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The job reset to `pending` with `attempts` incremented and the previous error cleared. Only failed jobs within their attempt ceiling can be retried.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1396,11 +1325,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVideoJobDto"
                     }
                   }
                 }
@@ -1416,6 +1341,7 @@
     "/api/v1/pro/media/jobs/{id}/cancel": {
       "post": {
         "operationId": "VideoProcessingController_cancelJob",
+        "summary": "Cancel a pending or processing video job",
         "parameters": [
           {
             "name": "id",
@@ -1428,7 +1354,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The job after the cancel request: a pending job is `cancelled` immediately, a processing one becomes `cancelling` until the worker honours the flag.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1438,11 +1364,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVideoJobDto"
                     }
                   }
                 }
@@ -1458,10 +1380,11 @@
     "/api/v1/pro/media/stats": {
       "get": {
         "operationId": "VideoProcessingController_getStats",
+        "summary": "Video job statistics for the organization",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Job counts per state plus the mean processing time of completed jobs.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1471,11 +1394,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVideoJobStatsDto"
                     }
                   }
                 }
@@ -1491,6 +1410,7 @@
     "/api/v1/pro/media/assets/{assetId}/renditions": {
       "get": {
         "operationId": "VideoProcessingController_getRenditions",
+        "summary": "List the active renditions of a video asset",
         "parameters": [
           {
             "name": "assetId",
@@ -1503,7 +1423,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Active renditions only, widest first — superseded outputs are excluded because their storage objects are being purged.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1513,11 +1433,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProVideoRenditionDto"
+                      }
                     }
                   }
                 }
@@ -1533,6 +1452,7 @@
     "/api/v1/pro/media/assets/{assetId}/video-info": {
       "get": {
         "operationId": "VideoProcessingController_getVideoInfo",
+        "summary": "Aggregated video info for an asset (metadata, keys, renditions, captions)",
         "parameters": [
           {
             "name": "assetId",
@@ -1545,7 +1465,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Each field is the latest non-null value across the asset’s completed jobs (IMP-PRO-MEDIA-05), plus the rendition registry and ready caption tracks. All fields null/empty for an asset that was never processed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1555,11 +1475,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVideoInfoDto"
                     }
                   }
                 }
@@ -1575,10 +1491,11 @@
     "/api/v1/pro/media/profiles": {
       "get": {
         "operationId": "VideoProcessingController_listProfiles",
+        "summary": "List transcode profiles of the organization",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "All profiles, the default one first, then alphabetically by name.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1588,11 +1505,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProTranscodeProfileDto"
+                      }
                     }
                   }
                 }
@@ -1606,6 +1522,7 @@
       },
       "post": {
         "operationId": "VideoProcessingController_createProfile",
+        "summary": "Create a transcode profile",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1619,7 +1536,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created profile as stored. Creating it as default unsets the organization’s previous default.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1629,11 +1546,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProTranscodeProfileDto"
                     }
                   }
                 }
@@ -1659,6 +1572,7 @@
     "/api/v1/pro/media/profiles/{id}": {
       "get": {
         "operationId": "VideoProcessingController_getProfile",
+        "summary": "Get a transcode profile by ID",
         "parameters": [
           {
             "name": "id",
@@ -1671,7 +1585,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The profile row; 404 when unknown.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1681,11 +1595,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProTranscodeProfileDto"
                     }
                   }
                 }
@@ -1699,6 +1609,7 @@
       },
       "put": {
         "operationId": "VideoProcessingController_updateProfile",
+        "summary": "Update a transcode profile",
         "parameters": [
           {
             "name": "id",
@@ -1721,7 +1632,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The profile after the update (re-read from the database).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1731,11 +1642,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProTranscodeProfileDto"
                     }
                   }
                 }
@@ -1759,6 +1666,7 @@
       },
       "delete": {
         "operationId": "VideoProcessingController_deleteProfile",
+        "summary": "Delete a transcode profile",
         "parameters": [
           {
             "name": "id",
@@ -1782,6 +1690,7 @@
     "/api/v1/pro/media/assets/{assetId}/captions": {
       "get": {
         "operationId": "VideoProcessingController_listCaptions",
+        "summary": "List the caption tracks of a video asset",
         "parameters": [
           {
             "name": "assetId",
@@ -1794,7 +1703,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Every track of the asset regardless of status, the default one first then by locale.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1804,11 +1713,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProVideoCaptionDto"
+                      }
                     }
                   }
                 }
@@ -1824,6 +1732,7 @@
     "/api/v1/pro/media/captions": {
       "post": {
         "operationId": "VideoProcessingController_uploadCaption",
+        "summary": "Upload a WebVTT caption track for a video asset",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1837,7 +1746,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored track (`source: uploaded`, `status: ready`). Re-uploading a locale replaces the existing track and purges the previous object; invalid WebVTT is rejected with 400.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1847,11 +1756,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProVideoCaptionDto"
                     }
                   }
                 }
@@ -1877,6 +1782,7 @@
     "/api/v1/pro/media/captions/{id}": {
       "delete": {
         "operationId": "VideoProcessingController_deleteCaption",
+        "summary": "Delete a caption track",
         "parameters": [
           {
             "name": "id",
@@ -1900,6 +1806,7 @@
     "/api/v1/pro/notifications": {
       "get": {
         "operationId": "NotificationController_listNotifications",
+        "summary": "List notifications for the current user",
         "parameters": [
           {
             "name": "type",
@@ -1936,7 +1843,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The user’s inbox, newest first — archived and deferred (pending-digest) rows excluded. The envelope additionally carries `total`, the unpaged match count.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1946,11 +1853,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProNotificationDto"
+                      }
                     }
                   }
                 }
@@ -1964,6 +1870,7 @@
       },
       "post": {
         "operationId": "NotificationController_createNotification",
+        "summary": "Create a notification (system alerts, manual sends)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1977,7 +1884,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created row. Created directly, so recipient preferences (DND, mutes, digest) are not applied.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1987,11 +1894,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationDto"
                     }
                   }
                 }
@@ -2017,10 +1920,11 @@
     "/api/v1/pro/notifications/unread-count": {
       "get": {
         "operationId": "NotificationController_getUnreadCount",
+        "summary": "Get unread count for the current user",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Badge count: unread, non-archived, non-deferred notifications.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2030,11 +1934,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationUnreadCountDto"
                     }
                   }
                 }
@@ -2050,6 +1950,7 @@
     "/api/v1/pro/notifications/{id}": {
       "get": {
         "operationId": "NotificationController_getNotification",
+        "summary": "Get a single notification by ID",
         "parameters": [
           {
             "name": "id",
@@ -2062,7 +1963,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The notification, or `data: null` when no row of this organization matches.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2072,11 +1973,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationDto"
                     }
                   }
                 }
@@ -2090,6 +1987,7 @@
       },
       "delete": {
         "operationId": "NotificationController_deleteNotification",
+        "summary": "Delete a notification",
         "parameters": [
           {
             "name": "id",
@@ -2102,7 +2000,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement; deleting an unknown id also reports success.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2112,11 +2010,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationAckDto"
                     }
                   }
                 }
@@ -2132,6 +2026,7 @@
     "/api/v1/pro/notifications/{id}/read": {
       "post": {
         "operationId": "NotificationController_markAsRead",
+        "summary": "Mark a notification as read",
         "parameters": [
           {
             "name": "id",
@@ -2144,7 +2039,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement; already-read notifications also report success.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2154,11 +2049,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationAckDto"
                     }
                   }
                 }
@@ -2174,10 +2065,11 @@
     "/api/v1/pro/notifications/read-all": {
       "post": {
         "operationId": "NotificationController_markAllAsRead",
+        "summary": "Mark all notifications as read",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many previously-unread notifications were marked read.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2187,11 +2079,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationAffectedCountDto"
                     }
                   }
                 }
@@ -2207,6 +2095,7 @@
     "/api/v1/pro/notifications/{id}/archive": {
       "post": {
         "operationId": "NotificationController_archive",
+        "summary": "Archive a notification",
         "parameters": [
           {
             "name": "id",
@@ -2219,7 +2108,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Acknowledgement; the row is hidden from the inbox listing afterwards.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2229,11 +2118,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationAckDto"
                     }
                   }
                 }
@@ -2249,10 +2134,11 @@
     "/api/v1/pro/notifications/read": {
       "delete": {
         "operationId": "NotificationController_deleteAllRead",
+        "summary": "Delete all read notifications of the current user",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many read notifications were deleted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2262,11 +2148,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationAffectedCountDto"
                     }
                   }
                 }
@@ -2282,10 +2164,11 @@
     "/api/v1/pro/notifications/preferences/me": {
       "get": {
         "operationId": "NotificationController_getPreferences",
+        "summary": "Get notification preferences for the current user",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The stored preferences, or `data: null` when the user never saved any (service defaults then apply).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2295,11 +2178,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationPreferencesDto"
                     }
                   }
                 }
@@ -2313,6 +2192,7 @@
       },
       "put": {
         "operationId": "NotificationController_updatePreferences",
+        "summary": "Update notification preferences for the current user",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2326,7 +2206,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The preferences after the upsert (created on first call).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2336,11 +2216,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationPreferencesDto"
                     }
                   }
                 }
@@ -2366,10 +2242,11 @@
     "/api/v1/pro/notifications/channels/list": {
       "get": {
         "operationId": "NotificationController_listChannels",
+        "summary": "List all notification channels for the organization",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Every channel of the organization, newest first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2379,11 +2256,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProNotificationChannelDto"
+                      }
                     }
                   }
                 }
@@ -2399,6 +2275,7 @@
     "/api/v1/pro/notifications/channels/{id}": {
       "get": {
         "operationId": "NotificationController_getChannel",
+        "summary": "Get a single notification channel by ID",
         "parameters": [
           {
             "name": "id",
@@ -2411,7 +2288,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The channel, or `data: null` when no channel of this organization matches.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2421,11 +2298,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationChannelDto"
                     }
                   }
                 }
@@ -2439,6 +2312,7 @@
       },
       "put": {
         "operationId": "NotificationController_updateChannel",
+        "summary": "Update a notification channel",
         "parameters": [
           {
             "name": "id",
@@ -2461,7 +2335,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The channel after the update, or `data: null` when the id is unknown.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2471,11 +2345,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationChannelDto"
                     }
                   }
                 }
@@ -2499,6 +2369,7 @@
       },
       "delete": {
         "operationId": "NotificationController_deleteChannel",
+        "summary": "Delete a notification channel",
         "parameters": [
           {
             "name": "id",
@@ -2511,7 +2382,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "`success: false` when no channel of this organization matched the id.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2521,11 +2392,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationAckDto"
                     }
                   }
                 }
@@ -2541,6 +2408,7 @@
     "/api/v1/pro/notifications/channels": {
       "post": {
         "operationId": "NotificationController_createChannel",
+        "summary": "Create a new notification channel",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2554,7 +2422,7 @@
         },
         "responses": {
           "201": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "The created channel.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2564,11 +2432,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationChannelDto"
                     }
                   }
                 }
@@ -2594,6 +2458,7 @@
     "/api/v1/pro/notifications/channels/{id}/test": {
       "post": {
         "operationId": "NotificationController_testChannel",
+        "summary": "Test a notification channel by sending a test message",
         "parameters": [
           {
             "name": "id",
@@ -2616,7 +2481,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Delivery outcome. A failed test is reported in the body (with `error`), not as an HTTP error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2626,11 +2491,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationChannelTestResultDto"
                     }
                   }
                 }
@@ -2656,10 +2517,11 @@
     "/api/v1/pro/notifications/stats/overview": {
       "get": {
         "operationId": "NotificationController_getStats",
+        "summary": "Get notification statistics for the organization",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "Counts by state and type, channel health totals and rolling activity.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2669,11 +2531,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationStatsDto"
                     }
                   }
                 }
@@ -2689,6 +2547,7 @@
     "/api/v1/pro/notifications/housekeeping": {
       "post": {
         "operationId": "NotificationController_housekeeping",
+        "summary": "Run housekeeping — delete notifications older than `days`",
         "parameters": [
           {
             "name": "days",
@@ -2701,7 +2560,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "How many rows the retention sweep removed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2711,11 +2570,7 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "$ref": "#/components/schemas/ProNotificationHousekeepingResultDto"
                     }
                   }
                 }
@@ -2780,7 +2635,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "description": "One page of the org-scoped feed, newest first (max 100). The envelope additionally carries `cursor` — the `created_at` of the last item, to pass as `before` for the next page; null when the page is empty.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2790,11 +2645,10 @@
                   ],
                   "properties": {
                     "data": {
-                      "description": "The response payload"
-                    },
-                    "meta": {
-                      "type": "object",
-                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProActivityDto"
+                      }
                     }
                   }
                 }
@@ -2993,6 +2847,1935 @@
       "InstallGalleryDto": {
         "type": "object",
         "properties": {}
+      },
+      "ProActivityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Activity UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "actor_id": {
+            "type": "object",
+            "description": "User that acted; null for system-generated entries (scheduler, release runner)",
+            "nullable": true
+          },
+          "verb": {
+            "type": "string",
+            "description": "What happened",
+            "enum": [
+              "created",
+              "updated",
+              "published",
+              "unpublished",
+              "deleted",
+              "commented",
+              "transitioned",
+              "schedule_failed",
+              "release_failed"
+            ],
+            "example": "published"
+          },
+          "resource": {
+            "type": "string",
+            "description": "Kind of object the activity refers to",
+            "enum": [
+              "content",
+              "comment",
+              "workflow",
+              "schedule",
+              "release"
+            ],
+            "example": "content"
+          },
+          "resource_id": {
+            "type": "string",
+            "description": "Id of the referenced object"
+          },
+          "meta": {
+            "type": "object",
+            "description": "Small human context of the source event — e.g. `contentTypeId`/`status` for content, `fromState`/`toState`/`workflowId` for transitions, `action`/`error` for failed schedules. Varies per verb.",
+            "additionalProperties": true,
+            "example": {
+              "fromState": "draft",
+              "toState": "in_review"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "description": "When it happened — also the pagination cursor (`before`)",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "verb",
+          "resource",
+          "resource_id",
+          "meta",
+          "created_at"
+        ]
+      },
+      "ProCustomLayoutDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Custom layout UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "layout_id": {
+            "type": "string",
+            "description": "Layout identifier, unique per (organization, content type)",
+            "example": "news-standard"
+          },
+          "content_type_id": {
+            "type": "string",
+            "description": "Content type the layout renders",
+            "example": "news"
+          },
+          "draft_definition": {
+            "type": "object",
+            "description": "Unpublished working copy of the layout/v1 definition; null when the draft was published or never started. Drafts may omit `layout_id`/`content_type`/`version`, so the shape is open-ended.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "published_at": {
+            "type": "object",
+            "description": "When the layout was last published into CE’s `content_type_layouts`",
+            "format": "date-time",
+            "nullable": true
+          },
+          "version_history": {
+            "description": "Published versions, newest first, capped at 50 entries",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProLayoutVersionEntryDto"
+            }
+          },
+          "gallery_status": {
+            "type": "string",
+            "description": "Gallery submission state of this layout; null when never submitted",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "published"
+            ],
+            "nullable": true
+          },
+          "gallery_id": {
+            "type": "object",
+            "description": "Gallery entry id this layout was submitted as; null when never submitted",
+            "nullable": true
+          },
+          "download_count": {
+            "type": "number",
+            "description": "Installs of this layout from the gallery",
+            "example": 0
+          },
+          "rating_sum": {
+            "type": "number",
+            "description": "Sum of gallery ratings",
+            "example": 0
+          },
+          "rating_count": {
+            "type": "number",
+            "description": "Number of gallery ratings",
+            "example": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Last modification. Echo it as `expectedUpdatedAt` on PUT to get optimistic-concurrency protection (IMP-PRO-LAYOUT-01).",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "layout_id",
+          "content_type_id",
+          "version_history",
+          "download_count",
+          "rating_sum",
+          "rating_count",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProCustomLayoutListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Custom layout UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "layout_id": {
+            "type": "string",
+            "description": "Layout identifier, unique per (organization, content type)",
+            "example": "news-standard"
+          },
+          "content_type_id": {
+            "type": "string",
+            "description": "Content type the layout renders",
+            "example": "news"
+          },
+          "draft_definition": {
+            "type": "object",
+            "description": "Unpublished working copy of the layout/v1 definition; null when the draft was published or never started. Drafts may omit `layout_id`/`content_type`/`version`, so the shape is open-ended.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "published_at": {
+            "type": "object",
+            "description": "When the layout was last published into CE’s `content_type_layouts`",
+            "format": "date-time",
+            "nullable": true
+          },
+          "version_history": {
+            "description": "Published versions, newest first, capped at 50 entries",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProLayoutVersionEntryDto"
+            }
+          },
+          "gallery_status": {
+            "type": "string",
+            "description": "Gallery submission state of this layout; null when never submitted",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "published"
+            ],
+            "nullable": true
+          },
+          "gallery_id": {
+            "type": "object",
+            "description": "Gallery entry id this layout was submitted as; null when never submitted",
+            "nullable": true
+          },
+          "download_count": {
+            "type": "number",
+            "description": "Installs of this layout from the gallery",
+            "example": 0
+          },
+          "rating_sum": {
+            "type": "number",
+            "description": "Sum of gallery ratings",
+            "example": 0
+          },
+          "rating_count": {
+            "type": "number",
+            "description": "Number of gallery ratings",
+            "example": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Last modification. Echo it as `expectedUpdatedAt` on PUT to get optimistic-concurrency protection (IMP-PRO-LAYOUT-01).",
+            "format": "date-time"
+          },
+          "layout_name": {
+            "type": "object",
+            "description": "Localized name of the joined CE layout row, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Standard article"
+            }
+          },
+          "ce_version": {
+            "type": "string",
+            "description": "Semver version of the published CE layout row",
+            "example": "1.0.2"
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether this is the default layout of its content type"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the CE layout row is active (offered for rendering)"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "layout_id",
+          "content_type_id",
+          "version_history",
+          "download_count",
+          "rating_sum",
+          "rating_count",
+          "created_at",
+          "updated_at",
+          "layout_name",
+          "ce_version",
+          "is_default",
+          "is_active"
+        ]
+      },
+      "ProLayoutDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "layout_id": {
+            "type": "string",
+            "description": "Stable layout identifier",
+            "example": "news-standard"
+          },
+          "content_type": {
+            "type": "string",
+            "description": "Content type the layout targets",
+            "example": "news"
+          },
+          "version": {
+            "type": "string",
+            "description": "Semver version of the definition",
+            "example": "1.0.2"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized layout name, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Standard article",
+              "de": "Standardartikel"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "settings": {
+            "type": "object",
+            "description": "Layout-level settings (max width, colour scheme, spacing, …)",
+            "additionalProperties": true
+          },
+          "breakpoints": {
+            "type": "object",
+            "description": "Breakpoint definitions keyed by name, each `{ min_width?, max_width? }`",
+            "additionalProperties": true,
+            "example": {
+              "mobile": {
+                "max_width": 640
+              },
+              "desktop": {
+                "min_width": 1024
+              }
+            }
+          },
+          "regions": {
+            "description": "The region tree",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProLayoutRegionDto"
+            }
+          },
+          "responsive_overrides": {
+            "type": "object",
+            "description": "Per-breakpoint overrides of region styles, keyed by breakpoint",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "layout_id",
+          "content_type",
+          "version",
+          "name",
+          "regions"
+        ]
+      },
+      "ProLayoutGalleryEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Gallery entry UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Entry name chosen at submission",
+            "example": "Magazine cover story"
+          },
+          "description": {
+            "type": "object",
+            "description": "Entry description",
+            "nullable": true
+          },
+          "contentTypeId": {
+            "type": "string",
+            "description": "Portable content type id the layout targets",
+            "example": "news"
+          },
+          "downloadCount": {
+            "type": "number",
+            "description": "How many organizations installed this entry",
+            "example": 12
+          },
+          "averageRating": {
+            "type": "object",
+            "description": "Mean rating rounded to one decimal; null when never rated",
+            "example": 4.5,
+            "nullable": true
+          },
+          "ratingCount": {
+            "type": "number",
+            "description": "Number of organizations that rated the entry",
+            "example": 8
+          },
+          "mine": {
+            "type": "boolean",
+            "description": "True when the calling organization submitted this entry"
+          },
+          "status": {
+            "type": "string",
+            "description": "Review state — returned only for the caller’s own submissions (review state is the submitter’s business only)",
+            "enum": [
+              "submitted",
+              "approved",
+              "rejected",
+              "published"
+            ]
+          },
+          "reviewNote": {
+            "type": "object",
+            "description": "Reviewer note — returned only for the caller’s own submissions",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "contentTypeId",
+          "downloadCount",
+          "ratingCount",
+          "mine"
+        ]
+      },
+      "ProLayoutGalleryInstallResultDto": {
+        "type": "object",
+        "properties": {
+          "layoutId": {
+            "type": "string",
+            "description": "UUID of the freshly created local custom layout in the caller’s organization"
+          },
+          "installed": {
+            "type": "boolean",
+            "description": "Always true — a failed install is an HTTP error",
+            "example": true
+          }
+        },
+        "required": [
+          "layoutId",
+          "installed"
+        ]
+      },
+      "ProLayoutGalleryRatingDto": {
+        "type": "object",
+        "properties": {
+          "averageRating": {
+            "type": "number",
+            "description": "Mean rating after the vote, rounded to one decimal",
+            "example": 4.3
+          },
+          "ratingCount": {
+            "type": "number",
+            "description": "Number of organizations that have rated the entry",
+            "example": 9
+          }
+        },
+        "required": [
+          "averageRating",
+          "ratingCount"
+        ]
+      },
+      "ProLayoutGalleryReviewResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Reviewed gallery entry UUID"
+          },
+          "status": {
+            "type": "string",
+            "description": "State after the review action",
+            "enum": [
+              "approved",
+              "rejected",
+              "published"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "ProLayoutGallerySubmissionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Gallery entry UUID created by the submission"
+          },
+          "status": {
+            "type": "string",
+            "description": "State of the fresh entry — awaiting instance-super-admin review",
+            "enum": [
+              "submitted"
+            ],
+            "example": "submitted"
+          },
+          "strippedPaths": {
+            "description": "JSON paths of org-specific values (asset URLs/ids) the sanitizer stripped before storing the snapshot",
+            "example": [
+              "regions[0].style.background_image"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "strippedPaths"
+        ]
+      },
+      "ProLayoutGitConfigResultDto": {
+        "type": "object",
+        "properties": {
+          "repoUrl": {
+            "type": "string",
+            "description": "The configured (SSRF-validated) Git remote",
+            "example": "https://git.example.eu/org/layouts.git"
+          },
+          "branch": {
+            "type": "string",
+            "description": "Branch layouts are synced with",
+            "example": "main"
+          },
+          "path": {
+            "type": "object",
+            "description": "Sub-path within the repository holding the layout files; null for the root",
+            "nullable": true
+          },
+          "tokenHint": {
+            "type": "object",
+            "description": "Masked hint of the vault-stored access token (the token itself is never returned); null when no token is stored",
+            "nullable": true
+          },
+          "sovereigntyWarning": {
+            "type": "object",
+            "description": "Data-sovereignty advisory when the remote is a known non-EU-hosted forge; null otherwise",
+            "nullable": true
+          }
+        },
+        "required": [
+          "repoUrl",
+          "branch"
+        ]
+      },
+      "ProLayoutGitPushResultDto": {
+        "type": "object",
+        "properties": {
+          "commitHash": {
+            "type": "object",
+            "description": "Commit hash created by the push; null when nothing changed",
+            "nullable": true
+          },
+          "pushed": {
+            "type": "number",
+            "description": "Layouts written into the repository",
+            "example": 7
+          },
+          "upToDate": {
+            "type": "boolean",
+            "description": "True when the export matched the repository and no commit was made"
+          }
+        },
+        "required": [
+          "pushed",
+          "upToDate"
+        ]
+      },
+      "ProLayoutGitStatusDto": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "description": "Whether this organization has a Git config row"
+          },
+          "repoUrl": {
+            "type": "object",
+            "description": "Configured Git remote; null when unconfigured",
+            "nullable": true
+          },
+          "branch": {
+            "type": "string",
+            "description": "Configured branch (defaults to `main`)",
+            "example": "main"
+          },
+          "path": {
+            "type": "object",
+            "description": "Sub-path within the repository",
+            "nullable": true
+          },
+          "tokenHint": {
+            "type": "object",
+            "description": "Masked hint of the vault-stored access token; null when no token is stored",
+            "nullable": true
+          },
+          "lastSync": {
+            "type": "object",
+            "description": "When a sync or push last succeeded",
+            "format": "date-time",
+            "nullable": true
+          },
+          "commitHash": {
+            "type": "object",
+            "description": "Commit hash of the last successful sync/push",
+            "nullable": true
+          },
+          "layoutCount": {
+            "type": "number",
+            "description": "Custom layouts this organization currently has",
+            "example": 7
+          }
+        },
+        "required": [
+          "configured",
+          "branch",
+          "layoutCount"
+        ]
+      },
+      "ProLayoutGitSyncFileDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path of the file inside the repository (relative to the configured sub-path)",
+            "example": "news-standard.layout.json"
+          },
+          "status": {
+            "type": "string",
+            "description": "Per-file outcome. `created` imported a new layout, `updated` wrote a new draft on an existing one, `skipped` was not a usable layout file, `failed` could not be imported.",
+            "enum": [
+              "created",
+              "updated",
+              "skipped",
+              "failed"
+            ]
+          },
+          "layoutId": {
+            "type": "string",
+            "description": "Layout id read from the file, when it had one"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why the file was skipped or failed"
+          }
+        },
+        "required": [
+          "path",
+          "status"
+        ]
+      },
+      "ProLayoutGitSyncResultDto": {
+        "type": "object",
+        "properties": {
+          "commitHash": {
+            "type": "string",
+            "description": "Commit hash the repository was read at"
+          },
+          "created": {
+            "type": "number",
+            "description": "Layouts newly imported (as drafts)",
+            "example": 2
+          },
+          "updated": {
+            "type": "number",
+            "description": "Existing layouts that received a new draft",
+            "example": 3
+          },
+          "skipped": {
+            "type": "number",
+            "description": "Files that were not usable layout files",
+            "example": 1
+          },
+          "failed": {
+            "type": "number",
+            "description": "Files that failed to import",
+            "example": 0
+          },
+          "files": {
+            "description": "Every file the sync looked at, so a partial pull stays legible",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProLayoutGitSyncFileDto"
+            }
+          }
+        },
+        "required": [
+          "commitHash",
+          "created",
+          "updated",
+          "skipped",
+          "failed",
+          "files"
+        ]
+      },
+      "ProLayoutRegionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Region id, unique within the layout",
+            "example": "hero"
+          },
+          "type": {
+            "type": "string",
+            "description": "Region renderer type",
+            "example": "hero-image"
+          },
+          "field_bindings": {
+            "type": "object",
+            "description": "Content fields bound into this region, keyed by binding name",
+            "additionalProperties": true
+          },
+          "label": {
+            "type": "object",
+            "description": "Localized region label, keyed by locale",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "en": "Hero",
+              "de": "Titelbereich"
+            }
+          },
+          "style": {
+            "type": "object",
+            "description": "Presentation style of the region (open-ended style bag)",
+            "additionalProperties": true
+          },
+          "condition": {
+            "type": "object",
+            "description": "Visibility condition — `{ field, operator, value? }` evaluated against the content at render time",
+            "additionalProperties": true
+          },
+          "children": {
+            "description": "Nested regions; absent for leaf regions (the structure is recursive)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Recursive — same shape as `ProLayoutRegionDto`. Inlined as a free-form object because a self-referencing schema cannot be dereferenced into a finite document."
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ]
+      },
+      "ProLayoutVersionEntryDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Semver version this entry was published as",
+            "example": "1.0.2"
+          },
+          "definition": {
+            "type": "object",
+            "description": "The full layout definition as published in this version (a layout/v1 document; drafts may be partial). Kept verbatim so it can be restored.",
+            "additionalProperties": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "When the version was published",
+            "format": "date-time"
+          },
+          "publishedBy": {
+            "type": "string",
+            "description": "User id that published it"
+          }
+        },
+        "required": [
+          "version",
+          "definition",
+          "publishedAt",
+          "publishedBy"
+        ]
+      },
+      "ProNotificationAckDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Always true — the operation is idempotent and reports success even when nothing matched (e.g. an already-read notification)",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "ProNotificationAffectedCountDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Number of notification rows the operation changed",
+            "example": 12
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "ProNotificationChannelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Channel UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Operator-chosen channel name",
+            "example": "Editorial Slack"
+          },
+          "type": {
+            "type": "string",
+            "description": "Delivery target kind",
+            "enum": [
+              "slack",
+              "teams",
+              "discord",
+              "webhook"
+            ],
+            "example": "webhook"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Disabled channels are skipped by every dispatch"
+          },
+          "config": {
+            "type": "object",
+            "description": "Connection settings as stored; carries at least `webhookUrl` (or `url`). The URL is SSRF-validated on write and again at every send.",
+            "additionalProperties": true
+          },
+          "events": {
+            "description": "Event types that trigger this channel; an empty array means \"every event\"",
+            "example": [
+              "content_published"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data_transfer_ack": {
+            "type": "boolean",
+            "description": "Explicit GDPR acknowledgement that notification content leaves the EU. Required (and re-checked at send time) for slack/teams/discord channels (IMP-PRO-NOTIF-02)."
+          },
+          "messages_sent": {
+            "type": "number",
+            "description": "Successful deliveries so far",
+            "example": 42
+          },
+          "last_sent_at": {
+            "type": "object",
+            "description": "Last successful delivery",
+            "format": "date-time",
+            "nullable": true
+          },
+          "last_error": {
+            "type": "object",
+            "description": "Message of the last failed delivery",
+            "nullable": true
+          },
+          "consecutive_failures": {
+            "type": "number",
+            "description": "Failures since the last success (channel-health telemetry)",
+            "example": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "type",
+          "enabled",
+          "config",
+          "events",
+          "data_transfer_ack",
+          "messages_sent",
+          "consecutive_failures",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProNotificationChannelStatsDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Configured channels",
+            "example": 4
+          },
+          "enabled": {
+            "type": "number",
+            "description": "Channels currently enabled",
+            "example": 3
+          },
+          "totalMessagesSent": {
+            "type": "number",
+            "description": "Messages sent across all channels",
+            "example": 1280
+          },
+          "byType": {
+            "type": "object",
+            "description": "Channel count per channel type",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "webhook": 2,
+              "slack": 1
+            }
+          }
+        },
+        "required": [
+          "total",
+          "enabled",
+          "totalMessagesSent",
+          "byType"
+        ]
+      },
+      "ProNotificationChannelTestResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the test message was accepted by the target"
+          },
+          "error": {
+            "type": "string",
+            "description": "Why the test failed — a transport error, a missing channel, or a missing EU transfer acknowledgement"
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "ProNotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Notification UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Recipient user id"
+          },
+          "type": {
+            "type": "string",
+            "description": "Event that produced the notification",
+            "enum": [
+              "content_published",
+              "content_updated",
+              "content_deleted",
+              "comment_added",
+              "task_assigned",
+              "workflow_transition",
+              "import_completed",
+              "export_completed",
+              "system_alert",
+              "channel_error"
+            ],
+            "example": "content_published"
+          },
+          "title": {
+            "type": "string",
+            "description": "Short headline",
+            "example": "Content Published"
+          },
+          "body": {
+            "type": "object",
+            "description": "Longer prose body",
+            "nullable": true
+          },
+          "data": {
+            "type": "object",
+            "description": "Free-form payload of the emitting event — typically `contentId`, `contentTypeId` and an `_i18n` block (`{ key, params }`) the client uses to render a localized message. Shape varies per notification type.",
+            "additionalProperties": true
+          },
+          "read_at": {
+            "type": "object",
+            "description": "When the recipient read it; null while unread",
+            "format": "date-time",
+            "nullable": true
+          },
+          "archived_at": {
+            "type": "object",
+            "description": "When it was archived; archived rows are excluded from the inbox listing",
+            "format": "date-time",
+            "nullable": true
+          },
+          "channels_sent": {
+            "description": "Ids of the external channels this notification was delivered to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pending_digest": {
+            "type": "boolean",
+            "description": "True while the row is deferred (IMP-PRO-NOTIF-05): created during a DND window or for a digest-frequency user, hidden from inbox and unread count until the digest job releases it."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "user_id",
+          "type",
+          "title",
+          "data",
+          "channels_sent",
+          "pending_digest",
+          "created_at"
+        ]
+      },
+      "ProNotificationHousekeepingResultDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "number",
+            "description": "Notifications deleted because they were older than the retention window",
+            "example": 240
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ProNotificationPreferencesDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Preference row UUID"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "user_id": {
+            "type": "string",
+            "description": "User the preferences belong to"
+          },
+          "in_app_enabled": {
+            "type": "boolean",
+            "description": "Deliver in-app notifications at all"
+          },
+          "email_enabled": {
+            "type": "boolean",
+            "description": "Deliver notifications by e-mail"
+          },
+          "digest_frequency": {
+            "type": "string",
+            "description": "Delivery cadence. Anything but `realtime`/`never` defers rows into a digest batch (IMP-PRO-NOTIF-05).",
+            "enum": [
+              "realtime",
+              "hourly",
+              "daily",
+              "weekly",
+              "never"
+            ],
+            "example": "realtime"
+          },
+          "dnd_enabled": {
+            "type": "boolean",
+            "description": "Do-not-disturb window active"
+          },
+          "dnd_start": {
+            "type": "object",
+            "description": "Start of the do-not-disturb window (PostgreSQL TIME), null when unset",
+            "example": "22:00",
+            "nullable": true
+          },
+          "dnd_end": {
+            "type": "object",
+            "description": "End of the do-not-disturb window (PostgreSQL TIME); a value before `dnd_start` wraps past midnight",
+            "example": "07:00",
+            "nullable": true
+          },
+          "type_overrides": {
+            "type": "object",
+            "description": "Per-notification-type overrides keyed by notification type, each `{ inApp?: boolean, email?: boolean }`. `inApp: false` suppresses the in-app row entirely.",
+            "additionalProperties": true,
+            "example": {
+              "content_published": {
+                "inApp": true,
+                "email": false
+              }
+            }
+          },
+          "muted_content_ids": {
+            "description": "Content ids the user muted — notifications referencing them are dropped",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "muted_content_types": {
+            "description": "Content type ids the user muted",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_digest_at": {
+            "type": "object",
+            "description": "When this user’s digest was last flushed",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "user_id",
+          "in_app_enabled",
+          "email_enabled",
+          "digest_frequency",
+          "dnd_enabled",
+          "type_overrides",
+          "muted_content_ids",
+          "muted_content_types",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProNotificationRecentActivityDto": {
+        "type": "object",
+        "properties": {
+          "last24h": {
+            "type": "number",
+            "description": "Notifications created in the last 24 hours",
+            "example": 18
+          },
+          "last7d": {
+            "type": "number",
+            "description": "Notifications created in the last 7 days",
+            "example": 96
+          },
+          "last30d": {
+            "type": "number",
+            "description": "Notifications created in the last 30 days",
+            "example": 402
+          }
+        },
+        "required": [
+          "last24h",
+          "last7d",
+          "last30d"
+        ]
+      },
+      "ProNotificationStatsDto": {
+        "type": "object",
+        "properties": {
+          "totalNotifications": {
+            "type": "number",
+            "description": "All notification rows of the organization",
+            "example": 402
+          },
+          "unreadCount": {
+            "type": "number",
+            "description": "Unread, non-archived rows",
+            "example": 12
+          },
+          "readCount": {
+            "type": "number",
+            "description": "Read, non-archived rows",
+            "example": 380
+          },
+          "archivedCount": {
+            "type": "number",
+            "description": "Archived rows",
+            "example": 10
+          },
+          "byType": {
+            "type": "object",
+            "description": "Notification count per notification type, busiest first",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "example": {
+              "content_published": 210,
+              "comment_added": 96
+            }
+          },
+          "channels": {
+            "description": "External channel statistics",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProNotificationChannelStatsDto"
+              }
+            ]
+          },
+          "recentActivity": {
+            "description": "Rolling creation counts",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProNotificationRecentActivityDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "totalNotifications",
+          "unreadCount",
+          "readCount",
+          "archivedCount",
+          "byType",
+          "channels",
+          "recentActivity"
+        ]
+      },
+      "ProNotificationUnreadCountDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number",
+            "description": "Unread, non-archived, non-deferred notifications of the current user",
+            "example": 3
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "ProTranscodeProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Transcode profile id"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Profile name, unique per organization",
+            "example": "1080p H.264"
+          },
+          "description": {
+            "type": "object",
+            "description": "What the preset is for",
+            "nullable": true
+          },
+          "format": {
+            "type": "string",
+            "description": "Container/codec family of the output",
+            "enum": [
+              "mp4",
+              "webm"
+            ]
+          },
+          "width": {
+            "type": "object",
+            "description": "Target width in pixels",
+            "example": 1920,
+            "nullable": true
+          },
+          "height": {
+            "type": "object",
+            "description": "Target height in pixels",
+            "example": 1080,
+            "nullable": true
+          },
+          "video_bitrate": {
+            "type": "object",
+            "description": "Target video bitrate, always of the form `NNNNk` — the worker interpolates it into ffmpeg arguments, so the format is constrained at rest (IMP-PRO-MEDIA-03)",
+            "example": "4500k",
+            "nullable": true
+          },
+          "audio_bitrate": {
+            "type": "object",
+            "description": "Target audio bitrate, same `NNNNk` constraint as `video_bitrate`",
+            "example": "128k",
+            "nullable": true
+          },
+          "quality": {
+            "type": "string",
+            "description": "Encoder quality preset",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "max_file_size": {
+            "type": "object",
+            "description": "Soft cap for the output size in bytes",
+            "example": 209715200,
+            "nullable": true
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether this is the organization’s default profile"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "format",
+          "quality",
+          "is_default",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProVideoCaptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Caption track id"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "asset_id": {
+            "type": "string",
+            "description": "Video asset the track belongs to"
+          },
+          "locale": {
+            "type": "string",
+            "description": "BCP-47 locale tag; one track per (asset, locale)",
+            "example": "de-AT"
+          },
+          "label": {
+            "type": "object",
+            "description": "Player-facing track label",
+            "nullable": true
+          },
+          "storage_key": {
+            "type": "string",
+            "description": "Storage key of the stored WebVTT document"
+          },
+          "source": {
+            "type": "string",
+            "description": "Where the track came from: an operator upload, or a local transcription engine (never a non-EU SaaS by default)",
+            "enum": [
+              "uploaded",
+              "auto"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Only `ready` tracks are offered to players",
+            "enum": [
+              "pending",
+              "ready",
+              "failed"
+            ]
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether players should preselect this track"
+          },
+          "cue_count": {
+            "type": "object",
+            "description": "Number of cues parsed from the WebVTT",
+            "nullable": true
+          },
+          "size_bytes": {
+            "type": "object",
+            "description": "Size of the WebVTT document in bytes",
+            "nullable": true
+          },
+          "error_message": {
+            "type": "object",
+            "description": "Why an auto-transcription failed; null otherwise",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "object",
+            "description": "User that uploaded the track; null for machine-generated tracks",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "asset_id",
+          "locale",
+          "storage_key",
+          "source",
+          "status",
+          "is_default",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProVideoCaptionTrackDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Caption track id"
+          },
+          "locale": {
+            "type": "string",
+            "description": "BCP-47 locale tag",
+            "example": "de"
+          },
+          "label": {
+            "type": "object",
+            "description": "Player-facing track label",
+            "nullable": true
+          },
+          "storage_key": {
+            "type": "string",
+            "description": "Storage key of the WebVTT document"
+          },
+          "source": {
+            "type": "string",
+            "description": "Upload or local transcription",
+            "enum": [
+              "uploaded",
+              "auto"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Always `ready` here — the video info only carries usable tracks",
+            "enum": [
+              "ready"
+            ]
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether players should preselect this track"
+          }
+        },
+        "required": [
+          "id",
+          "locale",
+          "storage_key",
+          "source",
+          "status",
+          "is_default"
+        ]
+      },
+      "ProVideoInfoDto": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "description": "Latest probed metadata across the asset’s completed jobs",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProVideoMetadataDto"
+              }
+            ]
+          },
+          "thumbnailKey": {
+            "type": "object",
+            "description": "Latest non-null thumbnail storage key across completed jobs",
+            "nullable": true
+          },
+          "transcodeKey": {
+            "type": "object",
+            "description": "Latest non-null transcode storage key across completed jobs",
+            "nullable": true
+          },
+          "muxData": {
+            "type": "object",
+            "description": "Latest external streaming payload (`assetId`, `playbackId`, `streamingUrl`, optional URL maps); null when no provider is configured. Provider-defined shape.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "thumbhash": {
+            "type": "object",
+            "description": "Latest ThumbHash placeholder",
+            "nullable": true
+          },
+          "lastJobStatus": {
+            "type": "string",
+            "description": "Status of the most recently created job for this asset",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "cancelling",
+              "cancelled"
+            ],
+            "nullable": true
+          },
+          "renditions": {
+            "description": "Active renditions, widest first (the asset’s quality ladder)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProVideoRenditionDto"
+            }
+          },
+          "captions": {
+            "description": "Ready caption tracks, default first then by locale",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProVideoCaptionTrackDto"
+            }
+          }
+        },
+        "required": [
+          "renditions",
+          "captions"
+        ]
+      },
+      "ProVideoJobDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Video job id"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "asset_id": {
+            "type": "string",
+            "description": "Asset the job processes"
+          },
+          "created_by": {
+            "type": "object",
+            "description": "User that queued the job; null once that user was erased (GDPR)",
+            "nullable": true
+          },
+          "job_type": {
+            "type": "string",
+            "description": "What the worker should do",
+            "enum": [
+              "metadata",
+              "thumbnail",
+              "transcode",
+              "full",
+              "captions"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Lifecycle state. `cancelling` is the cooperative flag a processing job honours between stages; `cancelled` is the finalized state.",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "cancelling",
+              "cancelled"
+            ]
+          },
+          "priority": {
+            "type": "number",
+            "description": "Queue priority, higher runs first (0–10)",
+            "example": 0
+          },
+          "transcode_profile": {
+            "type": "object",
+            "description": "Snapshot of the requested encoding settings: either one profile (`id`, `name`, `format`, `width`, `height`, `videoBitrate`, `audioBitrate`, `quality`, `maxFileSize`) or `{ ladder: [ …profiles ] }` for a quality ladder (IMP-PRO-MEDIA-07). Null when the job needs no profile. Open-ended by design.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "video_metadata": {
+            "description": "Probed source metadata; filled once a metadata/full job completed",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProVideoMetadataDto"
+              }
+            ]
+          },
+          "thumbnail_key": {
+            "type": "object",
+            "description": "Storage key of the generated thumbnail",
+            "nullable": true
+          },
+          "transcode_key": {
+            "type": "object",
+            "description": "Storage key of the transcoded output (single-profile jobs)",
+            "nullable": true
+          },
+          "mux_data": {
+            "type": "object",
+            "description": "External streaming provider payload when one is configured — `assetId`, `playbackId`, `streamingUrl` and optional `mp4Urls` / `thumbnailUrls` maps. Provider-defined, so the shape is open-ended.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "thumbhash": {
+            "type": "object",
+            "description": "Base64 ThumbHash used as a blurred video placeholder",
+            "nullable": true
+          },
+          "error_message": {
+            "type": "object",
+            "description": "Failure message of the last attempt",
+            "nullable": true
+          },
+          "error_details": {
+            "type": "object",
+            "description": "Structured failure context (stderr excerpts, stage, exit code)",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "attempts": {
+            "type": "number",
+            "description": "Attempts consumed so far; bounded by MEDIA_MAX_ATTEMPTS (IMP-PRO-MEDIA-04)",
+            "example": 0
+          },
+          "heartbeat_at": {
+            "type": "object",
+            "description": "Last worker heartbeat. A processing job whose heartbeat is older than 15 minutes counts as abandoned and is requeued or deletable.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "caption_locale": {
+            "type": "object",
+            "description": "Locale a captions job transcribes into; null falls back to MEDIA_TRANSCRIBE_LOCALE",
+            "example": "de",
+            "nullable": true
+          },
+          "started_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "processing_time_ms": {
+            "type": "object",
+            "description": "Wall-clock processing time of the successful attempt, in milliseconds",
+            "example": 42150,
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "asset_id",
+          "job_type",
+          "status",
+          "priority",
+          "attempts",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ProVideoJobStatsDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "All video jobs of the organization",
+            "example": 128
+          },
+          "pending": {
+            "type": "number",
+            "description": "Jobs waiting to be claimed",
+            "example": 3
+          },
+          "processing": {
+            "type": "number",
+            "description": "Jobs currently claimed by a worker",
+            "example": 1
+          },
+          "completed": {
+            "type": "number",
+            "description": "Successfully completed jobs",
+            "example": 120
+          },
+          "failed": {
+            "type": "number",
+            "description": "Failed jobs",
+            "example": 4
+          },
+          "avgProcessingTimeMs": {
+            "type": "object",
+            "description": "Mean processing time of completed jobs in milliseconds; null when none completed",
+            "example": 38400,
+            "nullable": true
+          }
+        },
+        "required": [
+          "total",
+          "pending",
+          "processing",
+          "completed",
+          "failed"
+        ]
+      },
+      "ProVideoMetadataDto": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "number",
+            "description": "Duration in seconds",
+            "example": 184.32
+          },
+          "width": {
+            "type": "number",
+            "description": "Frame width in pixels",
+            "example": 1920
+          },
+          "height": {
+            "type": "number",
+            "description": "Frame height in pixels",
+            "example": 1080
+          },
+          "codec": {
+            "type": "string",
+            "description": "Video codec as reported by ffprobe",
+            "example": "h264"
+          },
+          "bitrate": {
+            "type": "number",
+            "description": "Bitrate in bits per second",
+            "example": 4500000
+          },
+          "fps": {
+            "type": "number",
+            "description": "Frames per second",
+            "example": 25
+          },
+          "hasAudio": {
+            "type": "boolean",
+            "description": "Whether the file carries an audio stream"
+          },
+          "fileSize": {
+            "type": "number",
+            "description": "Source file size in bytes",
+            "example": 104857600
+          }
+        },
+        "required": [
+          "duration",
+          "width",
+          "height",
+          "codec",
+          "bitrate",
+          "fps",
+          "hasAudio"
+        ]
+      },
+      "ProVideoRenditionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Rendition id"
+          },
+          "organization_id": {
+            "type": "string",
+            "description": "Owning organization id"
+          },
+          "asset_id": {
+            "type": "string",
+            "description": "Asset this output belongs to"
+          },
+          "job_id": {
+            "type": "object",
+            "description": "Job that produced it; null once that job was deleted",
+            "nullable": true
+          },
+          "kind": {
+            "type": "string",
+            "description": "What kind of output this is",
+            "enum": [
+              "transcode",
+              "thumbnail"
+            ]
+          },
+          "storage_key": {
+            "type": "string",
+            "description": "Storage key of the stored object"
+          },
+          "format": {
+            "type": "object",
+            "description": "Container format of the output",
+            "example": "mp4",
+            "nullable": true
+          },
+          "width": {
+            "type": "object",
+            "description": "Output width in pixels",
+            "example": 1280,
+            "nullable": true
+          },
+          "height": {
+            "type": "object",
+            "description": "Output height in pixels",
+            "example": 720,
+            "nullable": true
+          },
+          "video_bitrate": {
+            "type": "object",
+            "description": "Video bitrate used",
+            "example": "2500k",
+            "nullable": true
+          },
+          "audio_bitrate": {
+            "type": "object",
+            "description": "Audio bitrate used",
+            "example": "128k",
+            "nullable": true
+          },
+          "quality": {
+            "type": "string",
+            "description": "Quality preset used",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "nullable": true
+          },
+          "size_bytes": {
+            "type": "object",
+            "description": "Size of the stored object in bytes",
+            "nullable": true
+          },
+          "profile_id": {
+            "type": "object",
+            "description": "Transcode profile that produced it; null for profile-less outputs",
+            "nullable": true
+          },
+          "profile_snapshot": {
+            "type": "object",
+            "description": "Copy of the profile settings at production time — profiles may change afterwards, so this is what the file actually encodes. Open-ended.",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Only `active` renditions are delivered; a re-transcode marks the previous one `superseded` before its object is purged.",
+            "enum": [
+              "active",
+              "superseded"
+            ]
+          },
+          "superseded_at": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "asset_id",
+          "kind",
+          "storage_key",
+          "status",
+          "created_at"
+        ]
       },
       "RateGalleryDto": {
         "type": "object",
