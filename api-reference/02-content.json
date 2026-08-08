@@ -5805,10 +5805,11 @@
             "description": "Sort position among siblings"
           },
           "children": {
-            "description": "Nested children — present only when the requested `depth` is greater than 1 and the node has children",
+            "description": "Nested children — present only when the requested `depth` is greater than 1 and the node has children. Each child has the same structure as ContentTreeNodeDto.",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContentTreeNodeDto"
+              "type": "object",
+              "description": "Child tree node — same structure as ContentTreeNodeDto"
             }
           }
         },
@@ -7487,10 +7488,11 @@
             "description": "Result of the region `condition` against the content — false means \"render nothing\""
           },
           "children": {
-            "description": "Nested regions, resolved recursively; absent for leaf regions",
+            "description": "Nested regions, resolved recursively; absent for leaf regions. Each child region has the same structure as ResolvedRegionDto.",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ResolvedRegionDto"
+              "type": "object",
+              "description": "Child region — same structure as ResolvedRegionDto"
             }
           }
         },
