@@ -1,0 +1,2794 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "roadbeat Studio API — Assets & Media Delivery",
+    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Assets & Media Delivery.** Asset upload and management, folder organization and CDN integration.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://studio.roadbeat.net",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "assets"
+    },
+    {
+      "name": "asset-folders"
+    },
+    {
+      "name": "cdn"
+    }
+  ],
+  "paths": {
+    "/api/v1/assets/folders/tree": {
+      "get": {
+        "operationId": "AssetFoldersController_getTree",
+        "summary": "Get folder tree with nested children and asset counts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "asset-folders"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/folders": {
+      "get": {
+        "operationId": "AssetFoldersController_findAll",
+        "summary": "Get flat list of all folders (useful for dropdowns)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "asset-folders"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "AssetFoldersController_create",
+        "summary": "Create a new asset folder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFolderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "asset-folders"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/folders/{id}": {
+      "get": {
+        "operationId": "AssetFoldersController_findOne",
+        "summary": "Get folder by ID with parent, children, and asset count",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Folder UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "asset-folders"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "AssetFoldersController_update",
+        "summary": "Update folder name or move to a different parent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Folder UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFolderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "asset-folders"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "AssetFoldersController_remove",
+        "summary": "Delete folder (fails if it has children or assets)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Folder UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "asset-folders"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets": {
+      "get": {
+        "operationId": "AssetsController_findAll",
+        "summary": "List assets with optional mime type and folder filters",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (higher limit for large-screen tile grids)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 250,
+              "default": 24,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "default": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "description": "Field filters, e.g. ?filter[status]=active (allow-listed per resource)",
+            "schema": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by filename (case-insensitive contains)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mimeType",
+            "required": false,
+            "in": "query",
+            "description": "Filter by MIME type prefix (e.g. image/)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by folder ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/search": {
+      "get": {
+        "operationId": "AssetsController_search",
+        "summary": "Advanced asset search with text, filters, sorting, and pagination",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 250,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "default": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "description": "Field filters, e.g. ?filter[status]=active (allow-listed per resource)",
+            "schema": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search query (filename, title, description, tags)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by folder ID (\"root\" for unfiled assets)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mimeType",
+            "required": false,
+            "in": "query",
+            "description": "Filter by MIME type prefix (e.g., \"image/\", \"video/\", \"image/png\")",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "required": false,
+            "in": "query",
+            "description": "Filter by tags (comma-separated, matches any)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "uploadedById",
+            "required": false,
+            "in": "query",
+            "description": "Filter by uploader user ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "required": false,
+            "in": "query",
+            "description": "Filter by created after date (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "required": false,
+            "in": "query",
+            "description": "Filter by created before date (ISO 8601)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minSize",
+            "required": false,
+            "in": "query",
+            "description": "Minimum file size in bytes",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxSize",
+            "required": false,
+            "in": "query",
+            "description": "Maximum file size in bytes",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "minWidth",
+            "required": false,
+            "in": "query",
+            "description": "Minimum image width in pixels",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "minHeight",
+            "required": false,
+            "in": "query",
+            "description": "Minimum image height in pixels",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "missingAlt",
+            "required": false,
+            "in": "query",
+            "description": "Only images missing alt text (accessibility)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: name, -name, date, -date, size, -size",
+            "schema": {
+              "default": "-date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/facets": {
+      "get": {
+        "operationId": "AssetsController_getFacets",
+        "summary": "Get asset type facets (images/videos/audio/documents/other counts)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/tags": {
+      "get": {
+        "operationId": "AssetsController_getPopularTags",
+        "summary": "Get popular tags across the organization",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Max tags to return (default 50)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/unused": {
+      "get": {
+        "operationId": "AssetsController_findUnused",
+        "summary": "Find assets not referenced by any content",
+        "parameters": [
+          {
+            "name": "olderThan",
+            "required": false,
+            "in": "query",
+            "description": "ISO date — only show unused assets created before this date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Max results (default 50)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/storage": {
+      "get": {
+        "operationId": "AssetsController_getStorageUsage",
+        "summary": "Get storage usage stats (CE: 5 GB limit)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/reconcile": {
+      "post": {
+        "operationId": "AssetsController_reconcile",
+        "summary": "Reconcile storage vs DB for this org: quarantine old orphans, flag missing files (IMP-ASSET-07)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/{id}": {
+      "get": {
+        "operationId": "AssetsController_findOne",
+        "summary": "Get asset by ID with upload info, folder, and content references",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "AssetsController_update",
+        "summary": "Update asset metadata or move to folder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "AssetsController_remove",
+        "summary": "Delete asset and file (emits asset.beforeDelete — Pro plugins can prevent)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "force",
+            "required": false,
+            "in": "query",
+            "description": "Set to \"true\" to bypass usage check",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/upload": {
+      "post": {
+        "operationId": "AssetsController_upload",
+        "summary": "Upload asset file (CE: 5 GB total storage limit, 50 MB per file)",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/upload/batch": {
+      "post": {
+        "operationId": "AssetsController_uploadBatch",
+        "summary": "Upload up to 50 files in one request — per-file success/error results",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/bulk": {
+      "post": {
+        "operationId": "AssetsController_bulk",
+        "summary": "Bulk asset action (move / delete / addTags / removeTags) — per-item results",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkAssetActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/{id}/metadata": {
+      "put": {
+        "operationId": "AssetsController_updateMetadata",
+        "summary": "Update asset metadata (title, description, alt, custom)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMetadataDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/{id}/tags": {
+      "post": {
+        "operationId": "AssetsController_addTags",
+        "summary": "Add tags to an asset (merges with existing)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManageTagsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "AssetsController_removeTags",
+        "summary": "Remove tags from an asset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManageTagsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/{id}/usage": {
+      "get": {
+        "operationId": "AssetsController_getUsage",
+        "summary": "Get which content items reference this asset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/{id}/can-delete": {
+      "get": {
+        "operationId": "AssetsController_canDelete",
+        "summary": "Check if asset can be safely deleted (not referenced by content)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assets/reorder": {
+      "put": {
+        "operationId": "AssetsController_reorder",
+        "summary": "Reorder assets by updating sort_order values",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "assets"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/status": {
+      "get": {
+        "operationId": "CdnController_getStatus",
+        "summary": "Get CDN configuration status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/resolve/{assetId}": {
+      "get": {
+        "operationId": "CdnController_resolveUrl",
+        "summary": "Resolve CDN URL for an asset with optional transforms",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "w",
+            "required": false,
+            "in": "query",
+            "description": "Width",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "h",
+            "required": false,
+            "in": "query",
+            "description": "Height",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Quality (1-100)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "f",
+            "required": false,
+            "in": "query",
+            "description": "Format (jpg, png, webp, avif)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "signed",
+            "required": false,
+            "in": "query",
+            "description": "Generate a signed URL",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expiresIn",
+            "required": false,
+            "in": "query",
+            "description": "Signed URL expiration in seconds",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/resolve/batch": {
+      "post": {
+        "operationId": "CdnController_resolveUrls",
+        "summary": "Batch-resolve CDN URLs for multiple assets",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/responsive/{assetId}": {
+      "get": {
+        "operationId": "CdnController_getResponsiveData",
+        "summary": "Get responsive image srcset and picture sources for an asset",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "formats",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated formats (webp,jpg,avif)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "quality",
+            "required": false,
+            "in": "query",
+            "description": "Quality (1-100)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/presets": {
+      "get": {
+        "operationId": "CdnController_getPresets",
+        "summary": "Get all available image preset definitions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/preset/{assetId}/{preset}": {
+      "get": {
+        "operationId": "CdnController_getPresetUrl",
+        "summary": "Get a preset-optimized URL for an asset",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "preset",
+            "required": true,
+            "in": "path",
+            "description": "Preset name (thumbnail, small, medium, large, xlarge, full, og, avatar)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/invalidate/{assetId}": {
+      "post": {
+        "operationId": "CdnController_invalidateAsset",
+        "summary": "Invalidate CDN cache for a specific asset",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/invalidate": {
+      "post": {
+        "operationId": "CdnController_invalidateKeys",
+        "summary": "Invalidate CDN cache for specific storage keys",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/cache": {
+      "delete": {
+        "operationId": "CdnController_purgeAll",
+        "summary": "Purge entire CDN cache (admin only, use with caution)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/cache/rules": {
+      "get": {
+        "operationId": "CdnController_getCacheRules",
+        "summary": "Get all configured edge cache rules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/cache/headers": {
+      "get": {
+        "operationId": "CdnController_getCacheHeaders",
+        "summary": "Preview Cache-Control headers for a given path",
+        "parameters": [
+          {
+            "name": "path",
+            "required": true,
+            "in": "query",
+            "description": "URL path to check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cdn/cache/asset-headers/{assetId}": {
+      "get": {
+        "operationId": "CdnController_getAssetCacheHeaders",
+        "summary": "Get recommended Cache-Control headers for an asset",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "description": "Asset UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cdn"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    },
+    "schemas": {
+      "BulkAssetActionDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "description": "Asset UUIDs to act on",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "move",
+              "delete",
+              "addTags",
+              "removeTags"
+            ]
+          },
+          "folderId": {
+            "type": "object",
+            "description": "Target folder for `move` (null = root)",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Tags for `addTags`/`removeTags`",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Force `delete` even if the asset is referenced",
+            "default": false
+          }
+        },
+        "required": [
+          "assetIds",
+          "action"
+        ]
+      },
+      "CreateFolderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Hero Images",
+            "description": "Folder name"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Parent folder UUID for nesting"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "statusCode",
+          "error",
+          "code",
+          "message",
+          "timestamp",
+          "path"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP status label",
+            "example": "Bad Request"
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code (e.g. BAD_REQUEST, UNAUTHORIZED, NOT_FOUND)",
+            "example": "BAD_REQUEST"
+          },
+          "message": {
+            "description": "Human-readable message; validation errors return one message per violation",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the error occurred"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path that produced the error"
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          }
+        }
+      },
+      "ManageTagsDto": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "description": "Array of tag strings",
+            "example": [
+              "press-conference",
+              "politics",
+              "2026"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "tags"
+        ]
+      },
+      "ReorderDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Array of items with their new sort order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReorderItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ReorderItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Item ID"
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "New sort order (0-based)"
+          }
+        },
+        "required": [
+          "id",
+          "sortOrder"
+        ]
+      },
+      "UpdateAssetDto": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "example": {
+              "alt_text": {
+                "en": "Chancellor at podium"
+              },
+              "caption": {
+                "en": "Press conference"
+              },
+              "credit": "AP"
+            },
+            "description": "Asset metadata (alt text, caption, credit, focal point, etc.)"
+          },
+          "folderId": {
+            "type": "string",
+            "description": "Move asset to a different folder"
+          }
+        }
+      },
+      "UpdateFolderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Thumbnails",
+            "description": "New folder name"
+          },
+          "parentId": {
+            "type": "object",
+            "description": "Move to a different parent folder (null = root)"
+          }
+        }
+      },
+      "UpdateMetadataDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "object",
+            "description": "Display title",
+            "example": "Press conference photo"
+          },
+          "description": {
+            "type": "object",
+            "description": "Description / caption"
+          },
+          "alt": {
+            "type": "object",
+            "description": "Alt text for accessibility",
+            "example": "Chancellor at podium"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Custom metadata (key-value pairs)",
+            "example": {
+              "credit": "AP",
+              "focal_point": {
+                "x": 50,
+                "y": 30
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,3900 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "roadbeat Studio API — Pro — APIs & Realtime",
+    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Pro — APIs & Realtime.** GraphQL management and delivery APIs, the API explorer, incoming/outgoing webhook extensions and WebSocket realtime tickets.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://studio.roadbeat.net",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "pro-graphql"
+    },
+    {
+      "name": "pro-graphql-delivery"
+    },
+    {
+      "name": "pro-api-explorer"
+    },
+    {
+      "name": "pro-webhooks"
+    },
+    {
+      "name": "pro-realtime"
+    }
+  ],
+  "paths": {
+    "/api/v1/pro/api-explorer/endpoints": {
+      "get": {
+        "operationId": "ApiExplorerController_getEndpoints",
+        "summary": "Get the full endpoint catalog with descriptions and parameters",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/openapi": {
+      "get": {
+        "operationId": "ApiExplorerController_getOpenApi",
+        "summary": "Download the OpenAPI document backing the catalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/endpoints/categories": {
+      "get": {
+        "operationId": "ApiExplorerController_getEndpointsByCategory",
+        "summary": "Get endpoints grouped by category",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/endpoints/search": {
+      "get": {
+        "operationId": "ApiExplorerController_searchEndpoints",
+        "summary": "Search endpoints by query",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/endpoints/categories/list": {
+      "get": {
+        "operationId": "ApiExplorerController_getCategories",
+        "summary": "List available endpoint categories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/example": {
+      "get": {
+        "operationId": "ApiExplorerController_getExamplePayload",
+        "summary": "Get example payload for an endpoint",
+        "parameters": [
+          {
+            "name": "method",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endpoint",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/curl": {
+      "post": {
+        "operationId": "ApiExplorerController_generateCurl",
+        "summary": "Generate a cURL command from request parameters",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/execute": {
+      "post": {
+        "operationId": "ApiExplorerController_executeRequest",
+        "summary": "Execute an API request and record it in history",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/history": {
+      "get": {
+        "operationId": "ApiExplorerController_listHistory",
+        "summary": "List request history for the current user",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ApiExplorerController_clearHistory",
+        "summary": "Clear request history (keeps saved items by default)",
+        "parameters": [
+          {
+            "name": "keepSaved",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/history/{id}": {
+      "get": {
+        "operationId": "ApiExplorerController_getHistoryItem",
+        "summary": "Get a specific history item with full request/response data",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ApiExplorerController_deleteHistoryItem",
+        "summary": "Delete a history item",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/history/{id}/replay": {
+      "post": {
+        "operationId": "ApiExplorerController_replayHistoryItem",
+        "summary": "Replay a history item (re-execute the same request)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/history/{id}/save": {
+      "put": {
+        "operationId": "ApiExplorerController_saveHistoryItem",
+        "summary": "Save a history item with a name and optional tags",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveHistoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/history/{id}/unsave": {
+      "put": {
+        "operationId": "ApiExplorerController_unsaveHistoryItem",
+        "summary": "Remove saved status from a history item",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/stats": {
+      "get": {
+        "operationId": "ApiExplorerController_getStats",
+        "summary": "Get API explorer usage statistics for the current user",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/environments": {
+      "get": {
+        "operationId": "ApiExplorerController_listEnvironments",
+        "summary": "List environments (secret VALUES are never returned)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ApiExplorerController_createEnvironment",
+        "summary": "Create an environment; secrets are vaulted",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/environments/{id}": {
+      "put": {
+        "operationId": "ApiExplorerController_updateEnvironment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ApiExplorerController_deleteEnvironment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/api-explorer/export/postman": {
+      "get": {
+        "operationId": "ApiExplorerController_exportPostman",
+        "summary": "Export saved requests as a Postman v2.1 collection",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-api-explorer"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/schema": {
+      "get": {
+        "operationId": "GraphQLController_getSchema",
+        "summary": "Get the generated GraphQL SDL schema for this organization",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/schema/types": {
+      "get": {
+        "operationId": "GraphQLController_getSchemaTypes",
+        "summary": "List content types with their GraphQL field mappings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/schema/type/{contentTypeId}": {
+      "get": {
+        "operationId": "GraphQLController_getTypeMapping",
+        "summary": "Get GraphQL field mappings for a specific content type",
+        "parameters": [
+          {
+            "name": "contentTypeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/schema/sdl": {
+      "get": {
+        "operationId": "GraphQLController_getSDL",
+        "summary": "Get raw SDL string (for external tools and IDE plugins)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/query": {
+      "post": {
+        "operationId": "GraphQLController_executeQuery",
+        "summary": "Execute a GraphQL-style content query",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/query/batch": {
+      "post": {
+        "operationId": "GraphQLController_executeBatch",
+        "summary": "Execute multiple GraphQL-style queries in a single request",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/resolve/content/{id}": {
+      "get": {
+        "operationId": "GraphQLController_resolveReference",
+        "summary": "Resolve a content reference by ID (for linked records)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/resolve/asset/{id}": {
+      "get": {
+        "operationId": "GraphQLController_resolveAsset",
+        "summary": "Resolve an asset by ID with responsive image data",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "w",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "h",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/content-types": {
+      "get": {
+        "operationId": "GraphQLController_getContentTypes",
+        "summary": "List all content types available in the GraphQL schema",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/config": {
+      "get": {
+        "operationId": "GraphQLController_getConfig",
+        "summary": "Get GraphQL API configuration for this organization",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "GraphQLController_updateConfig",
+        "summary": "Update GraphQL API configuration",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGraphQLConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/stats": {
+      "get": {
+        "operationId": "GraphQLController_getStats",
+        "summary": "Get GraphQL API usage statistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/delivery/tokens": {
+      "get": {
+        "operationId": "DeliveryAdminController_listTokens",
+        "summary": "List delivery tokens (never returns token material)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "DeliveryAdminController_createToken",
+        "summary": "Create a delivery token — the plaintext is shown ONCE",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/delivery/tokens/{id}": {
+      "delete": {
+        "operationId": "DeliveryAdminController_revokeToken",
+        "summary": "Revoke a delivery token (effective immediately)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/delivery/queries": {
+      "get": {
+        "operationId": "DeliveryAdminController_listQueries",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "DeliveryAdminController_registerQuery",
+        "summary": "Register a persisted query; returns its hash",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/graphql/delivery/queries/{id}": {
+      "delete": {
+        "operationId": "DeliveryAdminController_removeQuery",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/graphql-delivery/query/{hash}": {
+      "post": {
+        "operationId": "GraphQLDeliveryController_executePersisted",
+        "summary": "Execute a persisted query with a delivery token",
+        "parameters": [
+          {
+            "name": "hash",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql-delivery"
+        ]
+      }
+    },
+    "/api/v1/graphql-delivery/schema": {
+      "get": {
+        "operationId": "GraphQLDeliveryController_getSchema",
+        "summary": "Get the SDL for this organization (delivery token)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-graphql-delivery"
+        ]
+      }
+    },
+    "/api/v1/pro/realtime/stats": {
+      "get": {
+        "operationId": "RealtimeController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-realtime"
+        ]
+      }
+    },
+    "/api/v1/pro/realtime/connections": {
+      "get": {
+        "operationId": "RealtimeController_getConnections",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-realtime"
+        ]
+      }
+    },
+    "/api/v1/pro/realtime/presence": {
+      "get": {
+        "operationId": "RealtimeController_getAllPresence",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-realtime"
+        ]
+      }
+    },
+    "/api/v1/pro/realtime/presence/{contentId}": {
+      "get": {
+        "operationId": "RealtimeController_getContentPresence",
+        "parameters": [
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-realtime"
+        ]
+      }
+    },
+    "/api/v1/pro/realtime/users/{userId}/online": {
+      "get": {
+        "operationId": "RealtimeController_isUserOnline",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-realtime"
+        ]
+      }
+    },
+    "/api/v1/pro/realtime/users/{userId}/connections": {
+      "delete": {
+        "operationId": "RealtimeController_disconnectUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-realtime"
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/retry-config": {
+      "get": {
+        "operationId": "WebhookRetryController_getRetryConfig",
+        "summary": "Get retry configuration for a webhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "WebhookRetryController_updateRetryConfig",
+        "summary": "Update retry configuration for a webhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRetryConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/retry-schedule": {
+      "get": {
+        "operationId": "WebhookRetryController_getRetrySchedule",
+        "summary": "Preview the retry schedule for a webhook (based on current config)",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/deliveries": {
+      "get": {
+        "operationId": "WebhookRetryController_listDeliveries",
+        "summary": "List delivery log for a webhook with filtering",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/deliveries/{deliveryId}": {
+      "get": {
+        "operationId": "WebhookRetryController_getDelivery",
+        "summary": "Get a specific delivery log entry",
+        "parameters": [
+          {
+            "name": "deliveryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/failed": {
+      "get": {
+        "operationId": "WebhookRetryController_getFailedDeliveries",
+        "summary": "List dead-letter / failed deliveries for a webhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "WebhookRetryController_purgeFailedDeliveries",
+        "summary": "Purge dead-letter deliveries for a webhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/failed/{deliveryId}/retry": {
+      "post": {
+        "operationId": "WebhookRetryController_retryDelivery",
+        "summary": "Retry a specific failed/DLQ delivery",
+        "parameters": [
+          {
+            "name": "deliveryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/failed/retry-all": {
+      "post": {
+        "operationId": "WebhookRetryController_retryAllFailed",
+        "summary": "Retry all DLQ deliveries for a webhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/dlq/all": {
+      "get": {
+        "operationId": "WebhookRetryController_getAllDlq",
+        "summary": "List all DLQ entries across all webhooks",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/dlq/stats": {
+      "get": {
+        "operationId": "WebhookRetryController_getDlqStats",
+        "summary": "Get DLQ statistics across all webhooks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/{webhookId}/stats": {
+      "get": {
+        "operationId": "WebhookRetryController_getWebhookStats",
+        "summary": "Get delivery statistics for a specific webhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/stats/overview": {
+      "get": {
+        "operationId": "WebhookRetryController_getOrgStats",
+        "summary": "Get delivery statistics across all webhooks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/process-retries": {
+      "post": {
+        "operationId": "WebhookRetryController_processRetries",
+        "summary": "Manually trigger processing of due retries",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/webhooks/housekeeping": {
+      "delete": {
+        "operationId": "WebhookRetryController_housekeeping",
+        "summary": "Purge old delivery logs (completed, failed, DLQ)",
+        "parameters": [
+          {
+            "name": "olderThanDays",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/incoming-webhooks": {
+      "get": {
+        "operationId": "IncomingWebhookController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      },
+      "post": {
+        "operationId": "IncomingWebhookController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIncomingWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      }
+    },
+    "/api/v1/pro/incoming-webhooks/stats": {
+      "get": {
+        "operationId": "IncomingWebhookController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      }
+    },
+    "/api/v1/pro/incoming-webhooks/{id}": {
+      "get": {
+        "operationId": "IncomingWebhookController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      },
+      "put": {
+        "operationId": "IncomingWebhookController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIncomingWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      },
+      "delete": {
+        "operationId": "IncomingWebhookController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      }
+    },
+    "/api/v1/pro/incoming-webhooks/{id}/regenerate-secret": {
+      "post": {
+        "operationId": "IncomingWebhookController_regenerateSecret",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      }
+    },
+    "/api/v1/pro/incoming-webhooks/{id}/logs": {
+      "get": {
+        "operationId": "IncomingWebhookController_getLogs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      },
+      "delete": {
+        "operationId": "IncomingWebhookController_clearLogs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      }
+    },
+    "/api/v1/hooks/{slug}": {
+      "post": {
+        "operationId": "IncomingWebhookController_handleHook",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-webhooks"
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    },
+    "schemas": {
+      "CreateIncomingWebhookDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "statusCode",
+          "error",
+          "code",
+          "message",
+          "timestamp",
+          "path"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP status label",
+            "example": "Bad Request"
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code (e.g. BAD_REQUEST, UNAUTHORIZED, NOT_FOUND)",
+            "example": "BAD_REQUEST"
+          },
+          "message": {
+            "description": "Human-readable message; validation errors return one message per violation",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the error occurred"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path that produced the error"
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          }
+        }
+      },
+      "ExecuteRequestDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "SaveHistoryDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateGraphQLConfigDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateIncomingWebhookDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateRetryConfigDto": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  }
+}

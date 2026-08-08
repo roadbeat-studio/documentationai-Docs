@@ -254,8 +254,74 @@
             ]
           },
           {
-            "group": "Endpoints",
-            "openapi": "openapi.yaml"
+            "group": "Authentication, Users & Organizations",
+            "icon": "lock",
+            "openapi": "api-reference/01-auth-users.json"
+          },
+          {
+            "group": "Content Management",
+            "icon": "file-text",
+            "openapi": "api-reference/02-content.json"
+          },
+          {
+            "group": "Localization & Reference Data",
+            "icon": "globe",
+            "openapi": "api-reference/03-localization.json"
+          },
+          {
+            "group": "Assets & Media Delivery",
+            "icon": "image",
+            "openapi": "api-reference/04-assets.json"
+          },
+          {
+            "group": "Publishing & Distribution",
+            "icon": "send",
+            "openapi": "api-reference/05-publishing.json"
+          },
+          {
+            "group": "Consumer Features",
+            "icon": "compass",
+            "openapi": "api-reference/06-consumer.json"
+          },
+          {
+            "group": "Platform, Administration & Operations",
+            "icon": "server",
+            "openapi": "api-reference/07-platform-ops.json"
+          },
+          {
+            "group": "Pro — Editorial Workflow",
+            "icon": "git-branch",
+            "openapi": "api-reference/08-pro-editorial.json"
+          },
+          {
+            "group": "Pro — Content Operations",
+            "icon": "database",
+            "openapi": "api-reference/09-pro-content-ops.json"
+          },
+          {
+            "group": "Pro — AI Assistant",
+            "icon": "sparkles",
+            "openapi": "api-reference/10-pro-ai.json"
+          },
+          {
+            "group": "Pro — Integration Hub",
+            "icon": "plug",
+            "openapi": "api-reference/11-pro-integrations.json"
+          },
+          {
+            "group": "Pro — Governance & Access",
+            "icon": "shield",
+            "openapi": "api-reference/12-pro-governance.json"
+          },
+          {
+            "group": "Pro — APIs & Realtime",
+            "icon": "code",
+            "openapi": "api-reference/13-pro-apis.json"
+          },
+          {
+            "group": "Pro — Media, Layouts & Notifications",
+            "icon": "clapperboard",
+            "openapi": "api-reference/14-pro-media-notifications.json"
           }
         ]
       },

@@ -1,0 +1,4015 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "roadbeat Studio API — Authentication, Users & Organizations",
+    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Authentication, Users & Organizations.** Login and token flows, user accounts, organization management and Delivery-API keys.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://studio.roadbeat.net",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth"
+    },
+    {
+      "name": "users"
+    },
+    {
+      "name": "organizations"
+    },
+    {
+      "name": "api-keys"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "summary": "Login with email and password",
+        "description": "Returns JWT tokens on success, or an org picker if the email exists in multiple organizations.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens on success, or an org-selection / MFA challenge step.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LoginResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "summary": "Refresh access token",
+        "description": "Exchange a valid refresh token for new access + refresh tokens. The old refresh token is revoked (rotation).",
+        "parameters": [
+          {
+            "name": "user-agent",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New access + refresh tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TokenResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "summary": "Logout (revoke refresh token)",
+        "description": "Revokes the presented refresh token so it can no longer be used.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmation that the token was revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthLoggedOutDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "operationId": "AuthController_getSessions",
+        "summary": "List active sessions",
+        "description": "Returns all active (non-revoked, non-expired) refresh token sessions for the current user.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Active sessions of the current user, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SessionDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/{id}": {
+      "delete": {
+        "operationId": "AuthController_revokeSession",
+        "summary": "Revoke a specific session",
+        "description": "Revokes a specific refresh token session by ID. Only the session owner can revoke their sessions.",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirmation that the session was revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthSessionRevokedDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/setup": {
+      "post": {
+        "operationId": "AuthController_setup",
+        "summary": "Initial admin setup",
+        "description": "Creates the first organization and admin user. Only works when no organizations exist.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tokens for the newly created admin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TokenResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/setup/status": {
+      "get": {
+        "operationId": "AuthController_setupStatus",
+        "summary": "Check if initial setup is needed",
+        "description": "Returns whether the instance needs initial admin setup.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Whether initial setup is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthSetupStatusDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_getProfile",
+        "summary": "Get current user profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Profile of the authenticated user including the effective organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthProfileDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "AuthController_updateProfile",
+        "summary": "Update own profile (name, avatar)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The updated profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthProfileDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "summary": "Change password (requires current password)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmation that the password was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthPasswordChangedDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "summary": "Request password reset",
+        "description": "Sends a password reset token (logged in dev mode). Always returns success to prevent email enumeration.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Always reports success (prevents email enumeration).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthPasswordResetSentDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "summary": "Reset password with token",
+        "description": "Validates the reset token and sets a new password. Token is single-use and expires after 1 hour.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmation that the password was reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AuthPasswordResetDoneDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/status": {
+      "get": {
+        "operationId": "AuthController_mfaStatus",
+        "summary": "Get MFA status",
+        "description": "Check if MFA is enabled for the current user.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "MFA enrollment state of the current user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MfaStatusDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/enroll": {
+      "post": {
+        "operationId": "AuthController_mfaEnroll",
+        "summary": "Start MFA enrollment",
+        "description": "Generates a TOTP secret and QR code. MFA is not active until verified with a code.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "TOTP secret, otpauth URI and QR code for the authenticator app.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MfaEnrollmentResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/verify": {
+      "post": {
+        "operationId": "AuthController_mfaVerify",
+        "summary": "Verify MFA enrollment",
+        "description": "Confirm enrollment by providing a TOTP code from the authenticator app. Returns recovery codes.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyMfaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Enrollment confirmation with one-time recovery codes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MfaVerifyResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/webauthn/register/options": {
+      "post": {
+        "operationId": "AuthController_webauthnRegisterOptions",
+        "summary": "Start passkey registration (returns WebAuthn creation options + challenge token)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/webauthn/register/verify": {
+      "post": {
+        "operationId": "AuthController_webauthnRegisterVerify",
+        "summary": "Finish passkey registration",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/webauthn/credentials": {
+      "get": {
+        "operationId": "AuthController_webauthnCredentials",
+        "summary": "List registered passkeys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/webauthn/{credentialId}": {
+      "delete": {
+        "operationId": "AuthController_webauthnRemove",
+        "summary": "Remove a passkey",
+        "parameters": [
+          {
+            "name": "credentialId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/webauthn/authenticate/options": {
+      "post": {
+        "operationId": "AuthController_webauthnAuthenticateOptions",
+        "summary": "Start a passkey login ceremony (requires the mfaToken from the password step)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/webauthn/authenticate/verify": {
+      "post": {
+        "operationId": "AuthController_webauthnAuthenticateVerify",
+        "summary": "Finish the passkey login ceremony and issue the session tokens",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/disable": {
+      "post": {
+        "operationId": "AuthController_mfaDisable",
+        "summary": "Disable MFA",
+        "description": "Disables MFA. Requires current password and a valid TOTP or recovery code.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisableMfaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/recovery-codes": {
+      "post": {
+        "operationId": "AuthController_mfaRegenerateRecoveryCodes",
+        "summary": "Regenerate recovery codes",
+        "description": "Generates new recovery codes, invalidating all previous ones. Requires a valid TOTP code.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyMfaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/users": {
+      "get": {
+        "operationId": "UsersController_findAll",
+        "summary": "List users in the organization",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 250,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "default": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "description": "Field filters, e.g. ?filter[status]=active (allow-listed per resource)",
+            "schema": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated users of the caller's organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResponseDto"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "UsersController_create",
+        "summary": "Create a new user (CE: max 3 users)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The newly created user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/users/{id}": {
+      "get": {
+        "operationId": "UsersController_findOne",
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user including its `preferences` object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserDetailDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "UsersController_update",
+        "summary": "Update user profile, role, or status",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_remove",
+        "summary": "Delete user (cannot delete last admin)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion acknowledgement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserDeletedDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/users/{id}/unlock": {
+      "post": {
+        "operationId": "UsersController_unlock",
+        "summary": "Unlock a locked user account (org-scoped)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user after unlocking. Idempotent — a non-locked account is returned unchanged (with its `preferences`), only its failed login attempts are cleared.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserDetailDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/users/{id}/export": {
+      "get": {
+        "operationId": "UsersController_exportData",
+        "summary": "GDPR Art. 15 — export a user's personal data (org-scoped)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The complete personal-data export bundle for the subject (secrets excluded).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserGdprExportDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/users/{id}/erase": {
+      "post": {
+        "operationId": "UsersController_erase",
+        "summary": "GDPR Art. 17 — erase (anonymize) a user and delete auth artifacts (org-scoped)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Erasure acknowledgement with counts of hard-deleted personal data records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserGdprErasureResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/organization": {
+      "get": {
+        "operationId": "OrganizationsController_findOne",
+        "summary": "Get current organization with user/content/asset counts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The caller's organization including related record counts in `_count`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OrganizationWithCountsDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "organizations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "OrganizationsController_update",
+        "summary": "Update organization name or settings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganizationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated organization (without `_count`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OrganizationResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "organizations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/api-keys": {
+      "get": {
+        "operationId": "ApiKeysController_findAll",
+        "summary": "List API keys (admin only, key hashes are never exposed)",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 250,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "default": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "description": "Field filters, e.g. ?filter[status]=active (allow-listed per resource)",
+            "schema": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated API keys of the organization, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiKeyDto"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "page": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "example": 20
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api-keys"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ApiKeysController_create",
+        "summary": "Create a new API key (CE: max 3). The plain key is returned ONLY on creation.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created key, including the plain `key` value — shown only here and never retrievable again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ApiKeyCreatedDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api-keys"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/api-keys/{id}": {
+      "get": {
+        "operationId": "ApiKeysController_findOne",
+        "summary": "Get API key details (without the actual key)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API key UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The API key metadata; the key itself is never returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ApiKeyDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api-keys"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "ApiKeysController_update",
+        "summary": "Update API key name, permissions, or status",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API key UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateApiKeyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated API key metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ApiKeyDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api-keys"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ApiKeysController_remove",
+        "summary": "Permanently delete an API key",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API key UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion acknowledgement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ApiKeyDeletedDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api-keys"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/api-keys/{id}/revoke": {
+      "post": {
+        "operationId": "ApiKeysController_revoke",
+        "summary": "Revoke an API key (cannot be undone)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API key UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revocation acknowledgement.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ApiKeyRevokedDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api-keys"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    },
+    "schemas": {
+      "ApiKeyCreatedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "API key UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable key name",
+            "example": "CI pipeline"
+          },
+          "keyPrefix": {
+            "type": "string",
+            "description": "First 12 characters of the key (for identification)",
+            "example": "rbk_a1b2c3d4"
+          },
+          "permissions": {
+            "description": "Granted permissions",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiresAt": {
+            "type": "object",
+            "description": "Expiration timestamp; null when the key never expires",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Key lifecycle state",
+            "enum": [
+              "active",
+              "revoked"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "key": {
+            "type": "string",
+            "description": "The plain API key — returned ONLY on creation and never retrievable again. Store it securely."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "keyPrefix",
+          "permissions",
+          "expiresAt",
+          "status",
+          "createdAt",
+          "key"
+        ]
+      },
+      "ApiKeyDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "True when the key was permanently deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "ApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "API key UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable key name",
+            "example": "CI pipeline"
+          },
+          "keyPrefix": {
+            "type": "string",
+            "description": "First 12 characters of the key (for identification)",
+            "example": "rbk_a1b2c3d4"
+          },
+          "permissions": {
+            "description": "Granted permissions (e.g. 'content.read', 'content.write', 'assets.read', 'assets.write', 'content-types.read')",
+            "example": [
+              "content.read",
+              "assets.read"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiresAt": {
+            "type": "object",
+            "description": "Expiration timestamp; null when the key never expires",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "type": "object",
+            "description": "When the key was last used (debounced, updated at most once per minute)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Key lifecycle state",
+            "enum": [
+              "active",
+              "revoked"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "keyPrefix",
+          "permissions",
+          "expiresAt",
+          "lastUsedAt",
+          "status",
+          "createdAt"
+        ]
+      },
+      "ApiKeyRevokedDto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "description": "True when the key was revoked",
+            "example": true
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      },
+      "AuthLoggedOutDto": {
+        "type": "object",
+        "properties": {
+          "loggedOut": {
+            "type": "boolean",
+            "description": "True when the refresh token was revoked",
+            "example": true
+          }
+        },
+        "required": [
+          "loggedOut"
+        ]
+      },
+      "AuthPasswordChangedDto": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "boolean",
+            "description": "True when the password was changed",
+            "example": true
+          }
+        },
+        "required": [
+          "changed"
+        ]
+      },
+      "AuthPasswordResetDoneDto": {
+        "type": "object",
+        "properties": {
+          "reset": {
+            "type": "boolean",
+            "description": "True when the password was reset",
+            "example": true
+          }
+        },
+        "required": [
+          "reset"
+        ]
+      },
+      "AuthPasswordResetSentDto": {
+        "type": "object",
+        "properties": {
+          "sent": {
+            "type": "boolean",
+            "description": "Always true — the endpoint reports success regardless of whether the email exists (prevents enumeration)",
+            "example": true
+          }
+        },
+        "required": [
+          "sent"
+        ]
+      },
+      "AuthProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address",
+            "example": "admin@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role within the organization",
+            "enum": [
+              "admin",
+              "editor",
+              "viewer",
+              "super_admin"
+            ]
+          },
+          "avatarUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "preferences": {
+            "type": "object",
+            "description": "Free-form user preferences (UI settings, locale, …)",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended",
+              "locked",
+              "deleted"
+            ]
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "description": "Timestamp of the last successful login",
+            "format": "date-time",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Effective organization UUID (super admins may carry a switched org context)"
+          },
+          "organization": {
+            "description": "The effective organization",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuthProfileOrganizationDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isSuperAdmin": {
+            "type": "boolean",
+            "description": "True when the user is a platform super admin"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "avatarUrl",
+          "preferences",
+          "status",
+          "lastLoginAt",
+          "organizationId",
+          "organization",
+          "createdAt",
+          "isSuperAdmin"
+        ]
+      },
+      "AuthProfileOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug",
+            "example": "my-news-org"
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "logoUrl": {
+            "type": "object",
+            "description": "Organization logo URL",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "plan",
+          "logoUrl"
+        ]
+      },
+      "AuthSessionRevokedDto": {
+        "type": "object",
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "description": "True when the session was revoked",
+            "example": true
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      },
+      "AuthSetupStatusDto": {
+        "type": "object",
+        "properties": {
+          "needsSetup": {
+            "type": "boolean",
+            "description": "True when no organization exists yet and the initial admin setup must run"
+          }
+        },
+        "required": [
+          "needsSetup"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Current password"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "CreateApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Frontend Read Key",
+            "description": "Descriptive name for the API key"
+          },
+          "permissions": {
+            "example": [
+              "content.read",
+              "assets.read"
+            ],
+            "description": "Permission scopes (e.g., content.read, content.write, assets.read, assets.write)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "example": "2026-12-31T23:59:59Z",
+            "description": "Optional expiration date"
+          }
+        },
+        "required": [
+          "name",
+          "permissions"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "jane@example.com",
+            "description": "Unique email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "securePass123!",
+            "minLength": 8,
+            "maxLength": 128
+          },
+          "name": {
+            "type": "string",
+            "example": "Jane Doe",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "role": {
+            "type": "string",
+            "example": "editor",
+            "enum": [
+              "admin",
+              "editor",
+              "viewer"
+            ],
+            "description": "CE supports 3 fixed roles: admin, editor, viewer"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "name",
+          "role"
+        ]
+      },
+      "DisableMfaDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Current password for verification"
+          },
+          "code": {
+            "type": "string",
+            "description": "Six-digit TOTP code or recovery code for verification"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "code"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "statusCode",
+          "error",
+          "code",
+          "message",
+          "timestamp",
+          "path"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP status label",
+            "example": "Bad Request"
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code (e.g. BAD_REQUEST, UNAUTHORIZED, NOT_FOUND)",
+            "example": "BAD_REQUEST"
+          },
+          "message": {
+            "description": "Human-readable message; validation errors return one message per violation",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the error occurred"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path that produced the error"
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          }
+        }
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Email address of the account"
+          },
+          "organizationSlug": {
+            "type": "string",
+            "example": "my-news-org",
+            "description": "Organization slug — if omitted, resets password for all matching accounts"
+          },
+          "captchaToken": {
+            "type": "string",
+            "description": "CAPTCHA token — required when CAPTCHA_PROVIDER is configured"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "securePass123!",
+            "minLength": 8
+          },
+          "organizationSlug": {
+            "type": "string",
+            "example": "my-news-org",
+            "description": "Organization slug — required when the email exists in multiple organizations"
+          },
+          "mfaCode": {
+            "type": "string",
+            "example": "123456",
+            "description": "TOTP code or recovery code — required when MFA is enabled for the user"
+          },
+          "captchaToken": {
+            "type": "string",
+            "description": "CAPTCHA token — required when CAPTCHA_PROVIDER is configured"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT access token (present on successful login)"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "JWT refresh token (present on successful login)"
+          },
+          "expiresIn": {
+            "type": "string",
+            "example": "24h",
+            "description": "Access token expiration"
+          },
+          "requiresOrgSelection": {
+            "type": "boolean",
+            "description": "If true, the user must select an organization before logging in"
+          },
+          "methods": {
+            "description": "Available second-factor methods when mfaRequired (e.g. ['totp','webauthn'])",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "organizations": {
+            "description": "Available organizations (only present when requiresOrgSelection is true)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrgSelectionDto"
+            }
+          },
+          "mfaRequired": {
+            "type": "boolean",
+            "description": "If true, the user must provide an MFA code to complete login"
+          },
+          "mfaToken": {
+            "type": "string",
+            "description": "Temporary token for MFA verification step (only present when mfaRequired is true)"
+          }
+        }
+      },
+      "LogoutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token to revoke"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "MfaEnrollmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "Base32-encoded TOTP secret"
+          },
+          "otpauthUrl": {
+            "type": "string",
+            "description": "otpauth:// URI for authenticator apps"
+          },
+          "qrCodeDataUrl": {
+            "type": "string",
+            "description": "QR code as data URL (PNG)"
+          }
+        },
+        "required": [
+          "secret",
+          "otpauthUrl",
+          "qrCodeDataUrl"
+        ]
+      },
+      "MfaStatusDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether MFA is enabled for this user"
+          },
+          "enabledAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "When MFA was enabled"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "MfaVerifyResponseDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether MFA was successfully enabled"
+          },
+          "recoveryCodes": {
+            "description": "Recovery codes (only returned on initial setup)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "recoveryCodes"
+        ]
+      },
+      "OrgSelectionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Organization slug (use this in the next login request)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "OrganizationCountsDto": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "number",
+            "description": "Number of users in the organization"
+          },
+          "content": {
+            "type": "number",
+            "description": "Number of content items"
+          },
+          "assets": {
+            "type": "number",
+            "description": "Number of assets"
+          }
+        },
+        "required": [
+          "users",
+          "content",
+          "assets"
+        ]
+      },
+      "OrganizationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name",
+            "example": "My News Organization"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-safe unique slug",
+            "example": "my-news-org"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Free-form organization settings JSON",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "status": {
+            "type": "string",
+            "description": "Organization lifecycle status",
+            "enum": [
+              "active",
+              "suspended",
+              "onboarding",
+              "archived",
+              "pending"
+            ]
+          },
+          "maxUsers": {
+            "type": "number",
+            "description": "Maximum number of users",
+            "example": 5
+          },
+          "maxContent": {
+            "type": "number",
+            "description": "Maximum content items (-1 = unlimited)",
+            "example": 10000
+          },
+          "maxAssetsMb": {
+            "type": "number",
+            "description": "Maximum asset storage in MB (-1 = unlimited)",
+            "example": 1024
+          },
+          "maxStorageGb": {
+            "type": "number",
+            "description": "Maximum total storage in GB",
+            "example": 1
+          },
+          "ownerUserId": {
+            "type": "object",
+            "description": "UUID of the owning user",
+            "nullable": true
+          },
+          "domain": {
+            "type": "object",
+            "description": "Custom domain",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "object",
+            "description": "Organization logo URL",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Organization description",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "settings",
+          "plan",
+          "status",
+          "maxUsers",
+          "maxContent",
+          "maxAssetsMb",
+          "maxStorageGb",
+          "ownerUserId",
+          "domain",
+          "logoUrl",
+          "description",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "OrganizationWithCountsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Organization UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Organization display name",
+            "example": "My News Organization"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL-safe unique slug",
+            "example": "my-news-org"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Free-form organization settings JSON",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "plan": {
+            "type": "string",
+            "description": "Subscription plan",
+            "example": "free"
+          },
+          "status": {
+            "type": "string",
+            "description": "Organization lifecycle status",
+            "enum": [
+              "active",
+              "suspended",
+              "onboarding",
+              "archived",
+              "pending"
+            ]
+          },
+          "maxUsers": {
+            "type": "number",
+            "description": "Maximum number of users",
+            "example": 5
+          },
+          "maxContent": {
+            "type": "number",
+            "description": "Maximum content items (-1 = unlimited)",
+            "example": 10000
+          },
+          "maxAssetsMb": {
+            "type": "number",
+            "description": "Maximum asset storage in MB (-1 = unlimited)",
+            "example": 1024
+          },
+          "maxStorageGb": {
+            "type": "number",
+            "description": "Maximum total storage in GB",
+            "example": 1
+          },
+          "ownerUserId": {
+            "type": "object",
+            "description": "UUID of the owning user",
+            "nullable": true
+          },
+          "domain": {
+            "type": "object",
+            "description": "Custom domain",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "object",
+            "description": "Organization logo URL",
+            "nullable": true
+          },
+          "description": {
+            "type": "object",
+            "description": "Organization description",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_count": {
+            "description": "Related record counts",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "settings",
+          "plan",
+          "status",
+          "maxUsers",
+          "maxContent",
+          "maxAssetsMb",
+          "maxStorageGb",
+          "ownerUserId",
+          "domain",
+          "logoUrl",
+          "description",
+          "createdAt",
+          "updatedAt",
+          "_count"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token obtained from login"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Password reset token from email"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Session (refresh token) ID"
+          },
+          "ip": {
+            "type": "object",
+            "description": "IP address where the session was created"
+          },
+          "userAgent": {
+            "type": "object",
+            "description": "User agent of the session"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Session creation timestamp"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Session expiration timestamp"
+          },
+          "current": {
+            "type": "boolean",
+            "description": "Whether this is the current session"
+          }
+        },
+        "required": [
+          "id",
+          "ip",
+          "userAgent",
+          "createdAt",
+          "expiresAt",
+          "current"
+        ]
+      },
+      "SetupDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@example.com",
+            "description": "Admin email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "securePass123!",
+            "minLength": 8
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "Admin display name"
+          },
+          "organizationName": {
+            "type": "string",
+            "example": "My News Organization",
+            "description": "Organization name (defaults to \"Default Organization\")"
+          },
+          "organizationSlug": {
+            "type": "string",
+            "example": "my-news-org",
+            "description": "Organization slug (auto-generated from name if omitted)"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "name"
+        ]
+      },
+      "TokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "JWT access token"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "JWT refresh token (longer-lived)"
+          },
+          "expiresIn": {
+            "type": "string",
+            "example": "24h",
+            "description": "Access token expiration duration"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "expiresIn"
+        ]
+      },
+      "UpdateApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Renamed Key",
+            "description": "Updated name"
+          },
+          "permissions": {
+            "description": "Updated permission scopes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "example": "active",
+            "description": "Key status: active or revoked"
+          }
+        }
+      },
+      "UpdateOrganizationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "My News Organization",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "settings": {
+            "type": "object",
+            "example": {
+              "defaultLocale": "de",
+              "timezone": "Europe/Berlin"
+            },
+            "description": "Organization-level settings JSON"
+          }
+        }
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jane Smith",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "role": {
+            "type": "string",
+            "example": "editor",
+            "enum": [
+              "admin",
+              "editor",
+              "viewer"
+            ],
+            "description": "CE supports 3 fixed roles: admin, editor, viewer"
+          },
+          "status": {
+            "type": "string",
+            "example": "active",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended"
+            ]
+          }
+        }
+      },
+      "UserDeletedDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "True when the user was deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "UserDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name",
+            "example": "Jane Doe"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role within the organization",
+            "enum": [
+              "admin",
+              "editor",
+              "viewer",
+              "super_admin"
+            ]
+          },
+          "avatarUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended",
+              "locked",
+              "deleted"
+            ]
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "description": "Timestamp of the last successful login",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "preferences": {
+            "type": "object",
+            "description": "Free-form user preferences (UI settings, locale, …)",
+            "additionalProperties": true,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "avatarUrl",
+          "status",
+          "lastLoginAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UserGdprAssetItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Asset UUID"
+          },
+          "originalName": {
+            "type": "string",
+            "description": "Original file name of the upload"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "originalName",
+          "createdAt"
+        ]
+      },
+      "UserGdprCommentItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Comment UUID"
+          },
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID the comment belongs to"
+          },
+          "text": {
+            "type": "string",
+            "description": "Comment text"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "contentId",
+          "text",
+          "createdAt"
+        ]
+      },
+      "UserGdprContentItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "Content status"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "status",
+          "createdAt"
+        ]
+      },
+      "UserGdprErasureCountsDto": {
+        "type": "object",
+        "properties": {
+          "refreshTokens": {
+            "type": "number",
+            "description": "Deleted refresh tokens (sessions)"
+          },
+          "passwordResets": {
+            "type": "number",
+            "description": "Deleted password reset tokens"
+          },
+          "ssoTokens": {
+            "type": "number",
+            "description": "Deleted SSO tokens"
+          },
+          "loginAttempts": {
+            "type": "number",
+            "description": "Deleted login attempt records"
+          },
+          "notifications": {
+            "type": "number",
+            "description": "Deleted notifications"
+          },
+          "comments": {
+            "type": "number",
+            "description": "Deleted comments"
+          },
+          "mfaSecret": {
+            "type": "number",
+            "description": "Deleted MFA secrets (0 or 1)"
+          }
+        },
+        "required": [
+          "refreshTokens",
+          "passwordResets",
+          "ssoTokens",
+          "loginAttempts",
+          "notifications",
+          "comments",
+          "mfaSecret"
+        ]
+      },
+      "UserGdprErasureResultDto": {
+        "type": "object",
+        "properties": {
+          "erased": {
+            "type": "boolean",
+            "description": "True when the erasure completed",
+            "example": true
+          },
+          "anonymized": {
+            "type": "boolean",
+            "description": "True — the user row is anonymized (not deleted) to keep content authorship intact",
+            "example": true
+          },
+          "deleted": {
+            "description": "Counts of hard-deleted personal data records",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserGdprErasureCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "erased",
+          "anonymized",
+          "deleted"
+        ]
+      },
+      "UserGdprExportDto": {
+        "type": "object",
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "description": "When the export bundle was generated",
+            "format": "date-time"
+          },
+          "subject": {
+            "description": "Personal data of the subject (secrets are excluded)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserGdprSubjectDto"
+              }
+            ]
+          },
+          "mfaEnrolled": {
+            "type": "boolean",
+            "description": "Whether the subject has MFA enrolled"
+          },
+          "authoredContent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGdprContentItemDto"
+            }
+          },
+          "uploadedAssets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGdprAssetItemDto"
+            }
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGdprCommentItemDto"
+            }
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGdprSessionItemDto"
+            }
+          },
+          "loginAttempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGdprLoginAttemptItemDto"
+            }
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGdprNotificationItemDto"
+            }
+          },
+          "ssoTokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserGdprSsoTokenItemDto"
+            }
+          }
+        },
+        "required": [
+          "generatedAt",
+          "subject",
+          "mfaEnrolled",
+          "authoredContent",
+          "uploadedAssets",
+          "comments",
+          "sessions",
+          "loginAttempts",
+          "notifications",
+          "ssoTokens"
+        ]
+      },
+      "UserGdprLoginAttemptItemDto": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "IP address of the attempt"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the attempt succeeded"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "ip",
+          "success",
+          "createdAt"
+        ]
+      },
+      "UserGdprNotificationItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Notification UUID"
+          },
+          "type": {
+            "type": "string",
+            "description": "Notification type"
+          },
+          "title": {
+            "type": "string",
+            "description": "Notification title"
+          },
+          "readAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "readAt",
+          "createdAt"
+        ]
+      },
+      "UserGdprSessionItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Session (refresh token) UUID"
+          },
+          "ip": {
+            "type": "object",
+            "description": "IP address the session was created from",
+            "nullable": true
+          },
+          "userAgent": {
+            "type": "object",
+            "description": "User agent of the session",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revokedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "ip",
+          "userAgent",
+          "createdAt",
+          "expiresAt",
+          "revokedAt"
+        ]
+      },
+      "UserGdprSsoTokenItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "SSO token UUID"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "usedAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "usedAt",
+          "expiresAt"
+        ]
+      },
+      "UserGdprSubjectDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role within the organization"
+          },
+          "avatarUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "preferences": {
+            "type": "object",
+            "description": "Free-form user preferences",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status"
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "avatarUrl",
+          "preferences",
+          "status",
+          "lastLoginAt",
+          "createdAt"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name",
+            "example": "Jane Doe"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role within the organization",
+            "enum": [
+              "admin",
+              "editor",
+              "viewer",
+              "super_admin"
+            ]
+          },
+          "avatarUrl": {
+            "type": "object",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended",
+              "locked",
+              "deleted"
+            ]
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "description": "Timestamp of the last successful login",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "avatarUrl",
+          "status",
+          "lastLoginAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "VerifyMfaDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Six-digit TOTP code from authenticator app",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      }
+    }
+  }
+}

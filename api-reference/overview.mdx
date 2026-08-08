@@ -16,6 +16,10 @@ Both APIs are versioned under `/api/v1/` and return JSON responses.
   Interactive Swagger documentation is available at `http://localhost:3000/api/docs` when running the dev server.
 </Callout>
 
+## How this reference is organized
+
+The endpoint pages in the sidebar are **generated from the API source code**: the Studio API emits its OpenAPI document straight from the controller metadata, which is split into one spec file per functional area (Authentication & Users, Content Management, Publishing & Distribution, … plus the Pro plugin areas). The reference therefore always matches the running API — including the `{ "data": ... }` response envelope and the standard error body documented below.
+
 ## Base URL
 
 ```
@@ -43,18 +47,21 @@ For list endpoints, the `meta` object includes pagination information. For singl
 
 ### Error Responses
 
-Errors return an appropriate HTTP status code with a structured error body:
+Errors return an appropriate HTTP status code with a structured error body. `code` is a stable, machine-readable error code; `requestId` echoes the `X-Request-Id` header for support and log correlation:
 
 ```json
 {
   "statusCode": 400,
-  "message": "Validation failed",
   "error": "Bad Request",
-  "details": [
-    { "field": "email", "message": "email must be a valid email" }
-  ]
+  "code": "BAD_REQUEST",
+  "message": ["email must be a valid email"],
+  "timestamp": "2026-08-08T12:34:56.789Z",
+  "path": "/api/v1/manage/users",
+  "requestId": "req_a1b2c3"
 }
 ```
+
+`message` is a string for most errors and an array of strings for validation errors (one entry per violation).
 
 | Status Code | Meaning |
 |-------------|---------|

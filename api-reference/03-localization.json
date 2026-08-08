@@ -1,0 +1,2741 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "roadbeat Studio API — Localization & Reference Data",
+    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Localization & Reference Data.** Locale management, content translations, machine translation, and the language / country / currency reference lists.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "servers": [
+    {
+      "url": "https://studio.roadbeat.net",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "locales"
+    },
+    {
+      "name": "translations"
+    },
+    {
+      "name": "machine-translation"
+    },
+    {
+      "name": "languages"
+    },
+    {
+      "name": "countries"
+    },
+    {
+      "name": "currencies"
+    }
+  ],
+  "paths": {
+    "/api/v1/manage/locales": {
+      "get": {
+        "operationId": "LocaleController_findAll",
+        "summary": "List all locales for the organization (including disabled, for admin)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "All locales of the organization, default locale first, then by sort order and code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LocaleDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "LocaleController_create",
+        "summary": "Create a new locale",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created locale (the BCP-47 code is normalized, e.g. `en-us` → `en-US`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LocaleDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/locales/enabled": {
+      "get": {
+        "operationId": "LocaleController_findEnabled",
+        "summary": "List enabled locales only (for content editing)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Enabled locales only, default locale first (cached per organization for 5 minutes).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LocaleDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/locales/default": {
+      "get": {
+        "operationId": "LocaleController_getDefault",
+        "summary": "Get the default locale",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The default locale; falls back to the first enabled locale, and lazily seeds an `en` default when the organization has no locales yet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LocaleDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/locales/{id}": {
+      "get": {
+        "operationId": "LocaleController_findOne",
+        "summary": "Get a single locale by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Locale code (e.g., \"en\", \"de\", \"fr-FR\")",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested locale.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LocaleDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "LocaleController_update",
+        "summary": "Update a locale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Locale code",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated locale.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LocaleDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "LocaleController_remove",
+        "summary": "Delete a locale (must not be default, must have no content)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Locale code",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion acknowledgement. The locale is also removed from any other locale's fallback chain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LocaleDeletionResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/locales/{id}/fallback-chain": {
+      "get": {
+        "operationId": "LocaleController_getFallbackChain",
+        "summary": "Get the fallback chain for a locale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Locale code",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/locales/{id}/default": {
+      "post": {
+        "operationId": "LocaleController_setDefault",
+        "summary": "Set a locale as the default",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Locale code",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The locale, now flagged as default (the previous default is unset in the same transaction).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LocaleDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "locales"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/translations/content/{contentId}": {
+      "get": {
+        "operationId": "TranslationController_getTranslationStatus",
+        "summary": "Get translation status for a content item across all locales",
+        "parameters": [
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "Content UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-locale task and field-completeness status for the content item, across all enabled locales.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TranslationStatusDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "translations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/translations/tasks": {
+      "get": {
+        "operationId": "TranslationController_listTasks",
+        "summary": "List all translation tasks (filterable by status and assignee)",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assigneeId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by assignee",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Translation tasks of the organization with content summary and assignee, ordered by priority (desc), due date, then creation date.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TranslationTaskDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "translations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/translations/tasks/{taskId}": {
+      "get": {
+        "operationId": "TranslationController_findTask",
+        "summary": "Get a single translation task",
+        "parameters": [
+          {
+            "name": "taskId",
+            "required": true,
+            "in": "path",
+            "description": "Translation task UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The translation task including content summary and assignee.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TranslationTaskDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "translations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "TranslationController_updateTask",
+        "summary": "Update a translation task (status, assignee, priority, due date)",
+        "parameters": [
+          {
+            "name": "taskId",
+            "required": true,
+            "in": "path",
+            "description": "Translation task UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTranslationTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated task including the assignee (`completedAt` is set when the status becomes `completed`, cleared otherwise).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TranslationTaskDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "translations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/translations/content/{contentId}/tasks/{targetLocale}": {
+      "post": {
+        "operationId": "TranslationController_createTask",
+        "summary": "Create a translation task for a content item and target locale",
+        "parameters": [
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "Content UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetLocale",
+            "required": true,
+            "in": "path",
+            "description": "Target locale code (e.g., \"de\", \"fr\")",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTranslationTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created task (status `pending`) including the assignee; a completed/cancelled task for the same locale is reused and reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TranslationTaskDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "translations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/translations/content/{contentId}/copy-locale": {
+      "post": {
+        "operationId": "TranslationController_copyLocale",
+        "summary": "Copy localized field values from one locale to another (fills missing only)",
+        "parameters": [
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "Content UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopyLocaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "How many localized fields were copied into the target locale.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CopyLocaleResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "translations"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/provider": {
+      "get": {
+        "operationId": "MachineTranslationController_getProviderInfo",
+        "summary": "Get info about the configured translation provider",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The provider resolved from the organization settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TranslationProviderInfoDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/languages": {
+      "get": {
+        "operationId": "MachineTranslationController_getSupportedLanguages",
+        "summary": "Get list of supported languages from the configured provider",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/detect": {
+      "post": {
+        "operationId": "MachineTranslationController_detectLanguage",
+        "summary": "Detect the language of a text string",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetectLanguageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The detected language and confidence as reported by the provider (requires recorded consent — the text is sent externally).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DetectedLanguageDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/settings": {
+      "get": {
+        "operationId": "MachineTranslationController_getSettings",
+        "summary": "Get translation provider settings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Provider settings with API keys masked to their last 4 characters, plus the consent status (IMP-I18N-03).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TranslationSettingsResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "MachineTranslationController_updateSettings",
+        "summary": "Update translation provider settings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTranslationSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settings saved. Masked API keys (`***…`) are treated as unchanged and the recorded consent is preserved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MachineTranslationSuccessDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/consent": {
+      "post": {
+        "operationId": "MachineTranslationController_acceptConsent",
+        "summary": "Record data-processing consent for external machine translation (IMP-I18N-03)",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Consent recorded (timestamp and accepting admin are stored in the org settings).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MachineTranslationSuccessDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/test": {
+      "post": {
+        "operationId": "MachineTranslationController_testConnection",
+        "summary": "Test the translation provider connection",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Outcome of the connection test — misconfiguration is reported as `success: false` with an `error`, not as an HTTP error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TranslationConnectionTestDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/content/{contentId}": {
+      "post": {
+        "operationId": "MachineTranslationController_translateContent",
+        "summary": "Machine-translate all localized fields in a content item",
+        "parameters": [
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "Content UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslateContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The translated content data plus a per-field outcome list. Only persisted when `save` is true; fields flagged `noMachineTranslate` are skipped.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ContentTranslationResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/machine-translation/content/{contentId}/field/{fieldId}": {
+      "post": {
+        "operationId": "MachineTranslationController_translateField",
+        "summary": "Machine-translate a single field",
+        "parameters": [
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "description": "Content UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fieldId",
+            "required": true,
+            "in": "path",
+            "description": "Field ID to translate",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslateFieldDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The translated text for the field (not saved to the content item).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FieldTranslationResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "machine-translation"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/currencies": {
+      "get": {
+        "operationId": "CurrenciesController_getCurrencies",
+        "summary": "List all supported ISO 4217 currencies",
+        "description": "Proxies the authoritative currencies list from the Context Directory (CONTEXT_DIRECTORY_URL). Falls back to the bundled list if the Context Directory is unreachable.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The currency list with its origin (`source`). Always 200 — an unreachable Context Directory degrades to the bundled fallback.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CurrencyListDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "currencies"
+        ]
+      }
+    },
+    "/api/v1/countries": {
+      "get": {
+        "operationId": "CountriesController_listCountries",
+        "summary": "List all ISO 3166-1 countries",
+        "description": "Proxies the authoritative country list from the Context Directory (CONTEXT_DIRECTORY_URL). Falls back to a small EU+US bundled list if the Context Directory is unreachable.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The country list with its origin (`source`). Always 200 — an unreachable Context Directory degrades to the bundled fallback.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CountryListDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "countries"
+        ]
+      }
+    },
+    "/api/v1/languages": {
+      "get": {
+        "operationId": "LanguagesController_listLanguages",
+        "summary": "List all ISO 639-1 languages",
+        "description": "Proxies the authoritative language list from the Context Directory (CONTEXT_DIRECTORY_URL). Falls back to a bundled EU+major-world list if the Context Directory is unreachable.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The language list with its origin (`source`). Always 200 — an unreachable Context Directory degrades to the bundled fallback.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/LanguageListDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "languages"
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    },
+    "schemas": {
+      "ContentTranslationResultDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "targetLocale": {
+            "type": "string",
+            "description": "Locale the fields were translated into",
+            "example": "de"
+          },
+          "data": {
+            "type": "object",
+            "description": "The full content data with the target-locale values filled in. Keys are field IDs; localized values are `{ locale: value }` maps.",
+            "additionalProperties": true,
+            "example": {
+              "title": {
+                "en": "Hello world",
+                "de": "Hallo Welt"
+              }
+            }
+          },
+          "results": {
+            "description": "Per-field translation outcome",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldTranslationResultDto"
+            }
+          }
+        },
+        "required": [
+          "contentId",
+          "targetLocale",
+          "data",
+          "results"
+        ]
+      },
+      "CopyLocaleDto": {
+        "type": "object",
+        "properties": {
+          "sourceLocale": {
+            "type": "string",
+            "example": "en",
+            "description": "Source locale to copy from"
+          },
+          "targetLocale": {
+            "type": "string",
+            "example": "de",
+            "description": "Target locale to copy to"
+          }
+        },
+        "required": [
+          "sourceLocale",
+          "targetLocale"
+        ]
+      },
+      "CopyLocaleResultDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "sourceLocale": {
+            "type": "string",
+            "description": "Locale copied from",
+            "example": "en"
+          },
+          "targetLocale": {
+            "type": "string",
+            "description": "Locale copied into",
+            "example": "de"
+          },
+          "copiedFields": {
+            "type": "number",
+            "description": "Number of fields copied (only fields missing in the target locale)",
+            "example": 3
+          }
+        },
+        "required": [
+          "contentId",
+          "sourceLocale",
+          "targetLocale",
+          "copiedFields"
+        ]
+      },
+      "CountryEntryDto": {
+        "type": "object",
+        "properties": {
+          "alpha2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 code",
+            "example": "DE"
+          },
+          "alpha3": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-3 code",
+            "example": "DEU"
+          },
+          "numeric": {
+            "type": "string",
+            "description": "ISO 3166-1 numeric code (zero-padded)",
+            "example": "276"
+          },
+          "name": {
+            "type": "string",
+            "description": "English country name",
+            "example": "Germany"
+          }
+        },
+        "required": [
+          "alpha2",
+          "alpha3",
+          "numeric",
+          "name"
+        ]
+      },
+      "CountryListDto": {
+        "type": "object",
+        "properties": {
+          "countries": {
+            "description": "The country list as served by the Context Directory (or the bundled fallback)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountryEntryDto"
+            }
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of entries in `countries`",
+            "example": 249
+          },
+          "source": {
+            "type": "string",
+            "description": "Where the list came from: the Context Directory, the in-process 1 hour cache, or the bundled fallback list",
+            "enum": [
+              "context-directory",
+              "fallback",
+              "cache"
+            ],
+            "example": "context-directory"
+          }
+        },
+        "required": [
+          "countries",
+          "count",
+          "source"
+        ]
+      },
+      "CreateLocaleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "de",
+            "description": "Locale code (BCP 47) — `xx` or `xx-YY`, e.g. \"en\", \"de\", \"en-US\""
+          },
+          "name": {
+            "type": "string",
+            "example": "German",
+            "description": "Locale display name in English"
+          },
+          "nativeName": {
+            "type": "string",
+            "example": "Deutsch",
+            "description": "Locale name in its own language"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "example": false,
+            "description": "Set as default locale",
+            "default": false
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Enable this locale",
+            "default": true
+          },
+          "fallbackLocale": {
+            "type": "string",
+            "example": "en",
+            "description": "Fallback locale code when content is missing in this locale"
+          },
+          "direction": {
+            "type": "string",
+            "example": "ltr",
+            "enum": [
+              "ltr",
+              "rtl"
+            ],
+            "default": "ltr"
+          },
+          "dateFormat": {
+            "type": "string",
+            "example": "DD.MM.YYYY",
+            "description": "Date format pattern"
+          },
+          "timeFormat": {
+            "type": "string",
+            "example": "HH:mm",
+            "description": "Time format pattern"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0,
+            "description": "Sort order for display",
+            "default": 0
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "nativeName"
+        ]
+      },
+      "CreateTranslationTaskDto": {
+        "type": "object",
+        "properties": {
+          "sourceLocale": {
+            "type": "string",
+            "example": "en",
+            "description": "Source locale to translate from"
+          },
+          "assigneeId": {
+            "type": "string",
+            "example": "user-uuid",
+            "description": "User ID to assign translation to"
+          },
+          "priority": {
+            "type": "number",
+            "example": 1,
+            "description": "Task priority (higher = more urgent)",
+            "default": 0
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-03-01T00:00:00Z",
+            "description": "Due date for the translation"
+          }
+        },
+        "required": [
+          "sourceLocale"
+        ]
+      },
+      "CurrencyEntryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "ISO 4217 currency code",
+            "example": "EUR"
+          },
+          "name": {
+            "type": "string",
+            "description": "English currency name",
+            "example": "Euro"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Currency symbol",
+            "example": "€"
+          },
+          "decimals": {
+            "type": "number",
+            "description": "Number of decimal places used for minor units (0 for e.g. JPY, 3 for KWD)",
+            "example": 2
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "symbol",
+          "decimals"
+        ]
+      },
+      "CurrencyListDto": {
+        "type": "object",
+        "properties": {
+          "currencies": {
+            "description": "The currency list as served by the Context Directory (or the bundled fallback)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrencyEntryDto"
+            }
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of entries in `currencies`",
+            "example": 62
+          },
+          "source": {
+            "type": "string",
+            "description": "Where the list came from: the Context Directory, the in-process 1 hour cache, or the bundled fallback list",
+            "enum": [
+              "context-directory",
+              "fallback",
+              "cache"
+            ],
+            "example": "context-directory"
+          }
+        },
+        "required": [
+          "currencies",
+          "count",
+          "source"
+        ]
+      },
+      "DetectLanguageDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "example": "Bonjour le monde",
+            "description": "Text to detect language for"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "DetectedLanguageDto": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string",
+            "description": "Detected language code (ISO 639-1)",
+            "example": "fr"
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Confidence score between 0 and 1",
+            "example": 0.98
+          }
+        },
+        "required": [
+          "language",
+          "confidence"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "statusCode",
+          "error",
+          "code",
+          "message",
+          "timestamp",
+          "path"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "description": "HTTP status label",
+            "example": "Bad Request"
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code (e.g. BAD_REQUEST, UNAUTHORIZED, NOT_FOUND)",
+            "example": "BAD_REQUEST"
+          },
+          "message": {
+            "description": "Human-readable message; validation errors return one message per violation",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the error occurred"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path that produced the error"
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Correlation ID (echoes the X-Request-Id header) for support and log lookup"
+          }
+        }
+      },
+      "FieldTranslationResponseDto": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "description": "Field ID that was translated",
+            "example": "title"
+          },
+          "targetLocale": {
+            "type": "string",
+            "description": "Locale the field was translated into",
+            "example": "de"
+          },
+          "translatedText": {
+            "type": "string",
+            "description": "The translated plain text (not persisted — the caller decides whether to save it)",
+            "example": "Hallo Welt"
+          }
+        },
+        "required": [
+          "fieldId",
+          "targetLocale",
+          "translatedText"
+        ]
+      },
+      "FieldTranslationResultDto": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "description": "Field ID of the content type",
+            "example": "title"
+          },
+          "status": {
+            "type": "string",
+            "description": "Outcome for this field",
+            "enum": [
+              "success",
+              "error",
+              "skipped"
+            ],
+            "example": "success"
+          },
+          "error": {
+            "type": "string",
+            "description": "Provider error message (only when status is `error`)"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why the field was skipped (e.g. `noMachineTranslate`)",
+            "example": "noMachineTranslate"
+          }
+        },
+        "required": [
+          "fieldId",
+          "status"
+        ]
+      },
+      "LanguageEntryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "ISO 639-1 language code",
+            "example": "de"
+          },
+          "name": {
+            "type": "string",
+            "description": "English display name",
+            "example": "German"
+          },
+          "native_name": {
+            "type": "string",
+            "description": "Native display name",
+            "example": "Deutsch"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "native_name"
+        ]
+      },
+      "LanguageListDto": {
+        "type": "object",
+        "properties": {
+          "languages": {
+            "description": "The language list as served by the Context Directory (or the bundled fallback)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LanguageEntryDto"
+            }
+          },
+          "count": {
+            "type": "number",
+            "description": "Number of entries in `languages`",
+            "example": 184
+          },
+          "source": {
+            "type": "string",
+            "description": "Where the list came from: the Context Directory, the in-process 1 hour cache, or the bundled fallback list",
+            "enum": [
+              "context-directory",
+              "fallback",
+              "cache"
+            ],
+            "example": "context-directory"
+          }
+        },
+        "required": [
+          "languages",
+          "count",
+          "source"
+        ]
+      },
+      "LocaleDeletionResultDto": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Always true — the locale was deleted",
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
+      },
+      "LocaleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "BCP-47 locale code",
+            "example": "en-US"
+          },
+          "organizationId": {
+            "type": "string",
+            "description": "Organization the locale belongs to (UUID)"
+          },
+          "name": {
+            "type": "string",
+            "description": "English display name",
+            "example": "German"
+          },
+          "nativeName": {
+            "type": "string",
+            "description": "Native display name",
+            "example": "Deutsch"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether this is the default locale of the organization"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "description": "Whether the locale is enabled for content editing"
+          },
+          "fallbackLocale": {
+            "type": "object",
+            "description": "Locale to fall back to when a field has no value in this locale",
+            "example": "en",
+            "nullable": true
+          },
+          "direction": {
+            "type": "string",
+            "description": "Text direction",
+            "enum": [
+              "ltr",
+              "rtl"
+            ],
+            "example": "ltr"
+          },
+          "dateFormat": {
+            "type": "object",
+            "description": "Date format pattern (null falls back to CLDR defaults)",
+            "example": "DD.MM.YYYY",
+            "nullable": true
+          },
+          "timeFormat": {
+            "type": "object",
+            "description": "Time format pattern (null falls back to CLDR defaults)",
+            "example": "HH:mm",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "description": "Sort position in locale lists (ascending)",
+            "example": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "name",
+          "nativeName",
+          "isDefault",
+          "isEnabled",
+          "direction",
+          "sortOrder",
+          "createdAt"
+        ]
+      },
+      "LocaleTranslationStatusDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "description": "Locale code",
+            "example": "de"
+          },
+          "name": {
+            "type": "string",
+            "description": "English display name of the locale",
+            "example": "German"
+          },
+          "nativeName": {
+            "type": "string",
+            "description": "Native display name of the locale",
+            "example": "Deutsch"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether this is the default locale"
+          },
+          "task": {
+            "description": "Translation task for this locale (null when none exists)",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslationTaskDto"
+              }
+            ]
+          },
+          "completeness": {
+            "description": "Field-level translation completeness for this locale",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslationCompletenessDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "locale",
+          "name",
+          "nativeName",
+          "isDefault",
+          "completeness"
+        ]
+      },
+      "MachineTranslationSuccessDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Always true — the operation succeeded",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "TranslateContentDto": {
+        "type": "object",
+        "properties": {
+          "targetLocale": {
+            "type": "string",
+            "example": "de",
+            "description": "Target locale to translate into"
+          },
+          "sourceLocale": {
+            "type": "string",
+            "example": "en",
+            "description": "Source locale (defaults to content locale)"
+          },
+          "fields": {
+            "example": [
+              "title",
+              "body"
+            ],
+            "description": "Specific field IDs to translate (omit to translate all)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "save": {
+            "type": "boolean",
+            "example": true,
+            "description": "Save translated data to the database",
+            "default": false
+          },
+          "overwrite": {
+            "type": "boolean",
+            "example": false,
+            "description": "Overwrite existing target locale values",
+            "default": false
+          }
+        },
+        "required": [
+          "targetLocale"
+        ]
+      },
+      "TranslateFieldDto": {
+        "type": "object",
+        "properties": {
+          "targetLocale": {
+            "type": "string",
+            "example": "de",
+            "description": "Target locale"
+          },
+          "sourceLocale": {
+            "type": "string",
+            "example": "en",
+            "description": "Source locale"
+          }
+        },
+        "required": [
+          "targetLocale"
+        ]
+      },
+      "TranslationCompletenessDto": {
+        "type": "object",
+        "properties": {
+          "filled": {
+            "type": "number",
+            "description": "Number of localized fields with a value in this locale"
+          },
+          "total": {
+            "type": "number",
+            "description": "Total number of localized fields"
+          },
+          "percentage": {
+            "type": "number",
+            "description": "Completion percentage (0-100)",
+            "example": 75
+          }
+        },
+        "required": [
+          "filled",
+          "total",
+          "percentage"
+        ]
+      },
+      "TranslationConnectionTestDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the provider configuration works",
+            "example": true
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider the test ran against (`none` when nothing is configured)",
+            "example": "deepl"
+          },
+          "languages": {
+            "type": "number",
+            "description": "Number of languages the provider reported (only on success)",
+            "example": 32
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure reason (only when `success` is false)",
+            "example": "No translation provider configured"
+          }
+        },
+        "required": [
+          "success",
+          "provider"
+        ]
+      },
+      "TranslationProviderInfoDto": {
+        "type": "object",
+        "properties": {
+          "providerId": {
+            "type": "string",
+            "description": "Resolved provider for the organization (`noop` when nothing is configured)",
+            "enum": [
+              "noop",
+              "pro-ai",
+              "deepl",
+              "mistral",
+              "libretranslate"
+            ],
+            "example": "deepl"
+          }
+        },
+        "required": [
+          "providerId"
+        ]
+      },
+      "TranslationSettingsResponseDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Configured provider. `pro-ai` routes through the governed pro-ai gateway; `none` means no machine translation (or the pro-ai default when the plugin is installed).",
+            "enum": [
+              "none",
+              "pro-ai",
+              "deepl",
+              "mistral",
+              "libretranslate",
+              "google",
+              "azure"
+            ],
+            "example": "deepl"
+          },
+          "deeplApiKey": {
+            "type": "string",
+            "description": "DeepL API key, masked to the last 4 characters (empty when unset)",
+            "example": "***a1b2"
+          },
+          "googleApiKey": {
+            "type": "string",
+            "description": "Google API key, masked to the last 4 characters (empty when unset)",
+            "example": ""
+          },
+          "azureApiKey": {
+            "type": "string",
+            "description": "Azure API key, masked to the last 4 characters (empty when unset)",
+            "example": ""
+          },
+          "azureRegion": {
+            "type": "string",
+            "description": "Azure Translator region (empty when unset)",
+            "example": "westeurope"
+          },
+          "formality": {
+            "type": "string",
+            "description": "Formality preference passed to providers that support it (DeepL)",
+            "enum": [
+              "default",
+              "formal",
+              "informal"
+            ],
+            "example": "default"
+          },
+          "consentAcceptedAt": {
+            "type": "string",
+            "description": "When an admin recorded the data-processing consent (IMP-I18N-03)",
+            "format": "date-time"
+          },
+          "consentAcceptedBy": {
+            "type": "string",
+            "description": "UUID of the admin who recorded the consent"
+          },
+          "consentRequired": {
+            "type": "boolean",
+            "description": "Whether an explicit CE-level consent is required before external dispatch (false for `none` and `pro-ai`)",
+            "example": true
+          },
+          "consentGiven": {
+            "type": "boolean",
+            "description": "Whether a consent has been recorded",
+            "example": false
+          }
+        },
+        "required": [
+          "provider",
+          "deeplApiKey",
+          "googleApiKey",
+          "azureApiKey",
+          "azureRegion",
+          "formality",
+          "consentRequired",
+          "consentGiven"
+        ]
+      },
+      "TranslationStatusDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "sourceLocale": {
+            "type": "string",
+            "description": "Source locale of the content item",
+            "example": "en"
+          },
+          "locales": {
+            "description": "Per-locale translation status across all enabled locales",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocaleTranslationStatusDto"
+            }
+          }
+        },
+        "required": [
+          "contentId",
+          "sourceLocale",
+          "locales"
+        ]
+      },
+      "TranslationTaskAssigneeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User UUID"
+          },
+          "name": {
+            "type": "string",
+            "description": "User display name"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email address"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "TranslationTaskContentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content UUID"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Content slug"
+          },
+          "contentTypeId": {
+            "type": "string",
+            "description": "Content type ID the item belongs to"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Source locale of the content item",
+            "example": "en"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "contentTypeId",
+          "locale"
+        ]
+      },
+      "TranslationTaskDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Translation task UUID"
+          },
+          "contentId": {
+            "type": "string",
+            "description": "Content UUID the task belongs to"
+          },
+          "sourceLocale": {
+            "type": "string",
+            "description": "Locale to translate from",
+            "example": "en"
+          },
+          "targetLocale": {
+            "type": "string",
+            "description": "Locale to translate into",
+            "example": "de"
+          },
+          "status": {
+            "type": "string",
+            "description": "Workflow status of the task",
+            "enum": [
+              "pending",
+              "in_progress",
+              "review",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "assigneeId": {
+            "type": "object",
+            "description": "UUID of the assigned translator",
+            "nullable": true
+          },
+          "priority": {
+            "type": "number",
+            "description": "Priority (higher is more urgent)",
+            "example": 0
+          },
+          "dueDate": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "object",
+            "description": "When the task was marked completed",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "assignee": {
+            "description": "The assigned translator (null when unassigned)",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslationTaskAssigneeDto"
+              }
+            ]
+          },
+          "content": {
+            "description": "Summary of the content item (present on task list/detail endpoints)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranslationTaskContentDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "contentId",
+          "sourceLocale",
+          "targetLocale",
+          "status",
+          "priority",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateLocaleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "German",
+            "description": "Locale display name in English"
+          },
+          "nativeName": {
+            "type": "string",
+            "example": "Deutsch",
+            "description": "Locale name in its own language"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Enable/disable this locale"
+          },
+          "fallbackLocale": {
+            "type": "string",
+            "example": "en",
+            "description": "Fallback locale code when content is missing in this locale"
+          },
+          "direction": {
+            "type": "string",
+            "example": "ltr",
+            "enum": [
+              "ltr",
+              "rtl"
+            ]
+          },
+          "dateFormat": {
+            "type": "string",
+            "example": "DD.MM.YYYY",
+            "description": "Date format pattern"
+          },
+          "timeFormat": {
+            "type": "string",
+            "example": "HH:mm",
+            "description": "Time format pattern"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 0,
+            "description": "Sort order for display"
+          }
+        }
+      },
+      "UpdateTranslationSettingsDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "pro-ai",
+            "enum": [
+              "none",
+              "pro-ai",
+              "deepl",
+              "mistral",
+              "libretranslate",
+              "google",
+              "azure"
+            ],
+            "description": "'pro-ai' routes through the governed pro-ai gateway (canonical when the plugin is installed; also the default for 'none' in that case). The remaining ids are the CE-native EU providers used when Pro is absent."
+          },
+          "deeplApiKey": {
+            "type": "string",
+            "example": "your-deepl-api-key"
+          },
+          "googleApiKey": {
+            "type": "string",
+            "example": "your-google-api-key"
+          },
+          "azureApiKey": {
+            "type": "string",
+            "example": "your-azure-api-key"
+          },
+          "azureRegion": {
+            "type": "string",
+            "example": "westeurope"
+          },
+          "formality": {
+            "type": "string",
+            "example": "formal",
+            "enum": [
+              "default",
+              "formal",
+              "informal"
+            ]
+          }
+        },
+        "required": [
+          "provider"
+        ]
+      },
+      "UpdateTranslationTaskDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "in_progress",
+            "enum": [
+              "pending",
+              "in_progress",
+              "review",
+              "completed",
+              "cancelled"
+            ],
+            "description": "Translation task status"
+          },
+          "assigneeId": {
+            "type": "string",
+            "example": "user-uuid",
+            "description": "Reassign to another user"
+          },
+          "priority": {
+            "type": "number",
+            "example": 1,
+            "description": "Task priority"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-03-01T00:00:00Z",
+            "description": "Due date"
+          }
+        }
+      }
+    }
+  }
+}

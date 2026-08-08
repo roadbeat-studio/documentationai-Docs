@@ -3,6 +3,26 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-08-08" description="Generated API reference with response schemas" tags={["feature", "api"]}>
+  ## API reference now generated from the API source — with documented responses
+
+  The API Reference tab is now built from the Studio API's own OpenAPI document
+  instead of a hand-maintained spec, so it can no longer drift from the running
+  API:
+
+  - **Per-area endpoint docs** — the reference is split into 14 functional
+    areas (Authentication & Users, Content Management, Publishing &
+    Distribution, Consumer Features, the Pro plugin areas, …), each generated
+    from the API's controller metadata.
+  - **Responses documented everywhere** — every endpoint now documents its
+    response: typed schemas for the `{ "data": ... }` envelope on the
+    management/delivery/consumer APIs, plus the standard error body (`400`
+    validation and `401` authentication errors) on all secured endpoints.
+  - **Error body reference** — [API Overview](/api-reference/overview) now
+    shows the exact error format, including the stable `code` and the
+    `requestId` correlation ID.
+</Update>
+
 <Update label="2026-07-03" description="Content validation depth, zero-leakage tenancy & UI consistency" tags={["feature", "security", "api"]}>
   ## Richer content validation, completed tenant isolation & a consistent admin UI
 
