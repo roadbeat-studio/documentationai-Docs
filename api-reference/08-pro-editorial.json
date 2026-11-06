@@ -2921,6 +2921,60 @@
         ]
       }
     },
+    "/api/v1/pro/workflows/instances/{contentId}/startable": {
+      "get": {
+        "operationId": "WorkflowsController_getStartable",
+        "summary": "Workflows that can be started by hand for a content item",
+        "parameters": [
+          {
+            "name": "contentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active workflows bound to the content item’s type, for content without a workflow instance (Q17). `canStart` is false for viewers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProStartableWorkflowsDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-workflows"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/pro/workflows/instances/{contentId}/initialize": {
       "post": {
         "operationId": "WorkflowsController_initializeInstance",
@@ -2947,7 +3001,7 @@
         },
         "responses": {
           "201": {
-            "description": "The created instance, standing on the definition’s initial state with a single `initialized` history entry.",
+            "description": "The created instance, standing on the definition’s initial state with a single `initialized` history entry. Only an active workflow bound to the content item’s type can be started (400 otherwise); viewers get 403; 400 when the content already has an active instance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3144,6 +3198,69 @@
       }
     },
     "/api/v1/pro/tasks": {
+      "post": {
+        "operationId": "TasksController_create",
+        "summary": "Create a task by hand (spec 56)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateManualTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new manual task (no workflow instance, `manual: true`). Assignee and linked content must belong to the caller's organization (404 otherwise).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProWorkflowTaskDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-workflows"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
       "get": {
         "operationId": "TasksController_findAll",
         "summary": "List tasks for current organization",
@@ -3168,6 +3285,54 @@
         "responses": {
           "200": {
             "description": "Tasks of the organization, newest first, optionally filtered by assignee and status. Each row carries the joined `content_id`, `current_state` and `workflow_name`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProWorkflowTaskDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-workflows"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/tasks/my": {
+      "get": {
+        "operationId": "TasksController_findMine",
+        "summary": "Open tasks (to do + in progress) assigned to the caller",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Newest first.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3291,6 +3456,189 @@
                       "$ref": "#/components/schemas/ProWorkflowTaskDto"
                     }
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-workflows"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "TasksController_update",
+        "summary": "Edit a task (title, description, due date, priority, tags, linked content)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated task. Linked content can only be changed on manual tasks (409).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProWorkflowTaskDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-workflows"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "TasksController_remove",
+        "summary": "Delete a manual task (workflow tasks are cancelled instead — 409)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content — the operation succeeded."
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "pro-workflows"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pro/tasks/{id}/status": {
+      "patch": {
+        "operationId": "TasksController_setStatus",
+        "summary": "Move a task on the board (pending / in_progress / completed / cancelled)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetTaskStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The task with its new status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProWorkflowTaskDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -3958,7 +4306,7 @@
         ],
         "responses": {
           "201": {
-            "description": "The copy — same states/transitions, every locale of `name` suffixed with \" (Copy)\", never the org default.",
+            "description": "The copy — same states/transitions, every locale of `name` suffixed with \" (Copy)\".",
             "content": {
               "application/json": {
                 "schema": {
@@ -4591,6 +4939,53 @@
           "name"
         ]
       },
+      "CreateManualTaskDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Update the event photos"
+          },
+          "description": {
+            "type": "string",
+            "example": "The venue sent new pictures."
+          },
+          "assigneeId": {
+            "type": "string",
+            "description": "User ID of the assignee (same organization)"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-11-20T17:00:00Z"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
+            "default": "medium"
+          },
+          "contentId": {
+            "type": "string",
+            "description": "Linked content item (same organization)"
+          },
+          "tags": {
+            "example": [
+              "photos"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
       "CreateRecurringScheduleDto": {
         "type": "object",
         "properties": {}
@@ -4656,10 +5051,6 @@
             "items": {
               "$ref": "#/components/schemas/WorkflowTransitionDto"
             }
-          },
-          "isDefault": {
-            "type": "boolean",
-            "example": true
           }
         },
         "required": [
@@ -5724,6 +6115,51 @@
           "updated_at"
         ]
       },
+      "ProStartableWorkflowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "object",
+            "description": "Localized name map",
+            "example": {
+              "en": "Editorial Review",
+              "de": "Redaktionelle Prüfung"
+            }
+          },
+          "description": {
+            "type": "object",
+            "description": "Localized description map"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ProStartableWorkflowsDto": {
+        "type": "object",
+        "properties": {
+          "canStart": {
+            "type": "boolean",
+            "description": "True when the caller may start a workflow here: not a viewer, and the content has no active instance yet"
+          },
+          "workflows": {
+            "description": "Active workflows bound to the content item’s type (empty when the content already has an instance)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProStartableWorkflowDto"
+            }
+          }
+        },
+        "required": [
+          "canStart",
+          "workflows"
+        ]
+      },
       "ProVersionComparisonDto": {
         "type": "object",
         "properties": {
@@ -6308,10 +6744,6 @@
               "$ref": "#/components/schemas/ProWorkflowTransitionDto"
             }
           },
-          "is_default": {
-            "type": "boolean",
-            "description": "Auto-assigned to matching content types"
-          },
           "is_active": {
             "type": "boolean",
             "description": "Inactive definitions are kept but not offered for new instances"
@@ -6337,7 +6769,6 @@
           "content_type_ids",
           "states",
           "transitions",
-          "is_default",
           "is_active",
           "created_at",
           "updated_at"
@@ -6392,10 +6823,6 @@
             "items": {
               "$ref": "#/components/schemas/ProWorkflowTransitionDto"
             }
-          },
-          "isDefault": {
-            "type": "boolean",
-            "description": "Whether the exported definition was the org default"
           }
         },
         "required": [
@@ -6404,8 +6831,7 @@
           "name",
           "contentTypeIds",
           "states",
-          "transitions",
-          "isDefault"
+          "transitions"
         ]
       },
       "ProWorkflowIncomingTransitionDto": {
@@ -6801,8 +7227,13 @@
             "description": "Task UUID"
           },
           "workflow_instance_id": {
-            "type": "string",
-            "description": "Workflow instance UUID the task belongs to"
+            "type": "object",
+            "description": "Workflow instance UUID; null for a manual task",
+            "nullable": true
+          },
+          "manual": {
+            "type": "boolean",
+            "description": "Created by hand (no workflow instance)"
           },
           "organization_id": {
             "type": "string",
@@ -6830,9 +7261,10 @@
           },
           "status": {
             "type": "string",
-            "description": "Task lifecycle state",
+            "description": "Task lifecycle state (board columns: pending → in_progress → completed)",
             "enum": [
               "pending",
+              "in_progress",
               "completed",
               "cancelled"
             ]
@@ -6869,14 +7301,58 @@
             "type": "string",
             "format": "date-time"
           },
-          "content_id": {
+          "updated_at": {
             "type": "string",
-            "description": "Content UUID of the instance (joined)"
+            "format": "date-time"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
+            "example": "medium"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created_by": {
+            "type": "object",
+            "description": "UUID of the user who created a manual task",
+            "nullable": true
+          },
+          "created_by_name": {
+            "type": "object",
+            "nullable": true
+          },
+          "assignee_name": {
+            "type": "object",
+            "nullable": true
+          },
+          "content_id": {
+            "type": "object",
+            "description": "Linked content: a manual task’s own link, else the workflow instance’s content",
+            "nullable": true
+          },
+          "content_slug": {
+            "type": "object",
+            "nullable": true
+          },
+          "content_title": {
+            "type": "object",
+            "description": "Title/name/headline of the linked content",
+            "nullable": true
           },
           "current_state": {
-            "type": "string",
-            "description": "Current state of the instance (joined)",
-            "example": "in_review"
+            "type": "object",
+            "description": "Current state of the instance (joined); null for a manual task",
+            "example": "in_review",
+            "nullable": true
           },
           "workflow_name": {
             "type": "object",
@@ -6891,13 +7367,14 @@
         },
         "required": [
           "id",
-          "workflow_instance_id",
+          "manual",
           "organization_id",
           "type",
           "status",
           "created_at",
-          "content_id",
-          "current_state"
+          "updated_at",
+          "priority",
+          "tags"
         ]
       },
       "ProWorkflowTaskRuleDto": {
@@ -7176,6 +7653,23 @@
         "type": "object",
         "properties": {}
       },
+      "SetTaskStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "cancelled"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
       "TransitionInstanceDto": {
         "type": "object",
         "properties": {
@@ -7221,6 +7715,42 @@
           }
         }
       },
+      "UpdateTaskDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "object",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "object",
+            "nullable": true
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ]
+          },
+          "contentId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Manual tasks only"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "UpdateWorkflowDefinitionDto": {
         "type": "object",
         "properties": {
@@ -7254,9 +7784,6 @@
               "$ref": "#/components/schemas/WorkflowTransitionDto"
             }
           },
-          "isDefault": {
-            "type": "boolean"
-          },
           "isActive": {
             "type": "boolean"
           }
@@ -7288,6 +7815,11 @@
             "type": "boolean",
             "example": false
           },
+          "allowsPublish": {
+            "type": "boolean",
+            "example": false,
+            "description": "Content in this state may be published although the state is not final (IMP-PRO-WF-04)"
+          },
           "requiredRoles": {
             "example": [
               "admin",
@@ -7297,11 +7829,46 @@
             "items": {
               "type": "string"
             }
+          },
+          "taskRules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowTaskRuleDto"
+            }
           }
         },
         "required": [
           "id",
           "name"
+        ]
+      },
+      "WorkflowTaskRuleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "review"
+          },
+          "title": {
+            "type": "string",
+            "example": "Review the article"
+          },
+          "description": {
+            "type": "string"
+          },
+          "assigneeRole": {
+            "type": "string",
+            "example": "editor",
+            "description": "Assign to the active org member with this role carrying the fewest pending tasks"
+          },
+          "dueInHours": {
+            "type": "number",
+            "example": 24,
+            "description": "Due after this many hours (SLA)"
+          }
+        },
+        "required": [
+          "type"
         ]
       },
       "WorkflowTransitionDto": {

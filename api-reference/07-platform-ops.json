@@ -734,6 +734,64 @@
         ]
       }
     },
+    "/api/v1/platform/users/search": {
+      "get": {
+        "operationId": "PlatformController_searchUsers",
+        "summary": "Search users across all organizations by name or e-mail (super-admin only)",
+        "parameters": [
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "description": "Name or e-mail fragment (≥ 3 characters)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Up to 20 matching users (empty for queries shorter than 3 characters).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PlatformOrgUserDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "platform"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/platform/organizations/{id}/users": {
       "get": {
         "operationId": "PlatformController_getOrgUsers",
@@ -6938,6 +6996,11 @@
             "type": "string",
             "description": "Router path relative to the app root",
             "example": "/workflows"
+          },
+          "order": {
+            "type": "number",
+            "description": "Sort order within the section / group (lower first, default 100)",
+            "example": 100
           }
         },
         "required": [
@@ -6946,7 +7009,8 @@
           "label",
           "description",
           "icon",
-          "route"
+          "route",
+          "order"
         ]
       },
       "QuotaCounterDto": {

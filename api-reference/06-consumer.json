@@ -2935,6 +2935,35 @@
         ]
       }
     },
+    "/api/v1/consumer/user/delete/status": {
+      "get": {
+        "operationId": "UserController_deletionStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Whether a deletion is scheduled for the current user (and when) — lets the UI offer “cancel” after a reload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsumerAccountDeletionStatusDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer"
+        ]
+      }
+    },
     "/api/v1/consumer/user/delete": {
       "post": {
         "operationId": "UserController_requestDeletion",
@@ -3653,6 +3682,25 @@
           }
         },
         "required": [
+          "deleteAt"
+        ]
+      },
+      "ConsumerAccountDeletionStatusDto": {
+        "type": "object",
+        "properties": {
+          "pending": {
+            "type": "boolean",
+            "description": "Whether an uncancelled deletion request exists"
+          },
+          "deleteAt": {
+            "type": "string",
+            "description": "When the account will be deleted, or null when nothing is scheduled",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "pending",
           "deleteAt"
         ]
       },

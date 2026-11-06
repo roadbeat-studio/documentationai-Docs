@@ -2933,6 +2933,57 @@
             "type": "string",
             "description": "When it happened — also the pagination cursor (`before`)",
             "format": "date-time"
+          },
+          "actor_name": {
+            "type": "object",
+            "description": "Actor's display name (name, else email)",
+            "nullable": true
+          },
+          "content_id": {
+            "type": "object",
+            "description": "Content the entry is about: `resource_id` for content/workflow entries, `meta.contentId` for comments/schedules",
+            "nullable": true
+          },
+          "content_title": {
+            "description": "The content's `data.title` (falls back to `data.name`/`data.headline`) — a string or a locale map",
+            "nullable": true,
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ],
+            "example": {
+              "en": "Climate summit opens in Vienna"
+            }
+          },
+          "content_slug": {
+            "type": "object",
+            "description": "Slug of the content",
+            "nullable": true
+          },
+          "content_type_name": {
+            "description": "Content type display name — a string or a locale map",
+            "nullable": true,
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ],
+            "example": {
+              "en": "Video Content"
+            }
           }
         },
         "required": [

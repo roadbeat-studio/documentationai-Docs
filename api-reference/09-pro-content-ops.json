@@ -5565,6 +5565,11 @@
             "type": "string",
             "description": "Export job ID (UUID text)"
           },
+          "error_message": {
+            "type": "object",
+            "description": "Why the job failed (first 1000 characters); null unless status is failed",
+            "nullable": true
+          },
           "organization_id": {
             "type": "string",
             "description": "Owning organization ID"
