@@ -181,6 +181,16 @@ Removes the content bundle from the pod and updates the manifest:
 POST /api/v1/manage/content-pod/unpublish/:contentId
 ```
 
+If the content itself no longer exists in Studio, the item is still removed from **your organization's own pod** by its id — useful for pages left behind by content that was deleted earlier (see [Items Without Content](#items-without-content)).
+
+### Deleting Content
+
+Deleting a content item in Studio also removes it from the pod: its bundle and manifest entry are deleted, the manifest is re-signed, and the federation layer is told the item is gone so that Fediverse followers receive the removal as well. You do not need to unpublish from the pod before deleting.
+
+<Callout kind="info">
+  All pod endpoints that take a `:contentId` — `publish`, `unpublish` and `preview` — look the content up **in your own organization only**. An id that belongs to another organization answers `404`, exactly like an id that does not exist.
+</Callout>
+
 ### Bulk Publish
 
 Publish all content items that are currently in `published` status:
@@ -265,9 +275,13 @@ GET /api/v1/manage/content-pod/status
 | `podMode` | `"static"` or `"dynamic"` |
 | `tier` | `"free"`, `"starter"`, `"pro"`, or `"enterprise"` |
 | `status` | `"active"`, `"disabled"`, or `"provisioning"` |
-| `publishedCount` | Total items ever published (from DB config) |
-| `manifestEntries` | Current items in `manifest.json` |
-| `totalSizeBytes` | Cumulative bytes written (used for quota) |
+| `publishedCount` | Items currently in the pod — recomputed from `manifest.json` after every publish and unpublish (used for the item quota) |
+| `manifestEntries` | Current items in `manifest.json`, read live |
+| `totalSizeBytes` | Total size of the items currently in the pod, from the manifest (used for the storage quota) |
+
+<Callout kind="tip">
+  Because the counters are taken from the manifest after each publish or unpublish, they correct themselves: a pod whose stored counters had drifted (for example from an older Studio version that counted every update as a new item) shows the real numbers again after its next publish.
+</Callout>
 
 ---
 
@@ -298,6 +312,35 @@ The **Refresh** button re-reads the manifest. The trash icon **unpublishes** an 
 <Callout kind="info">
   The Content tab reads the pod manifest directly via `GET /api/v1/manage/content-pod/items` and does not depend on the Pod Hosting service being reachable.
 </Callout>
+
+### Items Without Content
+
+Pod items whose content no longer exists in Studio — typically pages of content that was deleted before Studio removed deleted content from the pod automatically — are flagged on the Content tab:
+
+- A banner **"Items without content: n"** explains that these items are still published in your pod although their content was deleted in Studio.
+- Each affected row carries a **Content deleted** badge.
+- **Remove from pod** deletes all of them after a confirmation. This cannot be undone.
+
+The same is available through the API. Listing is a dry run that changes nothing; pruning requires the `admin` role:
+
+```bash
+# List pod items whose content no longer exists (nothing is changed)
+GET /api/v1/manage/content-pod/orphans
+
+# Remove them from the pod
+POST /api/v1/manage/content-pod/prune
+```
+
+```json
+{
+  "data": {
+    "removed": 2,
+    "ids": ["c1a2…", "d3b4…"]
+  }
+}
+```
+
+Each entry of the `orphans` list carries `id`, `contentType`, `slug`, `title`, `path`, `sizeBytes` and `publishedAt` as written to the manifest. Removals re-sign the manifest and notify the federation layer, the same as a regular unpublish.
 
 ### Custom Domain Tab
 
@@ -354,13 +397,19 @@ Every Content Pod tier has storage and item count limits:
 | **Pro** | 20 GB | 50,000 |
 | **Enterprise** | Unlimited | Unlimited |
 
-Publishing returns **HTTP 403 Forbidden** when a quota is exceeded:
+Publishing returns **HTTP 403 Forbidden** when a quota is exceeded, with the stable error code `POD_ITEM_LIMIT` or `POD_STORAGE_LIMIT`:
 
 ```json
 {
-  "message": "Content Pod item limit reached (200/200). Upgrade your pod tier or remove existing content to publish more."
+  "statusCode": 403,
+  "error": "Forbidden",
+  "code": "POD_ITEM_LIMIT",
+  "message": "Content Pod item limit reached (200/200). Upgrade your pod tier or remove existing content to publish more.",
+  "params": { "count": 200, "limit": 200 }
 }
 ```
+
+The item limit applies only to publishes that **add** an item. Re-publishing content that is already in the pod (an update) replaces its bundle and is never refused for the item count — a full pod can still receive corrections. The storage limit applies to every publish.
 
 Admins can override quotas per-organization via:
 
@@ -432,6 +481,8 @@ POST /api/v1/manage/content-pod/setup/switch-mode
 | `POST` | `/api/v1/manage/content-pod/unpublish/:contentId` | Unpublish one item from pod |
 | `POST` | `/api/v1/manage/content-pod/publish-all` | Bulk-publish all published content |
 | `GET` | `/api/v1/manage/content-pod/preview/:contentId` | Preview bundle without writing |
+| `GET` | `/api/v1/manage/content-pod/orphans` | List pod items whose content no longer exists (dry run) |
+| `POST` | `/api/v1/manage/content-pod/prune` | Remove pod items whose content no longer exists (admin) |
 | `POST` | `/api/v1/manage/content-pod/setup/free` | Provision free pod |
 | `POST` | `/api/v1/manage/content-pod/setup/own` | Set up self-hosted pod |
 | `POST` | `/api/v1/manage/content-pod/setup/switch-mode` | Switch static ↔ dynamic mode |

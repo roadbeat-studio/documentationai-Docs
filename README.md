@@ -26,7 +26,8 @@ studio-docs/
 │   ├── search.mdx
 │   ├── backup-and-export.mdx
 │   ├── cdn.mdx
-│   └── consumer-features.mdx
+│   ├── consumer-features.mdx
+│   └── accessibility.mdx
 ├── editors/                    # Editor-focused documentation
 │   ├── guide.mdx
 │   ├── content-editor.mdx
@@ -36,6 +37,7 @@ studio-docs/
 │   ├── overview.mdx            #   hand-written overview pages
 │   ├── authentication.mdx
 │   ├── delivery-api.mdx
+│   ├── error-codes.mdx         #   stable API error codes
 │   └── NN-<area>.json          #   GENERATED per-area OpenAPI specs — do not edit
 ├── plugins/                    # Plugin system & CE vs Pro
 │   ├── overview.mdx
@@ -79,7 +81,7 @@ That emits the OpenAPI document from the API's controller metadata and splits it
 
 > **Do not hand-edit a spec to fix a build error.** The generator will undo it on the next run. Fix it in `studio/tools/split-openapi.mjs` so the correction survives — that is where the recursive-schema workaround lives, for example: Documentation.AI dereferences every `$ref` into a live object and then serializes it, so a self-referencing schema fails the deploy with `Converting circular structure to JSON`. The splitter breaks those cycles in these published copies (and verifies each file survives a dereference pass before writing it), while the API's own document keeps the recursive types its SDK consumers need.
 
-Only the prose pages in `api-reference/` (`overview.mdx`, `authentication.mdx`, `delivery-api.mdx`) are hand-written.
+Only the prose pages in `api-reference/` (`overview.mdx`, `authentication.mdx`, `delivery-api.mdx`, `error-codes.mdx`) are hand-written.
 
 ## Workflow
 

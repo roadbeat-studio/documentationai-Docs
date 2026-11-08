@@ -1197,6 +1197,99 @@
         ]
       }
     },
+    "/api/v1/manage/content-pod/orphans": {
+      "get": {
+        "operationId": "ContentPodController_listOrphans",
+        "summary": "List pod items whose content no longer exists (nothing is changed)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Items still published in the pod although their content was deleted in Studio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PodOrphanItemDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "content-pod"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/content-pod/prune": {
+      "post": {
+        "operationId": "ContentPodController_pruneOrphans",
+        "summary": "Remove the pod items whose content no longer exists",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Number and ids of the removed items.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PodPruneResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "content-pod"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/manage/content-pod/setup/free": {
       "post": {
         "operationId": "ContentPodController_setupFree",
@@ -6484,6 +6577,70 @@
         },
         "required": [
           "ok"
+        ]
+      },
+      "PodOrphanItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Content UUID (the content no longer exists)"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Content type of the pod item"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Slug of the pod item"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title as written to the manifest"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path of the item inside the pod"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "description": "Size of the item in bytes"
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "When the item was published to the pod",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "contentType",
+          "slug",
+          "title",
+          "path",
+          "sizeBytes",
+          "publishedAt"
+        ]
+      },
+      "PodPruneResultDto": {
+        "type": "object",
+        "properties": {
+          "removed": {
+            "type": "number",
+            "description": "Number of removed items",
+            "example": 26
+          },
+          "ids": {
+            "description": "Content UUIDs of the removed items",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "removed",
+          "ids"
         ]
       },
       "PodPublishAllItemDto": {

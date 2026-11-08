@@ -44,6 +44,56 @@ used by first-party UIs, so documented shapes match the real responses.
   </Tab>
 </Tabs>
 
+## API Keys
+
+<Steps>
+  <Step title="Create the key" icon="key">
+    In **Settings → API Keys** click **Create**, or call the API:
+
+    ```bash
+    POST /api/v1/manage/api-keys
+    {
+      "name": "Website build",
+      "permissions": ["content.read", "assets.read"]
+    }
+    ```
+  </Step>
+  <Step title="Copy the secret" icon="copy">
+    The response carries the secret in the **`key`** field (`rbk_…`). It is shown
+    **once** — Studio stores only a hash. Copy it into your secret store right away.
+  </Step>
+  <Step title="Use it" icon="globe">
+    Send it as `X-Api-Key` or `Authorization: Bearer` on Delivery API requests.
+  </Step>
+</Steps>
+
+### Scopes
+
+A key's `permissions` accept two equivalent vocabularies — the documented dot
+scopes and the `resource:action` permissions used by roles. Both resolve to the
+same permissions, so existing keys keep working:
+
+| Dot scope | Equivalent permission(s) |
+|-----------|--------------------------|
+| `content.read` | `content:read` |
+| `content.write` | `content:create`, `content:update`, `content:publish` |
+| `assets.read` | `asset:read` |
+| `assets.write` | `asset:write` |
+| `content-types.read` | `contenttype:read` |
+
+Any other `resource:action` permission from the catalog is accepted as well. An
+unknown scope (for example a typo) is rejected with **`400`
+`API_KEY_PERMISSION_INVALID`**, and the message lists the valid scopes.
+
+### Quota, Revoking and Re-activating
+
+Only **active** keys count against the organization's API key limit. Revoking a
+key (`POST /api/v1/manage/api-keys/:id/revoke`) frees its slot, so an
+organization can always create a new key after revoking old ones. Re-activating a
+revoked key (`PATCH /api/v1/manage/api-keys/:id` with `{ "status": "active" }`)
+takes a slot again and is refused when the limit is reached. A revoked key
+answers `401` on the Delivery API.
+
 ## Rate Limiting
 
 The Delivery API is rate-limited **per API key** — two keys behind the same
@@ -56,8 +106,13 @@ CDN/edge IP get independent budgets. Responses carry standard headers:
 | `X-RateLimit-Reset` | Seconds until the window resets |
 | `Retry-After` | On `429`, seconds to wait |
 
-The per-key limit derives from the org's plan (Pro tiers raise it). Unauthenticated
-traffic falls back to a per-IP budget.
+The per-key limit derives from the org's plan (Pro tiers raise it).
+
+Management API traffic signed in with a JWT is limited **per user**
+(`org:{orgId}:user:{userId}`), not per IP — several editors behind one office
+NAT or proxy each get their own budget. Requests with a forged, expired or
+malformed token count as anonymous. Unauthenticated traffic falls back to a
+per-IP budget.
 
 ## Conditional Requests (ETag / 304)
 

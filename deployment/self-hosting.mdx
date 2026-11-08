@@ -225,6 +225,9 @@ graph TB
 | `MEILISEARCH_HOST` | No | — | MeiliSearch URL (search features) |
 | `MEILISEARCH_API_KEY` | No | — | MeiliSearch master key |
 | `SCHEMA_REGISTRY_URL` | No | — | Schema Registry for content type definitions |
+| `DISCOVERY_NODE_URLS` | No | `http://localhost:3300` | Discovery Nodes for teaser publishing |
+| `DISCOVERY_NODE_PUBLISHER_KEY` | When publishing | — | Publisher key the Discovery Nodes know you by; without it every teaser push is rejected with `401` |
+| `CONTEXT_DIRECTORY_SERVICE_KEY` | When consumer features are used | — | Must equal the Context Directory's `CD_SERVICE_KEY`; no default in production |
 | `CORS_ORIGIN` | No | `*` | Allowed CORS origins |
 | `STORAGE_PROVIDER` | No | `local` | `local` or `s3` |
 | `DOMAIN` | No | — | Domain for Caddy auto-TLS |
@@ -256,6 +259,13 @@ docker compose exec studio-api \
 <Callout kind="alert">
   Always back up your database before running migrations on production. See [Backup & Export](/guides/backup-and-export).
 </Callout>
+
+Two further migration steps run **automatically when the API starts** — no extra command:
+
+- **Plugin SQL migrations** — the migrations shipped with installed Pro plugins are applied before the plugins initialize and recorded in the `plugin_migrations` table (see [Plugin database migrations](/plugins/overview#plugin-database-migrations)). `PLUGIN_MIGRATIONS=off` skips the step if your deploy pipeline applies them.
+- **Content storage shape** — content types not yet storing their fields at the schema path are normalized once, and their content and version history moved accordingly. `CONTENT_SHAPE_MIGRATION=off` skips the pass.
+
+Both are idempotent: a restart re-checks and finds nothing to do.
 
 ## Updating
 
@@ -318,7 +328,15 @@ studio-api:
 ```
 
 <Callout kind="info">
-  The Pro Docker image includes CE + all Pro plugins. No additional setup needed beyond the license key.
+  The Pro Docker image includes CE + all Pro plugins. No additional setup needed beyond the license key — the plugins' database tables are created by the API on its first start.
+</Callout>
+
+## Privacy: Self-Hosted Font
+
+The Studio UI's typeface (Inter, as a variable font with Latin, Latin Extended, Greek, Cyrillic and Vietnamese subsets) is bundled into the build instead of being fetched from Google Fonts, so opening Studio sends no visitor IP address to an external font service. Self-hosted deployments need no consent entry for fonts.
+
+<Callout kind="info">
+  The map view in the consumer Discover area loads its tiles from OpenStreetMap (`tile.openstreetmap.org`) when a user opens it — account for that request in your privacy notice.
 </Callout>
 
 ## Hetzner Cloud

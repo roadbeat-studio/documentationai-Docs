@@ -22,14 +22,19 @@ Webhooks allow Studio to notify external systems in real-time when content event
   <Step title="Add a new webhook" icon="plus">
     Click **Add Webhook** and fill in:
 
+    - **Name** — a label for the webhook (e.g., "Publish notifications")
     - **URL** — your endpoint (e.g., `https://example.com/webhooks/studio`)
     - **Events** — select which events to listen for:
-      - `content.afterCreate` — new content created
-      - `content.afterUpdate` — content modified
-      - `content.afterPublish` — content published
-      - `content.afterDelete` — content deleted
-      - `asset.afterUpload` — new asset uploaded
-    - **Enabled** — toggle on
+      - `content.created` — new content created
+      - `content.updated` — content modified
+      - `content.published` — content published
+      - `content.unpublished` — content unpublished
+      - `content.deleted` — content deleted
+      - `asset.uploaded` — new asset uploaded
+      - `asset.deleted` — asset deleted
+      - `user.created` — new user created
+
+    A new webhook starts **active**. The switch next to each webhook pauses it (`inactive`) and resumes it (`active`).
   </Step>
   <Step title="Save and note the secret" icon="key">
     After saving, Studio generates a **signing secret**. Copy and store it securely — you'll need it to verify webhook signatures.
@@ -53,14 +58,25 @@ Here's a minimal webhook receiver:
     const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
     app.post('/webhooks/studio', express.raw({ type: 'application/json' }), (req, res) => {
-      // Verify signature
-      const signature = req.headers['x-webhook-signature'];
-      const expected = crypto
+      // Verify signature: HMAC-SHA256 over "<timestamp>.<rawBody>"
+      const timestamp = req.headers['x-webhook-timestamp'];
+      if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) {
+        return res.status(401).json({ error: 'Stale delivery' });
+      }
+      const expected = 'sha256=' + crypto
         .createHmac('sha256', WEBHOOK_SECRET)
-        .update(req.body)
+        .update(`${timestamp}.${req.body}`)
         .digest('hex');
 
-      if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+      // During a secret rotation the header holds several comma-separated signatures
+      const valid = (req.headers['x-webhook-signature'] || '')
+        .split(',')
+        .some((sig) => {
+          const a = Buffer.from(sig.trim());
+          const b = Buffer.from(expected);
+          return a.length === b.length && crypto.timingSafeEqual(a, b);
+        });
+      if (!valid) {
         return res.status(401).json({ error: 'Invalid signature' });
       }
 
@@ -80,6 +96,7 @@ Here's a minimal webhook receiver:
     import hmac
     import hashlib
     import json
+    import time
     from flask import Flask, request, jsonify
 
     app = Flask(__name__)
@@ -87,14 +104,19 @@ Here's a minimal webhook receiver:
 
     @app.route('/webhooks/studio', methods=['POST'])
     def handle_webhook():
-        signature = request.headers.get('X-Webhook-Signature')
-        expected = hmac.new(
+        # Verify signature: HMAC-SHA256 over "<timestamp>.<rawBody>"
+        timestamp = request.headers.get('X-Webhook-Timestamp', '')
+        if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > 300:
+            return jsonify({'error': 'Stale delivery'}), 401
+        expected = 'sha256=' + hmac.new(
             WEBHOOK_SECRET.encode(),
-            request.data,
+            timestamp.encode() + b'.' + request.get_data(),
             hashlib.sha256
         ).hexdigest()
 
-        if not hmac.compare_digest(signature, expected):
+        # During a secret rotation the header holds several comma-separated signatures
+        signatures = request.headers.get('X-Webhook-Signature', '').split(',')
+        if not any(hmac.compare_digest(s.strip(), expected) for s in signatures):
             return jsonify({'error': 'Invalid signature'}), 401
 
         event = json.loads(request.data)
@@ -111,17 +133,16 @@ Every webhook delivery sends a JSON payload:
 
 ```json
 {
-  "event": "content.afterPublish",
-  "timestamp": "2026-01-24T14:30:00Z",
+  "event": "content.published",
   "data": {
     "contentId": "uuid",
-    "contentTypeId": "news",
-    "organizationId": "org-uuid",
-    "userId": "user-uuid",
-    "status": "published"
-  }
+    "contentTypeId": "news"
+  },
+  "timestamp": "2026-01-24T14:30:00.000Z"
 }
 ```
+
+The `data` fields per event are listed in the [Webhooks guide](/guides/webhooks#supported-events).
 
 ## Verifying Deliveries
 
@@ -153,8 +174,9 @@ After 3 failed attempts, the delivery is marked as permanently failed. You can s
 ## Troubleshooting
 
 <Expandable title="Webhook not firing" default-open="false">
-  - Check that the webhook is **enabled**
-  - Verify the selected events match what you're testing (e.g., `content.afterPublish` only fires when content is published, not when saved as draft)
+  - Check that the webhook's status is **active** (the switch in **Settings > Webhooks**)
+  - Verify the selected events match what you're testing (e.g., `content.published` only fires when content is published, not when saved as draft)
+  - Webhooks created with the old event names (`content.afterPublish`, …) never fire — edit them and select the events listed above
   - Check the delivery log for errors
 </Expandable>
 

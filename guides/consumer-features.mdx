@@ -14,11 +14,13 @@ The consumer features appear in the **DISCOVER** section of the Studio sidebar, 
   The same `@roadbeat/consumer` library is shared between Studio and the standalone Web Client. In Studio, it's mounted at `/consumer/*`; in the Web Client, it's the primary experience.&#x20;
 </Callout>
 
+A few options exist only in the **standalone Web Client** because they depend on its own API or account model — keeping follows on the device only, the recovery code, browser push, and password-confirmed account deletion. They are marked as such below; in Studio those controls are hidden.
+
 ## Features
 
 <Columns cols="2">
   <Card title="Compass" href="#compass" icon="compass" horizontal="false">
-    Goal portfolio management with categories, templates, time horizons, and progress tracking.
+    Goal portfolio management with categories, templates, time horizons, and progress check-ins.
   </Card>
 
   <Card title="Discover" href="#discover" icon="search" horizontal="false">
@@ -30,11 +32,11 @@ The consumer features appear in the **DISCOVER** section of the Studio sidebar, 
   </Card>
 
   <Card title="Bookmarks" href="#bookmarks" icon="bookmark" horizontal="false">
-    Save and organize content into collections with drag-to-reorder and optimistic updates.
+    Save and organize content into collections with a manual order, drag-to-reorder and optimistic updates.
   </Card>
 
   <Card title="Notifications" href="#notifications" icon="bell" horizontal="false">
-    Notification center with filtering, preferences, and 5-minute polling.
+    Notification center with filtering, archiving, preferences, and 5-minute polling.
   </Card>
 
   <Card title="Content Detail" href="#content-detail" icon="file-text" horizontal="false">
@@ -59,11 +61,49 @@ POST /api/v1/consumer/account/link
 DELETE /api/v1/consumer/account/link
 ```
 
-Configure the Context Directory URL in `.env`:
+Configure the Context Directory URL and its service key in `.env`:
 
 ```bash
 CONTEXT_DIRECTORY_URL=http://localhost:3100
+# Must equal the Context Directory's CD_SERVICE_KEY
+CONTEXT_DIRECTORY_SERVICE_KEY=change-me
 ```
+
+<Callout kind="alert" collapsed="false">
+  Studio links accounts through the Context Directory's `POST /auth/register-or-link`, which returns tokens for an existing account. The Context Directory therefore only accepts that call with a shared `X-Service-Key` header, and Studio sends `CONTEXT_DIRECTORY_SERVICE_KEY` as that key. **Set it in production** to the same value as the Context Directory's `CD_SERVICE_KEY` — there is no production default, and without it account linking fails. Outside production the development key `roadbeat-dev-cd-service-key` is used.
+</Callout>
+
+## Language
+
+The consumer screens follow the **Studio interface language** (all 24 EU locales) — when a user switches Studio to German, Compass, Discover, Bookmarks, Publishers, Notifications, Settings, Help and About switch with it. See [Interface Language](/guides/interface-language).
+
+Data that comes from other services follows the same language. The library sends the UI language as `Accept-Language` on every consumer API call, and the BFF answers in it, falling back to English where no translation exists:
+
+| What                                            | Source of the translation              |
+| ----------------------------------------------- | -------------------------------------- |
+| Teaser titles and descriptions                  | Multilingual teaser texts on the Discovery Node |
+| Goal texts, goal tree, category and subcategory names | Context Directory goal catalog (24 languages) |
+| Content type names                              | Schema Registry i18n files             |
+| Filter headings and filter values (e.g. "Event type: Exhibition") | Schema Registry form schemas and i18n files |
+| Country and region names                        | Context Directory geo i18n files       |
+| Publisher "About" text                          | The publisher's own description        |
+
+```bash
+# Content type names in the request language: { "event": "Veranstaltung", ... }
+GET /api/v1/consumer/content-types/names
+
+# Filter labels for the keys on screen (max 200): field:value, value, @field (heading)
+GET /api/v1/consumer/content-types/value-labels?keys=event_type:exhibition,culture,@event_type
+
+# Content types and categories from the Schema Registry, names in the request language
+GET /api/v1/consumer/content-types
+GET /api/v1/consumer/content-types/categories
+
+# Region names of one country in one language: { "regions": { "DE-BY": "Bayern", ... } }
+GET /api/v1/consumer/geo/regions/:countryCode/i18n/:locale
+```
+
+Content type names and filter labels are cached for one hour per language. When the Schema Registry cannot be reached, these endpoints answer with an empty map or list (not cached) and the UI falls back to the humanized type slug.
 
 ## Compass
 
@@ -90,7 +130,25 @@ PATCH /api/v1/consumer/goals/:goalId
 
 # Delete a goal
 DELETE /api/v1/consumer/goals/:goalId
+
+# Progress check-in
+POST /api/v1/consumer/goals/:goalId/progress
+{ "currentValue": 3, "targetValue": 10, "unit": "books" }
 ```
+
+Every goal returned by these endpoints carries its resolved `contentQueries`, a `status` (`active`, `paused`, `completed`, `abandoned`) and the fields the Compass groups by:
+
+| Field           | Description                                                                 |
+| --------------- | --------------------------------------------------------------------------- |
+| `subcategoryId` | Subcategory (filterset) the goal was created from                           |
+| `groupId`       | Category of the goal tree the goal belongs to (missing for custom goals)    |
+| `groupName`     | Name of that category, in the request language                              |
+| `groupPosition` | Sort position of the category (tree order, then its place in the tree)      |
+| `progress`      | Last check-in `{ currentValue, targetValue?, unit? }`, or `null` when never set |
+
+### Goal Progress
+
+Progress is tracked with **manual check-ins**. `POST /consumer/goals/:goalId/progress` forwards the values to the Context Directory, which marks the goal `completed` once `currentValue` reaches `targetValue`. `currentValue` must be 0 or more, `targetValue` at least 1 (it can be set once and changed later), and `unit` is a free label of up to 40 characters. The response is the updated goal.
 
 ### Goal Browsing & Search
 
@@ -108,6 +166,8 @@ GET /api/v1/consumer/goals/subcategories/:subcategoryId
 GET /api/v1/consumer/goals/search?q=mentor&treeId=personal
 ```
 
+Tree, category and subcategory names, the goal texts of a subcategory and goal search hits are returned in the request language. A translated goal text is only used when its `{{placeholders}}` match the English text, so parameters always fill in. New goals are stored with the text the user saw; existing goals keep their names.
+
 ### Goal Structure
 
 Goals are organized hierarchically:
@@ -124,11 +184,17 @@ Goals are organized hierarchically:
 
 ### Compass Views
 
+Goals are grouped by the **category of their goal tree** (e.g. 📚 Learning & Knowledge, 💼 Career & Professional, 🏃 Health & Wellness), using the `groupId` / `groupName` / `groupPosition` fields the API adds to each goal. Groups follow the tree order and carry an icon per category. Custom goals stay in their goal tree's group; goals with neither a category nor a tree are collected under **Other goals**.
+
 The Compass page adapts its layout based on the selected time horizon filter:
 
-- **"All" selected** — displays category cards in a grid (e.g., "Business & Organisation Goals", "Personal Goals"), each showing goal count and description. Click a card to drill into that category.
+- **"All" selected** — displays one card per goal category in a grid, each showing its goal count. Click a card to drill into that category.
 
 - **Specific horizon selected** (Life, Year, Month, Week, Day) — switches to a flat goal list grouped by category name. Each group shows a category heading followed by goal cards with parameters and horizon badges. Only categories with matching goals are shown.
+
+- **Goal detail** — opening a goal shows its parameters and a live **content preview**: "Matching items: n", the top three matches (they open in the [Content Reader](#content-reader)), and **View all matching content**, which opens Discover filtered to that goal (`discover?goal=<goalId>`).
+
+Category and goal views have their own addresses — `/consumer/compass/:categoryId` and `/consumer/compass/:categoryId/:goalId` — so browser back/forward and shared links work. Each view has a single back link to the level above.
 
 ### Goal Reordering
 
@@ -144,13 +210,15 @@ The time horizon filter is also available inside the **category detail view** �
 
 The goal editor is a 4-step wizard:
 
-1. **Select goal tree** — choose a category (Personal, Business, etc.)
+1. **Select goal tree** — choose a tree (Personal, Business, etc.); each tree shows a short hint in the UI language saying who it is for
 
 2. **Browse & multi-select** — expandable tree or search with checkbox multi-selection
 
 3. **Customize goals** — scrollable list of selected goals with inline parameter inputs (text fields, searchable dropdowns) and per-goal time horizon selection
 
 4. **Confirm** — review goals with the ability to remove individual goals before saving
+
+The editor is a modal dialog: it is announced to screen readers, **Escape** closes it, and focus returns to the button that opened it.
 
 Goals with parameterized text templates (e.g., `"Visit national parks in {{country}}"`) render inline input fields within the sentence. Parameters may include suggestions or options for searchable dropdowns. Time horizon is intelligently preselected from the goal's `time_context` metadata when a single value exists.
 
@@ -177,7 +245,14 @@ POST /api/v1/consumer/discover/search
 
 # Goal-based search
 POST /api/v1/consumer/discover/by-goal
-{ "goalId": "goal-uuid" }
+{
+  "goalId": "goal-uuid",
+  "query": "marathon",
+  "sort": "date",
+  "sortOrder": "desc",
+  "page": 1,
+  "limit": 20
+}
 
 # Autocomplete suggestions
 GET /api/v1/consumer/discover/suggestions?q=clim
@@ -185,23 +260,43 @@ GET /api/v1/consumer/discover/suggestions?q=clim
 # Available Discovery Nodes and their status
 GET /api/v1/consumer/discover/nodes
 
-# Facet configuration for a content type
+# Facets for a content type
 GET /api/v1/consumer/discover/facets/:contentType
 ```
 
+`search` and `by-goal` both accept `sort` (`relevance`, `date`, `title`) and `sortOrder` (`asc`, `desc`); `limit` is 1–100. In a goal search:
+
+- **`query`** narrows the goal feed to hits that match the text *and* one of the goal's content queries.
+- **`sort` / `sortOrder`** are applied by the Discovery Node, and results merged from several nodes keep that order. Both are ignored in random mode.
+- **`matchedGoalIds`** on each hit names the goals whose content queries matched it — the server-side answer to "why am I seeing this?". It is filled when the content queries in the request carry a `goal_id` (the Discovery Node names each query `goal:<goal_id>:cq:<n>` and reports the names that matched).
+
+Suggestions come from the Discovery Node's `GET /api/v1/search/suggestions`. Facets are the aggregations of a search restricted to the content type (global facets plus the type's own fields, with multilingual labels) — the Discovery Node has no separate facet-definition endpoint.
+
+<Callout kind="info" collapsed="false">
+  Search responses only include the raw Discovery Node requests (`_debug`) when `DISCOVER_DEBUG=true` is set. Use it in development to inspect the queries; leave it off in production.
+</Callout>
+
 ### Frontend Features
 
-- **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles)
+- **Facet sidebar** — dynamic filters (checkboxes, date ranges, geo distance, toggles). Filter headings and values are shown in the UI language.
 
-- **Goal group tabs** — two-level tab navigation: the first row shows goal categories (e.g., "Business & Organisation Goals", "Personal Goals") plus an "All Goals" tab; selecting a category reveals a second row of individual goal tabs within that category. Tab order follows the user's Compass sort order. Selecting a goal tab triggers a goal-based search.
+- **Filters drawer on small screens** — below 1024 px the sidebar is replaced by a **Filters** button showing the number of active filters. It opens a slide-over drawer with the same filters (enum pills become standard checkboxes there); **Show results (n)**, the backdrop or Escape closes it.
+
+- **Only from my country** — when **Share location** is on in [Discover Settings](#discover-settings) and the profile has a country, this filter limits results to teasers for that country (sent to the Discovery Node as `geographic.country_codes`). It appears as a "My country: …" pill while active.
+
+- **Goal group tabs** — two-level tab navigation: the first row shows the goal categories of the [Compass](#compass-views) plus an "All Goals" tab; selecting a category reveals a second row of individual goal tabs within that category. Tab order follows the user's Compass sort order. Selecting a goal tab triggers a goal-based search; the search box and sort controls work inside goal feeds too.
 
 - **View modes** — 8 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (interactive Mapbox globe with custom markers)
 
-- **Sort controls** — by relevance, date, or other fields
+- **Sort controls** — by relevance, date, or title. Each field starts in its natural direction (newest first, title A→Z); Relevance has no direction toggle.
 
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
 
 - **Active filter pills** — dismissible badges showing current filters
+
+- **Links into Discover** — `discover?goal=<goalId>` opens the feed of one goal (from the Compass goal detail), `discover?publisher=<id>` filters by a publisher (from a publisher profile's **View all content**).
+
+The Calendar, Map and 3D Globe views show one result set without pagination, so they load up to 100 results at once; the paged views go back to normal pages.
 
 ### Map View
 
@@ -278,7 +373,7 @@ Both the 2D map and 3D globe use consistent color-coded circle markers with Luci
 
 ### Calendar View
 
-The **Calendar** view mode displays content on a month grid, organized by publication date. Each day cell shows a preview of scheduled events, news, jobs, and other date-based content.
+The **Calendar** view mode displays content on a month grid, organized by the teaser's **event date**, or its publication date when it has none. Days are computed in the viewer's local time zone, and date-only values stay on their day. Each day cell shows a preview of scheduled events, news, jobs, and other date-based content.
 
 #### Month View
 
@@ -340,7 +435,7 @@ The drawer displays:
 
   - **Edit your goals** — navigates to the Compass page (`/consumer/compass`)
 
-  - **Adjust location settings** — navigates to Profile Settings (`/consumer/profile/settings`)
+  - **Adjust location settings** — navigates to Discover Settings (`/consumer/settings`)
 
   - **Hide content from this publisher** — mutes the publisher, hiding all their content from Discover (see [Muting](#muting))
 
@@ -362,6 +457,10 @@ The drawer determines matched goals using a three-tier strategy:
   </Step>
 </Steps>
 
+Clients that send goal-tagged content queries to `POST /discover/by-goal` (the mobile app does) get an exact answer without guessing: each hit's `matchedGoalIds` lists the goals whose queries matched it (see [Search API](#search-api)).
+
+The drawer, like the bookmark popover and the goal editor, is a modal dialog: Escape closes it and focus returns to the card that opened it.
+
 <Callout kind="tip" collapsed="false">
   Setting up goals on the Compass page significantly improves the transparency drawer experience — it enables the system to show exactly which goals led to each content recommendation.
 </Callout>
@@ -381,6 +480,22 @@ GET /api/v1/consumer/publishers/:id
 GET /api/v1/consumer/publishers/:id/content
 ```
 
+The API returns only the fields a reader needs — the publisher's contact e-mail and contact name, public key and rate limits stay on the Discovery Node. A publisher record carries:
+
+| Field               | Description                                                                 |
+| ------------------- | --------------------------------------------------------------------------- |
+| `verificationLevel` | Trust level: `unverified`, `domain`, `organization` or `trusted` (see [Trust Badges](#trust-badges)) |
+| `teaserCount`       | Teasers indexed for the publisher, counted in the search index              |
+| `itemsLast90Days`   | Items published in the last 90 days                                         |
+| `description`       | The "About" text, in the request language where the publisher provides it   |
+| `contentTypes`      | Content types the publisher publishes                                       |
+
+The publisher profile shows the publishing frequency derived from `itemsLast90Days` ("≈ 3 per week", "≈ 2 per month", "Less than monthly" or "None in 90 days"), the recent content from the search index, and **View all content**, which opens Discover filtered to the publisher.
+
+<Callout kind="tip" collapsed="false">
+  For a Studio organization, the "About" text is its **organization description** (Settings → Organization). When the description changes, Studio sends it to the organization's enabled Discovery Nodes in the organization's default language. See [Publishing](/guides/publishing).
+</Callout>
+
 ### Following
 
 ```bash
@@ -397,6 +512,17 @@ DELETE /api/v1/consumer/follows/:publisherId
 PUT /api/v1/consumer/follows
 { "publisherIds": ["id-1", "id-2"] }
 ```
+
+#### Where follows are kept
+
+In Studio, follows and muted publishers belong to the **account**: they are kept in the browser for instant use and synced to the server, so they reach every device and the mobile app.
+
+The **standalone Web Client** additionally lets users choose under **Settings → Privacy**:
+
+- **In my roadbeat account** (default) — on all devices and in the app.
+- **Only on this device** — nothing is stored on the server; other devices and the app don't see them.
+
+Switching moves the data: to the device, the lists are loaded from the account and the server copy is emptied; back to the account, the browser's lists are uploaded.
 
 ### Muting
 
@@ -448,6 +574,8 @@ DELETE /api/v1/consumer/follows/muted/:publisherId
   Muting does not remove existing bookmarks from muted publishers — users retain access to previously saved content.
 </Callout>
 
+The `localStorage` copies belong to the signed-in account — see [Data on shared browsers](#data-on-shared-browsers).
+
 ### Trust Badges
 
 Publishers have 4 trust levels displayed as colored badges:
@@ -464,8 +592,11 @@ Publishers have 4 trust levels displayed as colored badges:
 Save content and organize into collections.
 
 ```bash
-# Get bookmarks (paginated, filterable)
-GET /api/v1/consumer/bookmarks?collection=uuid&sort=newest&page=1
+# Get bookmarks (paginated, optionally one collection)
+GET /api/v1/consumer/bookmarks?collectionId=uuid&sort=newest&page=1&limit=20
+
+# Index of all bookmarks: teaser IDs + their collections, no teaser data
+GET /api/v1/consumer/bookmarks/index
 
 # Add bookmark
 POST /api/v1/consumer/bookmarks
@@ -475,7 +606,9 @@ POST /api/v1/consumer/bookmarks
 DELETE /api/v1/consumer/bookmarks/:teaserId
 ```
 
-There is no per-teaser "is this bookmarked?" endpoint — list the bookmarks once with `GET /api/v1/consumer/bookmarks` and resolve state client-side. That is also what keeps the follow/bookmark graph off the server's request log.
+`sort` is `newest` (default), `oldest` or `custom`. `custom` returns a collection in its manual order; without a `collectionId` it falls back to newest first.
+
+There is no per-teaser "is this bookmarked?" endpoint. Load `GET /api/v1/consumer/bookmarks/index` once and resolve the bookmarked state client-side — the index covers **all** bookmarks, whereas the paged list only holds what is on screen. That is also what keeps the follow/bookmark graph off the server's request log.
 
 ### Collections
 
@@ -485,13 +618,13 @@ GET /api/v1/consumer/bookmarks/collections
 
 # Create collection
 POST /api/v1/consumer/bookmarks/collections
-{ "name": "Research" }
+{ "name": "Research", "icon": "book" }
 
-# Update collection
+# Rename / change icon
 PUT /api/v1/consumer/bookmarks/collections/:id
 { "name": "Climate Research" }
 
-# Delete collection
+# Delete collection (its bookmarks stay)
 DELETE /api/v1/consumer/bookmarks/collections/:id
 
 # Add item to collection
@@ -500,13 +633,21 @@ POST /api/v1/consumer/bookmarks/collections/:id/items
 
 # Remove item from collection
 DELETE /api/v1/consumer/bookmarks/collections/:id/items/:teaserId
+
+# Save the manual order of the items on one page
+PUT /api/v1/consumer/bookmarks/collections/:id/reorder
+{ "teaserIds": ["teaser-3", "teaser-1", "teaser-2"] }
 ```
+
+Inside a collection the Bookmarks page sorts by **My order** by default. New items are added at the top; items can be dragged, or moved with **Move up / Move down** buttons for keyboard and touch users (focus stays on the moved item). A reorder only rearranges the submitted items among their own positions, so reordering one page does not disturb the order of the others.
+
+Each collection has its own address (`/consumer/bookmarks/:collectionId`). The open collection can be renamed (name and icon) or deleted after a confirmation — deleting a collection never deletes the bookmarks in it.
 
 ## Notifications
 
 ```bash
 # Get notifications (paginated, filterable by type)
-GET /api/v1/consumer/notifications?type=content&page=1
+GET /api/v1/consumer/notifications?type=content&page=1&limit=20
 
 # Get unread count
 GET /api/v1/consumer/notifications/unread-count
@@ -517,10 +658,22 @@ PUT /api/v1/consumer/notifications/:id/read
 # Mark all as read
 PUT /api/v1/consumer/notifications/read-all
 
+# Archive / restore a notification
+PUT /api/v1/consumer/notifications/:id/archive
+PUT /api/v1/consumer/notifications/:id/unarchive
+
+# Browser push status (always { "available": false } in Studio)
+GET /api/v1/consumer/notifications/push
+
 # Get/update notification preferences
 GET /api/v1/consumer/notifications/preferences
 PUT /api/v1/consumer/notifications/preferences
 ```
+
+- **Archive** — each notification row has an archive button. Archiving is a soft delete: the notification disappears from the list and the unread count, and `unarchive` brings it back. Users can only archive their own notifications.
+- **Translated texts** — notifications the server creates (welcome, password changed, data export ready, account deletion scheduled or cancelled, …) carry a `titleKey` / `bodyKey` with parameters in their `data`. The UI shows them in the current UI language and falls back to the stored English text for keys it does not know.
+- **Opening a notification** — clicking an entry in the dropdown opens its `actionUrl`.
+- **Browser push** — push notifications belong to the standalone Web Client's API. Studio answers `GET /consumer/notifications/push` with `available: false`, so the library shows neither the push switch nor the push offer there. In the Web Client, push is opt-in: it is offered once after the third sign-in (never as a modal, and not in a browser that blocks notifications), and the switch in Settings subscribes or unsubscribes the current browser.
 
 ## Content Reader
 
@@ -533,6 +686,17 @@ The **Content Reader** provides an integrated inline reading experience for cont
 | **Split pane**    | 4K / ultrawide (≥2560px)           | Side-by-side: left 50% Discover list, right 50% reader pane          |
 | **Modal overlay** | Regular desktop, tablet, mobile    | Full-screen modal with focus trap, Escape to close, backdrop dismiss |
 | **External tab**  | Self-hosted content (`isExternal`) | Opens in new browser tab with external-link badge on cards           |
+
+Clicking a card title in any view opens the reader (or, for external content, a new tab) — the app is never left in the same tab.
+
+### Reader Links
+
+While the reader is open, the address bar shows a link to the item, and these links open the reader directly when loaded or shared:
+
+| Route                                              | Opens                                   |
+| -------------------------------------------------- | --------------------------------------- |
+| `/consumer/discover/read/:contentType/:slug`       | Discover with the item in the reader    |
+| `/consumer/bookmarks/read/:contentType/:id`        | Bookmarks with the item in the reader   |
 
 ### Content Reader Features
 
@@ -551,6 +715,8 @@ The **Content Reader** provides an integrated inline reading experience for cont
 - **Loading skeleton** — realistic full-layout skeleton matching the content structure
 
 - **Error states** — 4 context-specific screens: pod unreachable, content not found, signature invalid, and generic error — each with Retry and Close actions
+
+The reader understands both the reader content shape (headline, article body, media, dates) and the shape the Content Pod generator writes (`{ data: { title, description, hero_image, … } }`), so full pod content is shown either way. Multilingual texts are shown in the UI language.
 
 ### Content Reader API
 
@@ -637,11 +803,15 @@ The BFF endpoint accepts the pod base URL, target endpoint, HTTP method, and par
 
 The **Tip System** lets users compensate content creators through a budget-based tipping mechanism. Tips are tracked locally in `localStorage` and represent appreciation for quality content.
 
+<Callout kind="info" collapsed="false">
+  Tipping starts only after the user has **set up a content budget** — saved a monthly budget greater than 0 under Settings → Tip Budget. Until then the reader footer shows a **Set up content budget** button (it closes the reader and jumps to the Tip Budget section of the settings) instead of the multiplier, no auto-tip countdown runs, and no tip is recorded.
+</Callout>
+
 ### How It Works
 
 <Steps>
   <Step title="Content loads in reader" icon="book-open" title-type="p">
-    When content finishes loading, the auto-tip countdown starts (if enabled).
+    When content finishes loading, the auto-tip countdown starts (if a budget is set up and auto-tip is enabled).
   </Step>
 
   <Step title="Countdown runs" icon="clock" title-type="p">
@@ -663,7 +833,7 @@ The footer displays a **1x–5x multiplier selector** with pill buttons. The sel
 
 ### Budget Configuration
 
-Users configure their tip budget in **Discover Settings → Tip Budget**:
+Users configure their tip budget in **Discover Settings → Tip Budget**. The defaults below pre-fill the form; they take effect once the budget is saved:
 
 | Setting                 | Range   | Default | Description                              |
 | ----------------------- | ------- | ------- | ---------------------------------------- |
@@ -683,7 +853,7 @@ The settings page displays:
 - **Budget progress bar** — green (>50%), yellow (20–50%), red (\<20%)
 
 <Callout kind="tip" collapsed="false">
-  Tip data is stored in `localStorage` under `rb_tip_history` (last 500 records) and `rb_tip_budget` (configuration). Future versions will sync tip data to the Context Directory for cross-device persistence.
+  Tip data is stored in `localStorage` under `rb_tip_history` (last 500 records) and `rb_tip_budget` (configuration), bound to the signed-in account (see [Data on shared browsers](#data-on-shared-browsers)). Future versions will sync tip data to the Context Directory for cross-device persistence.
 </Callout>
 
 ## Content Detail
@@ -696,8 +866,10 @@ GET /api/v1/consumer/discover/teaser/:contentType/:slug
 
 # Get related content
 POST /api/v1/consumer/discover/related
-{ "contentType": "news", "categories": ["politics"], "tags": ["climate"] }
+{ "contentType": "news", "categories": ["politics"], "tags": ["climate"], "excludeId": "teaser-uuid" }
 ```
+
+The teaser detail returns a mapped `TeaserDetail` (title, publisher, canonical URL, type-specific fields) with texts in the request language. Related content is searched on the Discovery Nodes by content type and categories (`classification.categories`), topped up with other items of the same type when too few match, and returned without the item named in `excludeId` (default `limit`: 6). `tags` and `publisherId` are accepted but do not narrow the search.
 
 Content-type-specific sections include:
 
@@ -712,21 +884,32 @@ Content-type-specific sections include:
 
 ## Mobile Sync
 
-Sync user data to mobile apps:
+The **Get the app** page (`/consumer/get-app`) transfers a user's goals, follows, bookmarks, collections and preferences to the mobile app — by scanning a QR code or by typing a short pairing code.
 
 ```bash
 # Generate sync package
 GET /api/v1/consumer/sync/package
 
-# Create single-use sync token
+# Create single-use sync token (returns token, code, expiresAt, syncUrl)
 POST /api/v1/consumer/sync/token
 
-# Get package by token (public endpoint)
+# Get QR code data: a fresh token's deep link, its short code and expiry
+GET /api/v1/consumer/sync/qr
+
+# Redeem by token (public endpoint)
 GET /api/v1/consumer/sync/token/:token
 
-# Get QR code data for mobile deep link
-GET /api/v1/consumer/sync/qr
+# Redeem by short pairing code (public endpoint, 5 attempts per minute)
+GET /api/v1/consumer/sync/code/:code
 ```
+
+How pairing works:
+
+- **Deep link** — the QR code encodes `roadbeat://sync/<token>?studio=<PUBLIC_URL>`. Because the link names the Studio, a device without a Studio session knows where to redeem it. Set `PUBLIC_URL` to the address the app can reach.
+- **Short code** — every token also gets an 8-character pairing code shown next to the QR as `XXXX-XXXX` (Crockford base32). Case, dashes, and the look-alikes I/L/O are forgiven when it is typed. Lookups are throttled to 5 per minute per client.
+- **Single use, 10 minutes** — token and code expire after 10 minutes and are claimed atomically: the first redemption gets the package, every later one gets `404` (`SYNC_TOKEN_INVALID` / `SYNC_CODE_INVALID`). The page shows a live countdown and offers a new code once it has expired.
+- **QR rendered in the browser** — the QR image is generated client-side, so the sync link never leaves the device for an external QR service.
+- **What will be synced** — the counts on the page come from the sync package itself. Goals in the package carry their goal tree (`treeId`) so they can be imported elsewhere.
 
 ## Discover Settings
 
@@ -741,13 +924,17 @@ The **Discover Settings** page (`/consumer/settings`) is a unified settings expe
 | Section                 | Description                                                                                                                         |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | **Discover Profile**    | Display name (editable), email (read-only, managed by Studio account), CD link status                                               |
-| **Language & Region**   | Preferred locale (24 EU languages), country (ISO 3166-1), region                                                                    |
-| **Privacy**             | Toggles for goal sync, follows sync, bookmarks sync, location sharing, analytics consent                                            |
-| **Notifications**       | Goal digest frequency (daily/weekly/off), publisher updates, bookmark reminders, system announcements, browser push                 |
+| **Language & Region**   | Preferred locale (24 EU languages), country and region — both selects with names in the UI language                                 |
+| **Privacy**             | Toggles for goal sync, follows sync, bookmarks sync, location sharing, analytics consent — all off until the user turns them on     |
+| **Notifications**       | Goal digest frequency (daily/weekly/off), publisher updates, bookmark reminders, system announcements (browser push only where the host supports it — not in Studio) |
 | **Content Preferences** | Enable/disable content types in Discover feed (news, events, jobs, courses, recipes, real estate, press releases)                   |
 | **Tip Budget**          | Monthly budget slider (10–500), auto-tip toggle, delay slider (10–120s), auto-tip multiplier (1x–5x), spending stats, clear history |
 | **Discovery Nodes**     | Select which Discovery Nodes to query, with online/offline status badges                                                            |
-| **Security**            | Change password (current + new + confirm)                                                                                           |
+| **Security**            | Change password (current + new + confirm); a wrong current password is reported in the UI language                                  |
+
+Privacy and content-type toggles are saved to the account (`GET`/`PUT /api/v1/consumer/user/preferences`) and survive a reload. **Share location** sends nothing on its own: it enables the Discover filter [Only from my country](#frontend-features), and only the country code is sent to Discovery Nodes, only while that filter is on.
+
+In the **standalone Web Client** the page differs slightly: the Studio-account explainer and the three "sync … to the Context Directory" toggles are hidden (goals, follows and bookmarks live in the account there), Privacy offers the choice [where follows are kept](#where-follows-are-kept), and Security adds **Create new recovery code** — the Context Directory stores no e-mail address, so the recovery code is the only way to reset a forgotten password. It needs the current password and is shown once, with a copy button.
 
 ### Profile API
 
@@ -762,6 +949,10 @@ PUT /api/v1/consumer/user
 
 # Change password
 PUT /api/v1/consumer/user/password
+
+# Get/update consumer preferences (locale, theme, privacy toggles, content types, nodes)
+GET /api/v1/consumer/user/preferences
+PUT /api/v1/consumer/user/preferences
 ```
 
 ### Notification Preferences API
@@ -779,34 +970,87 @@ GET /api/v1/consumer/notifications/unread-count
 
 ### GDPR & Data
 
+Users export their data and delete their account on **Profile → My Data** (`/consumer/profile/data`).
+
 ```bash
 # GDPR data export
 POST /api/v1/consumer/user/export
 GET /api/v1/consumer/user/export/:token
 
 # Account deletion (30-day grace period)
+GET /api/v1/consumer/user/delete/status
 POST /api/v1/consumer/user/delete
 POST /api/v1/consumer/user/delete/cancel
 ```
 
+**Data export** — `POST /export` collects profile, goals, follows, bookmarks, collections and preferences and returns a download link valid for **24 hours**. The download requires the same signed-in user who requested it; the UI fetches it through the authenticated client.
+
+**Account deletion** works in two stages:
+
+<Steps>
+  <Step title="Request" icon="calendar-clock" title-type="p">
+    `POST /delete` schedules the deletion 30 days ahead. The confirmation word is `DELETE` in every UI language. `GET /delete/status` returns `{ pending, deleteAt }`, so a pending deletion stays visible after a reload and can be cancelled with `POST /delete/cancel` until it runs.
+  </Step>
+
+  <Step title="Execution" icon="trash" title-type="p">
+    An hourly job executes due requests. It first deletes the user's goals and follows in the Context Directory — if the Directory cannot be reached, the deletion is retried on the next run — and then erases the account: bookmarks and collections, consumer and notification preferences, data exports, sync tokens, the Context Directory link, notifications, sessions, passkeys and MFA secrets, and platform-admin rights. The Studio user is anonymized as "Deleted User"; content the user authored stays in the organization.
+  </Step>
+</Steps>
+
+<Callout kind="alert" collapsed="false">
+  The **last active admin** of an organization cannot delete their account. The request is refused immediately with `409 ACCOUNT_DELETE_LAST_ADMIN` — make another member an admin first.
+</Callout>
+
+In the standalone Web Client the Context Directory deletes the account itself and asks for the password; when `delete/status` reports `requiresPassword`, the page shows a password field.
+
 ### Database Schema
 
-Consumer notifications are stored in the Studio database (not the Context Directory):
+Consumer data that Studio keeps is stored in the Studio database (not the Context Directory):
 
-- **`notifications`** — `id`, `user_id` (FK → users), `type`, `title`, `body`, `data` (JSONB), `action_url`, `is_read`, `created_at`
+- **`notifications`** — the Studio notification table, shared with CE notifications: `id`, `organization_id`, `user_id` (FK → users), `type`, `title`, `body`, `data` (JSONB, holds `actionUrl` and translation keys), `read_at`, `archived_at`, `created_at`. Every query is scoped by organization **and** user.
 
-- **`notification_preferences`** — `id`, `user_id` (unique, FK → users), `goal_digest_frequency` (default: weekly), `publisher_updates`, `bookmark_reminders`, `system_announcements`, `browser_push`
+- **`consumer_notification_preferences`** — `id`, `user_id` (unique, FK → users), `goal_digest_frequency` (default: weekly), `publisher_updates`, `bookmark_reminders`, `system_announcements`, `browser_push` (default: off)
+
+- **`user_preferences`** — locale, theme, the privacy toggles (all default `false`), enabled content types and Discovery Node URLs
+
+- **`data_exports`**, **`account_deletions`** (with `executed_at`, `attempted_at`, `last_error`), **`sync_tokens`** (with the short pairing `code`)
+
+## Data on Shared Browsers
+
+The library keeps some data in the browser — copies of the bookmarked state and the follow and mute lists, plus data that exists only there (tips, tip budget, recent searches, and follows in "only on this device" mode). This data belongs to the **signed-in account**, so on a shared browser the next person never sees, or uploads into their own account, the previous person's follows, mutes or bookmarks:
+
+- **On sign-out**, copies of server data are dropped and browser-only data is put away under the account, to be given back at its next sign-in. Studio reloads the page on logout so no account data stays in memory.
+- **When another account signs in** after a session that ended without sign-out, the previous account's data is put away first.
+
+Hosts embed this through the library's `beginLocalAccountSession()` (on sign-in or session restore) and `endLocalAccountSession()` (on sign-out).
+
+## Configuration
+
+| Variable                        | Default                  | Purpose                                                                 |
+| ------------------------------- | ------------------------ | ----------------------------------------------------------------------- |
+| `CONTEXT_DIRECTORY_URL`         | `http://localhost:3100`  | Context Directory for accounts, goals and geo data                      |
+| `CONTEXT_DIRECTORY_SERVICE_KEY` | dev key outside production | Shared key for account linking; must equal the Directory's `CD_SERVICE_KEY` — **required in production** |
+| `DISCOVERY_NODE_URLS`           | `http://localhost:3300`  | Comma-separated Discovery Nodes that Discover searches                  |
+| `DISCOVER_DEBUG`                | `false`                  | Adds the raw Discovery Node requests (`_debug`) to search responses — development only |
+| `MAPBOX_TOKEN`                  | —                        | Enables the 3D Globe view                                               |
+| `PUBLIC_URL`                    | `http://localhost:<PORT>` | Studio address put into mobile sync links (`?studio=`)                  |
+
+See [Configuration](/deployment/configuration) for all other settings.
 
 ## Shared Services
 
 The `@roadbeat/consumer` library provides shared services used across all features:
 
-| Service                    | Description                                                       |
-| -------------------------- | ----------------------------------------------------------------- |
-| **ThemeService**           | Light/dark/system mode with `matchMedia` detection                |
-| **I18nService**            | 24 EU locales with lazy-loaded JSON and `{{param}}` interpolation |
-| **SeoService**             | Dynamic meta/OG/Twitter Card tags, canonical URLs, JSON-LD        |
-| **FocusManagementService** | Route-change focus, scroll-to-top, ARIA live announcements        |
+| Service                     | Description                                                                   |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| **ThemeService**            | Light/dark/system mode with `matchMedia` detection                            |
+| **I18nService**             | 24 EU locales with lazy-loaded JSON and `{{param}}` interpolation; follows the host's UI language |
+| **ContentTypeNamesService** | Content type names and filter labels in the UI language, loaded in batches for what is on screen |
+| **SeoService**              | Dynamic meta/OG/Twitter Card tags, canonical URLs, JSON-LD                    |
+| **FocusManagementService**  | Route-change focus, scroll-to-top, ARIA live announcements                    |
+| **ConsumerPushService**     | Opt-in browser push, only where the host's API offers it                      |
+
+The library also exports the `t` (translate) and `localDate` pipes and the `rbDialog` directive, which gives overlays dialog semantics: `role="dialog"`, an accessible name, focus moved into the panel and back to the trigger, and Escape to dismiss.
 
 ## Consumer Health
 

@@ -129,6 +129,16 @@ the foundation the Pro `pro-advanced-roles` plugin builds custom roles on.
   </Step>
 </Steps>
 
+Sign-in is possible for members of organizations whose status is `active` or
+`onboarding` (setup still in progress). For `suspended`, `archived` and `pending`
+organizations, login, token refresh and every authenticated request are refused
+with `ORG_DEACTIVATED` — see [Organization Status](/guides/multi-tenancy#organization-status).
+
+The login page tells failures apart instead of reporting everything as "Invalid
+credentials": wrong credentials (`401`), a locked account, a deactivated
+organization, too many attempts (`429`), an unreachable server, and unexpected
+server errors each get their own message in the UI language.
+
 ### Initial Setup
 
 On first run, Studio requires an initial admin setup:
@@ -222,11 +232,16 @@ POST /api/v1/manage/users/:id/erase
 
 <Callout kind="info">
   **Retention policy — anonymize, not delete.** Erasure anonymizes the user row
-  (strips email/name/password/avatar, `status = deleted`) so authored content
-  keeps referential integrity, while auth artifacts and user-generated data
-  (sessions, MFA secret, login attempts, password resets, SSO tokens,
-  notifications, comments) are hard-deleted. The last active admin cannot be
-  erased. Both operations emit audit events.
+  (strips email/name/password/avatar, shows as "Deleted User", `status = deleted`)
+  so authored content keeps referential integrity, while auth artifacts and
+  user-generated data are hard-deleted: sessions, MFA secret, passkeys, login
+  attempts, password resets, SSO tokens, notifications, comments, super admin
+  rights, and the user's Discover data (bookmarks and collections, preferences,
+  notification preferences, data exports, mobile sync tokens, Context Directory
+  link). If the user owned an organization, the ownership is cleared. The last
+  active admin cannot be erased (`USER_LAST_ADMIN_ERASE`). Both operations emit
+  audit events; the erasure records whether an admin (`admin`) or the user's own
+  "Delete my account" request (`self-service`) triggered it.
 </Callout>
 
 ## Audit Log (Community Edition)
@@ -239,6 +254,12 @@ changes). Secrets are redacted before storage.
 # Org-scoped, paginated, filterable by action / actor / resource / date
 GET /api/v1/manage/audit?action=user.updated&limit=50
 ```
+
+User events (`user.created`, `user.updated`, `user.deleted`) name the **acting
+admin** as the actor — not the user who was changed. The same `actorId` travels on
+the `user.afterCreate` / `user.afterUpdate` / `user.afterDelete` plugin events
+(together with `previousRole` / `previousStatus` on updates), so `pro-audit`
+records role changes against the admin who made them.
 
 Retention is unlimited by default; set `CE_AUDIT_RETENTION_DAYS` to prune older
 entries. Pro `pro-audit` remains the richer, immutable-storage superset.

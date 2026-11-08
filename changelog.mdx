@@ -3,6 +3,341 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-11-08" description="Consumer area in your language, publishing and Content Pod fixes" tags={["feature", "security", "bugfix", "api"]}>
+  ## The consumer area speaks your language, and published content stays in sync
+
+  ### Compass, Discover and Bookmarks
+
+  - **Names in the UI language.** Goal trees, goal groups, subcategories,
+    goal texts, content type names, region names, and Discover filter headings
+    and values now appear in the UI language, with English as the fallback. The
+    texts come from the Context Directory and Schema Registry translations. New
+    endpoints: `GET /consumer/content-types/names`,
+    `GET /consumer/content-types/value-labels` and
+    `GET /consumer/geo/regions/{countryCode}/i18n/{locale}`. Consumer routes
+    read the language from `Accept-Language`.
+  - **Fixed: content type and category lists were always empty.**
+    `GET /consumer/content-types` and `GET /consumer/content-types/categories`
+    requested Schema Registry paths that do not exist and always returned `[]`.
+    They now return the types and categories with translated names.
+  - **Compass grouped by goal category.** Goals are grouped by their goal
+    tree's categories instead of almost all landing in one "Personal Goals"
+    group. Each goal carries `groupId`, `groupName` and `groupPosition`. A goal's
+    detail view shows a live preview of matching content and links into a
+    Discover feed for that goal (`?goal=<id>`). Categories and goals have their
+    own addresses (`compass/:categoryId/:goalId`).
+  - **Bookmark collections.** Collections can be sorted in your own order (drag
+    or "Move up/down"), renamed, deleted and linked to directly
+    (`/bookmarks/:collectionId`). The new `GET /consumer/bookmarks/index`
+    returns the IDs of every bookmark, so items outside the current page or
+    collection no longer appear un-bookmarked.
+  - **Discover on phones and tablets.** Below 1024 px, a **Filters** button
+    opens a slide-over filter drawer, where options are shown as checkboxes. The
+    new **Only from my country** filter applies your profile country, but only
+    while *Share location* is turned on.
+  - **Reader and publisher profiles.** Teasers open in the reader, which shows
+    the full Content Pod content in the UI language. Reader URLs can be reloaded
+    and shared. Publisher profiles no longer include the publisher's contact
+    e-mail, public key or rate limits. They now show trust level, item count,
+    recent content, publishing frequency and the publisher's **About** text.
+  - **Tips need a budget.** Until you set a content budget, the reader shows
+    *Set up content budget* instead of the tip slider, and no automatic tips
+    are recorded.
+  - **Get the app.** The sync summary shows real counts. A short pairing code
+    (`XXXX-XXXX`) is shown next to the QR code, and the expiry countdown updates
+    live.
+  - **Notifications** are shown in the UI language, and clicking one in the
+    dropdown opens its target. `GET /consumer/notifications/push` returns
+    `{ available: false }` in Studio, because browser push belongs to the
+    standalone Web Client.
+  - **Privacy on shared browsers.** Consumer data kept in the browser (follows,
+    mutes, bookmarks, tips) now belongs to the signed-in account. When one
+    account signs out, the next account no longer sees its data or uploads it.
+  - **Teaser details.** Titles and publishers are now mapped correctly.
+    Related-content queries now filter by type and category. The search debug
+    panel only appears when `DISCOVER_DEBUG=true` is set.
+
+  See [Consumer Features](/guides/consumer-features).
+
+  ### Publishing and Discovery Nodes
+
+  - **Teaser event dates** use the type's temporal mapping. Festivals and fairs
+    previously had no event date. An end date is no longer used as the teaser's
+    expiry, which had hidden ended events from filtered searches.
+  - **Country codes** in teasers are normalized to ISO 3166-1 alpha-2, so a
+    country filter matches every teaser for that country.
+  - **Deleting content withdraws its teasers** from the Discovery Nodes.
+    Before this fix, deleted content stayed discoverable.
+  - **Publisher About text.** The organization description is sent to the
+    organization's Discovery Nodes as the publisher's About text.
+  - **Fixed: organization settings could not be saved.** Every save returned
+    `400 property domain should not exist`. The API now accepts `domain` and
+    `description`.
+
+  See [Publishing](/guides/publishing).
+
+  ### Content Pod
+
+  - **Updating an item no longer counts against the item limit.** Pod counters
+    are recomputed from the manifest after every publish and unpublish, so a
+    pod that had wrongly hit its limit (`POD_ITEM_LIMIT`) recovers by itself.
+  - **Deleted content leaves the pod.** Items left behind by earlier deletions
+    can be listed with `GET /manage/content-pod/orphans` and removed with
+    `POST /manage/content-pod/prune` (admin), or from the pod dashboard. The
+    federation listener is now told about the removal.
+
+  See [Content Pod](/guides/content-pod).
+
+  ### Security
+
+  - **Content Pod endpoints are scoped to your organization.** Before this
+    fix, `manage/content-pod/{preview,publish,unpublish}/:contentId` loaded
+    content by ID alone, so an editor in one organization could preview,
+    publish or unpublish another organization's content. These endpoints now
+    return `404` for content outside your organization. Retrying a failed
+    publication (`POST /manage/publishing/content/:id/retry/:nodeId`) is scoped
+    the same way.
+  - **Organizations in onboarding can be signed in to**, as `SECURITY.md` 6.4
+    specifies. Before this fix, an organization created through onboarding
+    could never be entered (`ORG_DEACTIVATED`). It can now also be suspended.
+  - **No visitor IPs sent to Google Fonts.** The Inter font is now self-hosted.
+  - **SSO handover from the Web Client.** *Start publishing* in the Web Client
+    now arrives at the new landing page `/auth/sso` (or `/auth/org/:slug/sso`),
+    which exchanges the one-time token instead of showing a 404.
+
+  ### Documentation corrections
+
+  While updating these pages against the code, we found several statements that
+  were already wrong. They have been corrected:
+
+  - **Webhook event names.** Webhooks fire on `content.created`, `.updated`,
+    `.published`, `.unpublished` and `.deleted`, on `asset.uploaded` and
+    `.deleted`, and on `user.created`. The `content.afterPublish`-style names
+    listed before never matched, and there is no login event. The create
+    example sent `enabled`, which is not an accepted field, and was missing the
+    required `name`. The receiver samples in
+    [Setting Up Webhooks](/help-center/guides/setting-up-webhooks) now verify
+    `sha256=` over `<timestamp>.<rawBody>`, as
+    [Webhooks](/guides/webhooks) describes.
+  - **Unknown `filter[field]` values are rejected** with
+    `400 QUERY_FILTER_UNKNOWN`; they were described as ignored. A schema
+    violation returns `422 CONTENT_SCHEMA_INVALID` with an `errors` array, not
+    `UNPROCESSABLE_ENTITY` with `details`.
+  - **Smaller corrections:** the default `CONTEXT_DIRECTORY_TIMEOUT` is
+    `10000` ms, not 5000; the bookmarks filter parameter is `collectionId`; the
+    consumer notification tables are named as they actually are; the plugin
+    manifest response shape (`edition`, `tier`, `activePluginIds`, `limits`)
+    is correct; and the content type route parameter is `:id`.
+
+  ### API reference
+
+  The reference was regenerated from the current API and documents 918
+  operations, including 11 new ones: goal progress, notification
+  archive/unarchive, the browser-push probe, the bookmark index, the sync
+  pairing code, the three localization endpoints listed above, and the Content
+  Pod orphan endpoints.
+</Update>
+
+<Update label="2026-11-07" description="Stable error codes, accessibility and goal search" tags={["feature", "security", "api"]}>
+  ## Every error has a code, the UI meets WCAG 2.1 AA, and goal search does more
+
+  ### API
+
+  - **Stable error codes.** Every API error now has a stable `code`. Values
+    that the message interpolates are returned as `params`. Errors thrown
+    without a code get one derived from their status: `VALIDATION_FAILED`,
+    `NOT_FOUND`, `BAD_REQUEST` and so on. Clients can translate by code and
+    fall back to the English `message`. The Studio UI translates more than 160
+    codes into all 24 languages. See [Error Codes](/api-reference/error-codes).
+  - **Goal search.** `POST /consumer/discover/by-goal` accepts `query` (free
+    text within the goal), `sort` (`relevance`, `date` or `title`) and
+    `sortOrder`. Each hit reports `matchedGoalIds`, so a client can explain
+    *why am I seeing this* without guessing.
+  - **Goal progress check-ins.** `POST /consumer/goals/{goalId}/progress` takes
+    `currentValue` and optionally `targetValue` and `unit`. A goal is completed
+    once its target is reached. Goals include `progress`, which is `null` when
+    no progress was ever recorded.
+  - **Archiving notifications.** `PUT /consumer/notifications/{id}/archive`
+    and `/unarchive` work on your own notifications. Archived notifications are
+    excluded from the list and the unread count.
+  - **Device sync pairing code.** The sync link now names the Studio
+    (`roadbeat://sync/<token>?studio=<url>`). Every token also gets a short code
+    you can type instead of scanning, redeemed with
+    `GET /consumer/sync/code/{code}` (no authentication, 5 tries per minute). A
+    token or code can be redeemed only once.
+  - **Discover autocomplete and type facets** now call the Discovery Node API's
+    real endpoints. Before this fix, suggestions were always empty and facets
+    always fell back to the built-in defaults.
+
+  ### Interface language
+
+  - **Correct plural forms** in all 24 languages through `Intl.PluralRules`,
+    for example Polish, Czech, Slovenian, Latvian, Irish and Maltese
+    categories. This replaces English-only singular and plural pairs.
+  - **Formal address** throughout the UI in German, Dutch, Spanish, Hungarian,
+    Romanian and Estonian. Each language uses its own abbreviation for AI.
+  - The consumer area (Compass, Discover, Bookmarks, Publishers,
+    Notifications, Settings, Help and About) now follows the Studio language.
+
+  See [Interface Language](/guides/interface-language).
+
+  ### Accessibility
+
+  The admin UI and the consumer area went through a WCAG 2.1 AA pass, covering
+  contrast, accessible names on every control, real modal dialogs with focus
+  handling and Escape, keyboard-operable tabs, and announced toasts. Automated
+  axe-core checks run in the E2E suite. See the new
+  [Accessibility](/guides/accessibility) guide.
+
+  ### Content editor
+
+  - **Media and coordinates are stored in the shape the schema defines.**
+    Picked media are stored as `media_asset` (`url`, `type`, `asset_id`, …), and
+    coordinates go under the schema's `latitude` and `longitude`. Before this
+    fix, strict publish validation rejected content with media (`422`).
+
+  ### Security
+
+  - **Context Directory account linking requires a service key.** Studio now
+    sends `X-Service-Key` on register-or-link. Set
+    `CONTEXT_DIRECTORY_SERVICE_KEY` on every production node to match the
+    Context Directory's `CD_SERVICE_KEY`. See
+    [Configuration](/deployment/configuration).
+  - **Pro AI:** a failing AI provider returns a coded `502`
+    (`AI_PROVIDER_FAILED`) and never passes the provider's response body to the
+    client. Image and transcription source URLs that point at internal
+    addresses are refused with `400 AI_SOURCE_URL_BLOCKED`.
+  - Changes a platform admin makes to an organization's limits now apply
+    without restarting the API.
+</Update>
+
+<Update label="2026-11-06" description="Tenant isolation fix, enforced registry schemas and complete editor forms" tags={["security", "feature", "bugfix", "api"]}>
+  ## Critical tenant isolation fix, enforced Schema Registry schemas and editor forms for every type
+
+  <Callout kind="danger">
+  **Upgrade immediately.** The automatic organization scoping that services
+  rely on for tenant isolation never applied. Services that depended on it
+  returned and changed rows of **every** organization. Admins of one
+  organization could see other organizations' content types, content and users
+  in management lists, and the dashboard counted their data.
+  </Callout>
+
+  ### Security
+
+  - **Tenant auto-scoping fixed.** Prisma passes schema model names
+    (`ContentType`), but the scoper looked them up by client accessor names
+    (`contentType`), so no query was ever scoped. Model names are now
+    normalized. A test pins every scoped and global model, and an E2E
+    regression checks the management lists. See
+    [Multi-Tenancy](/guides/multi-tenancy).
+  - **Rate limiting per user.** Signed-in traffic is now limited per user
+    (`org:{orgId}:user:{userId}`) rather than per IP. Before this fix, several
+    editors behind one NAT shared a single 100 requests per minute bucket.
+  - **Accurate sign-in errors.** Sign-in no longer reports server or network
+    errors as *Invalid credentials*. Messages now distinguish wrong
+    credentials, a locked account, a deactivated organization, rate limiting
+    and an unreachable server.
+  - **The audit log names the acting admin.** User create, update and delete
+    events record who made the change instead of the affected user.
+
+  ### Content types and the Schema Registry
+
+  - **Registry import works again.** Before this fix, every not-yet-installed
+    registry type failed with `400 Invalid content type definition`. Installed
+    types show *Installed · vX* with a *Re-import* option that asks for
+    confirmation, instead of silently overwriting. Type lists are no longer
+    capped at 50 or 100 entries.
+  - **Registry schemas are enforced.** Import embeds the shared common schemas
+    a type references, so validation runs on create and publish instead of
+    being skipped silently. A rejected save shows each error next to its field.
+  - **Fields are stored where the schema says.** Form fields are stored at
+    their `schema_path`. Existing types and content are migrated at startup;
+    set `CONTENT_SHAPE_MIGRATION=off` to skip this.
+  - **Enable or disable content types.** Use
+    `POST /manage/content-types/{id}/enable` and `/disable`. A disabled type is
+    hidden from the sidebar and *New Content*, and its existing content stays
+    editable.
+  - **Migration script for legacy content.** `migrate-content-to-schema.ts`
+    repairs older content in place so it conforms to the registry schemas. It
+    runs as a dry run by default and backs up data before writing.
+
+  See [Content Types](/guides/content-types).
+
+  ### Content editor
+
+  - **Every registry form is complete and saveable.** Labels, help texts and
+    select options appear in the UI language. Every option source is now read,
+    so no dropdowns are empty. Slugs can always be edited and are generated by
+    the server when missing. Before this fix, 17 types could not be saved at
+    all.
+  - **Schema-driven sub-forms** replace raw JSON boxes for nested objects,
+    lists of objects, multilingual lists and typed values. Across all 51 types,
+    only 2 raw JSON editors remain. Empty values are never stored.
+  - The technical field type is shown only in the extended view.
+  - **Saved views (Pro).** Filters stored in a view are applied again. You can
+    now save the current filters, search, sort, page size and view mode from the
+    content list.
+  - **Upload deduplication.** When an upload matches an asset already in the
+    library, a notice names the existing asset.
+
+  See [Content Editor](/editors/content-editor).
+
+  ### Publishing
+
+  - **Scheduled publishing works.** Before this fix, every scheduled publish,
+    unpublish and release failed because there was no tenant context outside a
+    request.
+  - **Teasers always have a primary category.** Classification follows the
+    type's teaser mapping, falling back to the registry category and then to
+    the type ID. Before this fix, Discovery Nodes rejected most teasers with
+    `MISSING_PRIMARY_CATEGORY`.
+
+  ### Settings and administration
+
+  - **API keys** work from the admin UI. Both scope notations are accepted,
+    an unknown scope returns `400` listing the valid scopes, the secret is
+    displayed once, and revoked keys no longer count against the quota.
+  - **Webhooks** show and toggle their real status (`active` / `inactive`).
+  - **Organization status.** Organizations no longer all show as *Inactive*.
+    Platform admins can suspend and edit organizations, and *Resource limits*
+    shows usage against the limits the API actually enforces.
+  - **Granting super admin.** The user search (`GET /platform/users/search`)
+    now exists, so users can be found and promoted.
+
+  See [Platform Administration](/guides/platform-administration) and
+  [API & Integrations](/guides/api-and-integrations).
+
+  ### Consumer area
+
+  - **Consumer support tables restored.** Preferences, the GDPR export,
+    account deletion and mobile sync failed because their tables were missing.
+    Privacy toggles default to off (opt-in).
+  - **Account deletion is carried out.** After the 30-day grace period, the
+    account is erased: goals and follows are deleted in the Context Directory,
+    and consumer data, passkeys and platform-admin rights are removed. Authored content
+    stays, credited to "Deleted User". If you are your organization's last
+    admin, the request is refused immediately with `409`.
+  - The sync QR code is rendered in the browser, so the link never reaches an
+    external QR service.
+
+  ### Plugins and operations
+
+  - **The host applies plugin SQL migrations** and records them in
+    `plugin_migrations`. Set `PLUGIN_MIGRATIONS=off` to skip this step.
+  - Plugin errors keep their HTTP status. Before this fix, every plugin `4xx`
+    reached clients as a `500`.
+  - Nested arrays in plugin request bodies are no longer emptied by
+    validation. This had caused workflows to be saved without their states.
+  - Plugin menu labels and breadcrumbs follow the UI language. Items are sorted
+    by `order`, and items without a group appear under **More**.
+  - **Crash logging.** Uncaught exceptions, unhandled rejections and fatal
+    startup errors are written with their stack to a crash log
+    (`CRASH_LOG_FILE`), along with each process's start and listening time.
+
+  See [Developing Plugins](/plugins/developing-plugins) and
+  [Monitoring & Observability](/deployment/monitoring).
+</Update>
+
 <Update label="2026-08-08" description="Generated API reference with response schemas" tags={["feature", "api"]}>
   ## API reference now generated from the API source — with documented responses
 

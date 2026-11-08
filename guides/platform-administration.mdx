@@ -78,8 +78,16 @@ Navigate to **Platform** → **Manage Organizations** to see all organizations i
 | **Plan** | Current subscription plan |
 | **Users** | Number of users in the organization |
 | **Content** | Number of content entries |
-| **Status** | Active or inactive badge |
+| **Status** | **Active**, **Onboarding** or **Inactive** badge |
 | **Created** | Organization creation date |
+
+The badge is derived from the organization's `status` field (see [Organization Status](/guides/multi-tenancy#organization-status)):
+
+| Badge | `status` values | Members can sign in |
+|-------|-----------------|---------------------|
+| **Active** | `active` | Yes |
+| **Onboarding** | `onboarding` — setup still in progress, e.g. an organization created from the Web Client's "Start publishing" flow | Yes |
+| **Inactive** | `suspended`, `archived`, `pending` | No |
 
 Click any row to open the **Organization Detail** page.
 
@@ -95,7 +103,7 @@ The detail page (`/platform/organizations/:id`) has four tabs:
     Lists all users in the organization with their name, email, role, status, and last login date.
   </Tab>
   <Tab title="Settings" icon="settings">
-    Edit the organization's name, slug, plan, user limit, storage limit, domain, and description. Changes are saved via `PUT /api/v1/platform/organizations/:id`.
+    Edit the organization's name, plan, user limit, storage limit, domain, and description. Changes are saved via `PUT /api/v1/platform/organizations/:id`. New user and storage limits apply immediately — the API refreshes its cached limits when an organization is updated, no restart needed. An empty domain or description clears the value.
   </Tab>
   <Tab title="Federation" icon="globe">
     Manage this organization's ActivityPub federation. Sub-tabs include **Identity** (handle, toggle, counters), **Followers** (accept/reject), **Discussion** (inbound replies), **Reactions** (like/boost analytics), **Moderation** (block/flag events), and **Policy** (follow + reply policies). See the [Federation guide](/guides/federation) for full details.
@@ -112,14 +120,21 @@ When viewing an organization that is not your current active context, a **Switch
 
 ### Deactivating an Organization
 
-Click the **Deactivate** button on the organization detail page to soft-disable the organization. Deactivated organizations:
+Click the **Deactivate** button on the organization detail page to soft-disable the organization. After a confirmation, Studio sets the organization's `status` to `suspended`. Deactivated organizations:
 
-- Cannot log in or access the API
+- Cannot log in or access the API (members get "Organization is deactivated", code `ORG_DEACTIVATED`)
 - Retain all data for potential reactivation
 - Are marked as inactive in the organization list
 
+The button is offered for **active and onboarding** organizations alike. For an inactive organization it reads **Activate** and sets `status` back to `active`.
+
 <Callout kind="alert">
-  Deactivation is reversible. No data is deleted. Reactivate by updating the organization's `isActive` flag via the API.
+  Deactivation is reversible. No data is deleted. Reactivate with the **Activate** button, or via the API:
+
+  ```bash
+  PUT /api/v1/platform/organizations/:id
+  { "status": "active" }
+  ```
 </Callout>
 
 ### Content Type Management
@@ -198,8 +213,8 @@ The table shows all users with super admin status:
   <Step title="Click Grant Super Admin" icon="plus">
     Click the **Grant Super Admin** button to open the search panel.
   </Step>
-  <Step title="Search by email" icon="search">
-    Type at least 3 characters of the user's email to search across all organizations.
+  <Step title="Search by name or email" icon="search">
+    Type at least 3 characters of the user's name or email to search across all organizations. Up to 20 matches are shown (`GET /api/v1/platform/users/search?search=…`).
   </Step>
   <Step title="Select user" icon="user-check">
     Click **Grant** next to the user to grant super admin privileges.
@@ -219,6 +234,23 @@ Click **Revoke** next to any super admin in the list. A confirmation dialog appe
   You cannot revoke your own super admin status from the UI to prevent accidental lockout.
 </Callout>
 
+## Resource Limits in Organization Settings
+
+Organization admins see their own limits under **Settings → Organization → Resource Limits**. Each row shows **used / limit** as the API enforces it for that organization (`GET /api/v1/manage/usage`) — users, webhooks, API keys, locales, Discovery Nodes and storage — with labels in the UI language. Limits that are reached are highlighted, and exceeded ones are outlined. When no usage data is available, the page falls back to the default limits.
+
+The values reflect what a platform admin set on the organization's **Settings** tab, and change as soon as that is saved.
+
+## SSO Handover from the Web Client
+
+When a reader chooses **Start publishing** in the Web Client, an organization is created for them and they are handed over to Studio with a **one-time SSO token** — no second login. Studio's landing pages for this handover are:
+
+| Page | Purpose |
+|------|---------|
+| `/auth/sso?token=…` | Generic SSO landing |
+| `/auth/org/:slug/sso?token=…` | SSO landing for a specific organization |
+
+The page removes the token from the address bar and browser history, exchanges it via `POST /api/v1/platform/sso/exchange`, stores the session, and opens Studio. Tokens are valid for **5 minutes** and can be used **once**; an invalid, used or expired token shows a clear message with a link to the organization's sign-in page.
+
 ## API Reference
 
 All platform endpoints require a valid JWT with super admin privileges. They are prefixed with `/api/v1/platform/`.
@@ -230,8 +262,8 @@ All platform endpoints require a valid JWT with super admin privileges. They are
 | `GET` | `/organizations` | List organizations (search, filter, paginate) |
 | `POST` | `/organizations` | Create organization with initial admin |
 | `GET` | `/organizations/:id` | Get organization detail with stats |
-| `PUT` | `/organizations/:id` | Update organization settings |
-| `DELETE` | `/organizations/:id` | Deactivate organization |
+| `PUT` | `/organizations/:id` | Update organization settings, limits and `status` (e.g. `suspended` / `active`) |
+| `DELETE` | `/organizations/:id` | Deactivate organization (sets `suspended`, revokes API keys) |
 | `GET` | `/organizations/:id/users` | List organization users |
 | `POST` | `/organizations/:id/owner` | Set organization owner |
 | `POST` | `/organizations/:id/switch` | Switch org context (re-issue JWT) |
@@ -249,8 +281,15 @@ All platform endpoints require a valid JWT with super admin privileges. They are
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/admins` | List all super admins |
+| `GET` | `/users/search?search=` | Search users across all organizations by name or e-mail (≥ 3 characters, max. 20 hits) |
 | `POST` | `/admins` | Grant super admin (body: `{ userId }`) |
 | `DELETE` | `/admins/:userId` | Revoke super admin |
+
+### SSO
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/sso/exchange` | Exchange a one-time SSO token (5 min, single use) for JWT credentials |
 
 ### Statistics
 

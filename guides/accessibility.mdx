@@ -1,0 +1,105 @@
+---
+title: Accessibility
+description: How roadbeat Studio meets WCAG 2.1 AA — contrast, accessible names, keyboard-operable dialogs, screen-reader support — and how it is tested.
+---
+
+## Overview
+
+roadbeat Studio targets **WCAG 2.1 level AA** for the admin interface and for the embedded discovery area (Compass, Discover, Publishers, Bookmarks). That covers both the people who manage content and the readers who use Studio's discovery screens — with a keyboard, a screen reader, a touch screen or high zoom.
+
+<Columns cols={2}>
+  <Card title="Readable contrast" icon="contrast" href="#contrast">
+    Muted and status texts are tuned per surface, in light and dark mode.
+  </Card>
+  <Card title="Named controls" icon="tag" href="#accessible-names">
+    Every input, switch and icon-only button has an accessible name.
+  </Card>
+  <Card title="Keyboard everywhere" icon="keyboard" href="#keyboard-and-dialogs">
+    Real modal dialogs, ARIA tabs and keyboard-reachable actions.
+  </Card>
+  <Card title="Automated checks" icon="check-circle" href="#how-accessibility-is-tested">
+    axe-core checks in the end-to-end suite, plus static template checks.
+  </Card>
+</Columns>
+
+## Contrast
+
+Small grey "muted" texts and coloured status texts (success, warning, error, info, brand) are the usual contrast failures in admin UIs. In Studio these shades are not fixed Tailwind colours but **CSS variables chosen per surface**:
+
+| Surface | Text shade used |
+|---------|-----------------|
+| Light mode | The next darker shade that passes AA (e.g. `green-500` text renders as `green-700`) |
+| Dark mode | The stock shade, or the lighter `400` shade where the stock one is too dark |
+| Dark panels inside light mode (`.rb-dark-surface`) | Same as dark mode |
+
+White text on coloured buttons uses the first button shade that passes.
+
+## Accessible names
+
+- **Every form control is named** — by its visible label, which is bound to the input (`for`/`id`), or by an explicit `aria-label` where there is no visible label. This includes the shared create/edit dialogs (users, folders, …): screen readers announce "Full name", not just the placeholder.
+- **Required fields** carry `required`; the decorative asterisk is hidden from screen readers.
+- **Icon-only buttons and links** (edit, delete, bookmark, archive, theme toggle, …) have a translated name.
+- **Switches** — the content-type enable/disable toggle, the editor's basic/extended view toggle and the settings toggles — are real switches (`role="switch"`, `aria-checked`) with a label.
+- **Toggle buttons** such as filter pills and the theme selector expose their state with `aria-pressed`.
+- All names follow the interface language, and the page's `lang` attribute is set to it.
+
+## Keyboard and dialogs
+
+### Modal dialogs
+
+Pickers and confirmations are **real modal dialogs** — the asset picker, the move-to-folder picker, the Schema Registry browser, the locale and grant-admin dialogs, and in the discovery area the goal editor, "Why am I seeing this?", the bookmark and collection dialogs and the mobile filter drawer:
+
+- announced as a dialog (`role="dialog"`, `aria-modal`) with the dialog's heading as its name
+- focus moves into the dialog when it opens and is kept there
+- `Esc` closes it, and focus returns to the control that opened it
+
+### Tabs, menus and landmarks
+
+- The **Settings** tabs are WAI-ARIA tabs: the `←` / `→` arrow keys move between them, and the selected tab is announced.
+- Sidebar groups expose whether they are expanded (`aria-expanded`).
+- The app shell provides the page's **main landmark**, and screens no longer nest a second one inside it, so screen-reader landmark navigation works.
+
+### Notifications
+
+Toasts are announced through a persistent live region; errors use `role="alert"` so they are read immediately. Identical toasts are shown once.
+
+### Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl` + `K` (`⌘` + `K` on macOS) | Open the command palette |
+| `Esc` | Close the content reader or the open dialog |
+| `↑` / `↓` | Move to the previous / next item while the content reader is open beside the results (wide screens) |
+
+## Discovery area on touch and keyboard
+
+The discovery screens embedded in Studio (and the standalone Web Client built on the same library) are designed to work without a mouse:
+
+- **Card actions are always reachable.** The action buttons that appear on hover — on bookmark cards, goal cards, large tiles and masonry cards — also appear when the card has keyboard focus, and are always visible on touch devices that have no hover.
+- **Publisher cards** open the profile through a real link, so they work with `Tab` and `Enter` and in screen-reader link lists.
+- **Filters on small screens** — below 1024 px the filter sidebar is replaced by a **Filters** button (showing the number of active filters) that opens a slide-over drawer. In the drawer, option pills become standard checkboxes.
+- **Reordering without dragging** — in a bookmark collection sorted by *My order*, **Move up** / **Move down** buttons do what drag-and-drop does, and focus stays on the moved item.
+- Dates, relative times and counts are formatted for the interface language, so screen readers read them naturally.
+
+## How accessibility is tested
+
+Accessibility is checked automatically, not only by review:
+
+- **axe-core in the end-to-end suite** — `@axe-core/playwright` scans 33 screens in light mode and 5 in dark mode, plus the tab widgets, toasts and a dialog, against the WCAG 2.0/2.1 A and AA rules (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`). Any violation fails the test.
+- **Static checks** over the templates flag form controls without an accessible name and white text on colours that are too light.
+- **Translated names** — the i18n parity check fails when any key, accessible names included, is missing in one of the 24 languages.
+
+<Callout kind="tip">
+  Found a barrier? Report it with the screen, the assistive technology and browser you use, and what you expected — accessibility issues are treated as bugs, not enhancements.
+</Callout>
+
+## Related
+
+<Columns cols={2}>
+  <Card title="Interface Language" icon="languages" href="/guides/interface-language">
+    All 24 EU languages, plural forms and translated error messages.
+  </Card>
+  <Card title="Consumer Features" icon="compass" href="/guides/consumer-features">
+    Compass, Discover, Publishers and Bookmarks inside Studio.
+  </Card>
+</Columns>

@@ -5,6 +5,10 @@ description: Solutions for common errors you may encounter when using roadbeat S
 
 ## HTTP Error Codes
 
+<Callout kind="tip">
+  Every error body carries a stable `code` (e.g. `ORG_DEACTIVATED`) next to the HTTP status. Look it up in [Error Codes](/api-reference/error-codes) — it is more specific than the status alone, and the Studio UI shows its translated text.
+</Callout>
+
 ### 401 Unauthorized
 
 **Symptoms:** API requests return `401 Unauthorized`.
@@ -40,6 +44,18 @@ description: Solutions for common errors you may encounter when using roadbeat S
   Check if the API key still exists in **Settings > API Keys**. If it was deleted, create a new one. The full key value is only shown once at creation — if lost, create a new key.
 </Expandable>
 
+<Expandable title="Organization is deactivated (ORG_DEACTIVATED)" default-open="false">
+  Sign-in and existing sessions are refused while the organization is `suspended`, `archived` or `pending`. A platform admin can reactivate it in **Platform Admin → Organizations**.
+
+  Organizations in `onboarding` status (for example, created through the Web Client's "Start publishing" flow) **can** sign in while setup is in progress. Earlier versions rejected them with `ORG_DEACTIVATED`; update Studio if you still see this for an onboarding organization.
+</Expandable>
+
+<Expandable title="The login screen says “Invalid credentials” although the password is right" default-open="false">
+  The login screen now distinguishes wrong credentials from other failures — a locked account, a deactivated organization, too many attempts, an unreachable server or a gateway error (`502`/`504` from a reverse proxy) each get their own message. If you still see "Invalid email or password", the API really answered `401 AUTH_INVALID_CREDENTIALS`.
+
+  Note that an account whose user or organization is not allowed to sign in is reported the same way, so the message does not reveal which accounts exist.
+</Expandable>
+
 ### 403 Forbidden
 
 **Symptoms:** API requests return `403 Forbidden` despite being authenticated.
@@ -60,7 +76,7 @@ description: Solutions for common errors you may encounter when using roadbeat S
   - `pro-workflows` blocks publishing if content is not approved
   - `pro-locking` blocks editing if another user holds an exclusive lock
 
-  Check the error message for the specific prevention reason.
+  The response is `403 ACTION_PREVENTED`; the `message` carries the specific prevention reason.
 </Expandable>
 
 ### 429 Too Many Requests
@@ -70,11 +86,39 @@ description: Solutions for common errors you may encounter when using roadbeat S
 <Expandable title="Rate limit exceeded" default-open="true">
   Default limits:
 
-  - **Global:** 100 requests/minute per IP
+  - **Global:** 100 requests/minute — per user for signed-in requests, per key for API keys, per IP for anonymous requests
   - **Login:** 5 requests/minute per IP
   - **Password forgot:** 3 requests/minute per IP
 
   Check the `X-RateLimit-Reset` header for when the window resets. Implement exponential backoff in your client code.
+
+  **Several editors in one office hit 429 together?** Earlier versions counted all signed-in traffic per IP, so colleagues behind one NAT shared 100 requests per minute (a Studio page load makes 7–10). Signed-in traffic is now limited per user; update Studio if you still see this.
+</Expandable>
+
+<Expandable title="Logins fail with 429 during local test runs" default-open="false">
+  The login limit (5/minute) also applies locally. With `NODE_ENV=development`, logins from the same machine are exempt unless `LOGIN_THROTTLE_LOOPBACK_BYPASS=false` is set. The exemption checks the socket address — a request forwarded with a non-loopback `X-Forwarded-For` is still limited.
+</Expandable>
+
+### 422 Unprocessable Entity
+
+<Expandable title="Content does not match its content type (CONTENT_SCHEMA_INVALID)" default-open="false">
+  Creating, updating or publishing content returns `422` when the data violates its content type. The body's `errors` array names each failing field with a JSON-pointer `path`, a `message` and the `keyword` that fired; the content editor lists the same errors next to the field labels.
+
+  Publishing is always strict, even when the type tolerates invalid drafts. Registry content types are now validated in full — they embed the shared Schema Registry definitions they reference — so content that was accepted before may now be rejected on publish. Fix the listed fields and publish again.
+</Expandable>
+
+### 500 / 502 Errors from Pro Plugins
+
+<Expandable title="A Pro plugin answers 500 for a missing item or a conflict" default-open="false">
+  Plugin errors such as "task not found" or "already exists" used to reach clients as `500 Internal server error`, because plugins use their own copy of NestJS's exception classes. Studio now recognizes them, so they keep their real status (`404`, `403`, `409`, …) and code. A remaining `500` is a genuine server error — check the API log with the `requestId` from the response.
+</Expandable>
+
+<Expandable title="AI requests fail with 502 AI_PROVIDER_FAILED (Pro)" default-open="false">
+  The configured AI provider answered with an HTTP error; `params.provider` and `params.status` say which provider and which status. `AI_PROVIDER_UNREACHABLE` means it could not be reached at all. The provider's response body is written to the server log only — it can echo request details — so check the log for the cause (expired credentials, quota, wrong model name).
+</Expandable>
+
+<Expandable title="AI image or audio requests fail with 400 AI_SOURCE_URL_BLOCKED (Pro)" default-open="false">
+  Source URLs handed to the AI (vision, transcription) must be public `http(s)` addresses. URLs that resolve to private, loopback, link-local or internal addresses — including cloud metadata endpoints and local database ports — are refused before any provider request. Use an asset from your organization's library instead: Studio reads it from storage and sends the provider the file content, never the URL.
 </Expandable>
 
 ### 409 Conflict
@@ -138,11 +182,26 @@ description: Solutions for common errors you may encounter when using roadbeat S
 
 ### "User limit reached"
 
-<Expandable title="CE 5 user limit" default-open="false">
-  CE allows a maximum of **3 users** per organization. To add more:
+<Expandable title="CE user limit (QUOTA_USER_LIMIT)" default-open="false">
+  CE allows a maximum of **3 users** per organization by default; a platform admin can set a different limit per organization. **Settings → Organization → Resource Limits** shows how many users the organization has and the limit the API actually enforces. To add more:
 
   - Delete inactive users
+  - Ask a platform admin to raise the organization's user limit — the change applies immediately, no restart needed
   - Or upgrade to Pro for unlimited users
+</Expandable>
+
+### "API key limit reached"
+
+<Expandable title="Cannot create an API key after revoking others" default-open="false">
+  Only **active** API keys count against the limit (2 in CE). Earlier versions also counted revoked keys, which cannot be deleted, so an organization that had revoked two keys could never create another one. Update Studio; re-activating a revoked key checks the limit again.
+</Expandable>
+
+### "Content Pod item limit reached" (POD_ITEM_LIMIT)
+
+<Expandable title="Publishing to the pod is refused although the pod is not full" default-open="false">
+  `403 POD_ITEM_LIMIT` means the pod's item counter reached its limit. Earlier versions counted every **update** of an already-published item as a new item and never decreased the counters on unpublish, so a pod could report itself full with far fewer items and then refuse every publish — updates included.
+
+  Current versions do not count updates against the limit and recompute the counters from the pod manifest after each publish and unpublish, so the numbers correct themselves on the next publish. If the pod still holds items whose content was deleted, remove them in the pod dashboard (**Items without content → Remove from pod**). Otherwise, upgrade the pod or unpublish content.
 </Expandable>
 
 ## Publishing Errors
@@ -150,9 +209,9 @@ description: Solutions for common errors you may encounter when using roadbeat S
 ### "Schema validation failed"
 
 <Expandable title="Content doesn't match its content type schema" default-open="false">
-  Publishing validates content against the JSON Schema. Common issues:
+  Publishing validates content against the JSON Schema and answers `422 CONTENT_SCHEMA_INVALID`. Common issues:
 
-  - Missing required fields (check the error `details` array for specific fields)
+  - Missing required fields (check the error `errors` array — each entry has the field's `path`, a `message` and the failing `keyword`)
   - Invalid field values (wrong type, format, or constraint violation)
   - Broken references (linked content was deleted)
 

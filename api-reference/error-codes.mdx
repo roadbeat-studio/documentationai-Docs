@@ -1,0 +1,313 @@
+---
+title: Error Codes
+description: Every stable error code the roadbeat Studio API returns, with its HTTP status and meaning, grouped by area.
+---
+
+## How to use error codes
+
+Every error response from the Studio API carries a stable, machine-readable `code` next to the HTTP status (see [Error Responses](/api-reference/overview#error-responses) for the full body):
+
+```json
+{
+  "statusCode": 409,
+  "error": "Conflict",
+  "code": "CONTENT_TYPE_IN_USE",
+  "message": "Cannot delete content type \"event\": 12 content item(s) still reference it. Delete or reassign the content first.",
+  "params": { "contentTypeId": "event", "count": 12 },
+  "requestId": "req_a1b2c3"
+}
+```
+
+- **Branch on `code`, not on `message`.** Codes are stable across releases; messages are English prose and may be reworded.
+- **Translate by `code`.** `params` carries the values the message mentions, so a client can build its own text in the user's language. The Studio UI does exactly this for all 24 interface languages and falls back to `message` for a code it does not know yet.
+- **Expect new codes.** Treat an unknown code like its HTTP status.
+
+<Callout kind="info">
+  The **Status** column shows the status a code is returned with. A few codes are raised in more than one place with different statuses; those rows list each one.
+</Callout>
+
+## Codes derived from the status
+
+Errors that do not carry a specific code get one derived from their status, so `code` is always present:
+
+| Code | Status | When |
+|------|--------|------|
+| `VALIDATION_FAILED` | 400 | Request-body validation failed; `message` is an array with one entry per violation |
+| `BAD_REQUEST` | 400 | Other malformed requests |
+| `UNAUTHORIZED` | 401 | Missing or invalid authentication |
+| `FORBIDDEN` | 403 | Not allowed |
+| `NOT_FOUND` | 404 | Route or resource not found |
+| `CONFLICT` | 409 | Conflicting state |
+| `PAYLOAD_TOO_LARGE` | 413 | Request body or upload too large |
+| `UNSUPPORTED_MEDIA_TYPE` | 415 | Unsupported content type |
+| `UNPROCESSABLE_ENTITY` | 422 | Semantically invalid request |
+| `TOO_MANY_REQUESTS` | 429 | Rate limit reached — see [Rate Limiting](/api-reference/overview#rate-limiting) |
+| `UPSTREAM_UNAVAILABLE` | 502, 504 | An upstream service failed or timed out |
+| `SERVICE_UNAVAILABLE` | 503 | A required service is unavailable |
+| `INTERNAL_ERROR` | 500 | Unexpected server error — report it with the `requestId` |
+
+## General
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `RESOURCE_NOT_FOUND` | 404 | The item does not exist **in your organization** (tenant isolation — items of other organizations are never visible) |
+| `ACTION_PREVENTED` | 403 | A plugin prevented the action (e.g. publishing unapproved content under a workflow); `message` gives the reason |
+| `QUERY_FILTER_UNKNOWN` | 400 | `filter[field]` is not filterable on this endpoint; `params.allowed` lists the fields that are |
+| `QUERY_FILTER_NOT_BOOLEAN` | 400 | The filter value must be `true` or `false` |
+| `QUERY_FILTER_NOT_NUMBER` | 400 | The filter value must be a number |
+| `QUERY_FILTER_VALUE_INVALID` | 400 | The filter value is not one of `params.allowed` |
+| `QUERY_SORT_INVALID` | 400 | `sortBy` is not a sortable column of this endpoint; `params.allowed` lists them |
+
+## Authentication & sessions
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `AUTH_INVALID_CREDENTIALS` | 401 | Invalid email or password |
+| `AUTH_ACCOUNT_LOCKED` | 401 | The account is locked after too many failed logins; an admin must unlock it |
+| `AUTH_ACCOUNT_INACTIVE` | 401 (400 on SSO exchange) | The user account is not active |
+| `ORG_DEACTIVATED` | 401 (400 on organization switch) | The organization is suspended, archived or pending. Organizations in `onboarding` may sign in |
+| `AUTH_PASSWORD_LOGIN_BLOCKED` | 401 | Password sign-in is not allowed for this account (e.g. SSO is enforced) |
+| `AUTH_CAPTCHA_FAILED` | 401 | The CAPTCHA check failed |
+| `AUTH_PASSWORD_WRONG` | 401 | The password is incorrect (confirming a security change such as disabling two-factor authentication) |
+| `AUTH_CURRENT_PASSWORD_WRONG` | 401 | The current password is incorrect (password change) |
+| `WEAK_PASSWORD` | 400 | The new password does not meet the password policy; `message` lists the violations |
+| `INVALID_RESET_TOKEN` | 400 | The password-reset link is invalid or has expired |
+| `AUTH_REFRESH_TOKEN_INVALID` | 401 | The refresh token is not recognized or invalid |
+| `AUTH_REFRESH_TOKEN_EXPIRED` | 401 | The refresh token has expired — sign in again |
+| `AUTH_TOKEN_REUSE` | 401 | A refresh token was used twice; all of the user's sessions were revoked |
+| `AUTH_TOKEN_TYPE_INVALID` | 401 | The token is of the wrong type for this endpoint |
+| `USER_NOT_FOUND` | 401 | The token belongs to a user that no longer exists |
+| `AUTH_SESSION_NOT_FOUND` | 404 | The session to revoke was not found |
+| `AUTH_SETUP_DONE` | 409 | Initial setup has already been completed — sign in instead |
+| `AUTH_REQUIRED` | 403 | Sign-in required (platform-admin endpoints) |
+| `AUTH_MFA_TOKEN_MISSING` | 401 | The two-factor sign-in is incomplete — sign in again |
+| `AUTH_MFA_CHALLENGE_EXPIRED` | 401 | The two-factor sign-in has expired — sign in again |
+| `AUTH_MFA_CODE_INVALID` | 401 | The verification code is invalid |
+| `AUTH_MFA_ALREADY_ENABLED` | 409 | Two-factor authentication is already enabled |
+| `AUTH_MFA_NOT_ENABLED` | 400 | Two-factor authentication is not enabled |
+| `AUTH_MFA_ENROLLMENT_NOT_STARTED` | 400 | Two-factor setup has not been started |
+| `AUTH_PASSKEY_REQUIRED` | 401 | The account uses a passkey as second factor — confirm with the passkey |
+| `AUTH_PASSKEY_UNKNOWN` | 401 | This passkey is not registered for the account |
+| `AUTH_PASSKEY_VERIFY_FAILED` | 401 | The passkey could not be verified |
+| `AUTH_PASSKEY_REGISTER_FAILED` | 400 | The passkey could not be registered |
+| `AUTH_PASSKEY_NONE` | 404 | No passkeys are registered for this account |
+| `AUTH_PASSKEY_NOT_FOUND` | 404 | The passkey was not found |
+| `AUTH_WEBAUTHN_CHALLENGE_EXPIRED` | 401 | The passkey request has expired — try again |
+| `AUTH_WEBAUTHN_CHALLENGE_MISMATCH` | 401 | The passkey response does not match the request — try again |
+| `SSO_TOKEN_INVALID` | 401 | The one-time sign-in link (Web Client → Studio handover) is invalid |
+| `SSO_TOKEN_EXPIRED` | 401 | The sign-in link has expired (valid for 5 minutes) |
+| `SSO_TOKEN_USED` | 401 | The sign-in link has already been used |
+
+## API keys & metrics
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `API_KEY_MISSING` | 401 | No API key was sent (`Authorization: Bearer rbk_…` or `X-Api-Key`) |
+| `API_KEY_INVALID` | 401 | The API key is invalid, revoked or expired |
+| `API_KEY_PERMISSION_MISSING` | 401 | The key lacks a scope this endpoint requires |
+| `API_KEY_RATE_LIMITED` | 429 | Too many invalid API key attempts from this client — try again later |
+| `API_KEY_PERMISSION_INVALID` | 400 | Unknown scope (`params.permission`) when creating or updating a key; the message lists the valid ones |
+| `API_KEY_NOT_FOUND` | 404 | The API key was not found |
+| `METRICS_TOKEN_INVALID` | 401 | Missing or wrong bearer token for `/metrics` |
+
+## Users, organizations & limits
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `USER_NOT_FOUND` | 404 | The user was not found |
+| `USER_EMAIL_TAKEN` | 409 | This email address is already in use |
+| `USER_LAST_ADMIN_DEACTIVATE` | 403 | The last admin cannot be deactivated |
+| `USER_LAST_ADMIN_DELETE` | 403 | The last admin cannot be deleted |
+| `USER_LAST_ADMIN_ERASE` | 403 | The last active admin cannot be erased (GDPR erasure) |
+| `USER_LAST_ADMIN_ROLE` | 403 | The role of the last admin cannot be changed |
+| `QUOTA_USER_LIMIT` | 403 | The organization's user limit is reached (`params.limit`) |
+| `QUOTA_STORAGE_LIMIT` | 403 | The storage limit is reached (`params.limit` GB) |
+| `QUOTA_LIMIT` | 403 | Another plan limit is reached — API keys or webhooks (`params.resource`, `params.limit`). Only active API keys count |
+| `ORG_NOT_FOUND` | 404 (400 in federation setup) | The organization was not found |
+| `ORG_SLUG_TAKEN` | 409 | The organization address (`params.slug`) is already taken |
+| `ORG_LAST_ACTIVE` | 400 | The last active organization cannot be deactivated or archived |
+| `ORG_MAX_USERS_TOO_LOW` | 400 | The user limit cannot be set below the current number of users (`params.count`) |
+| `PLATFORM_ADMIN_REQUIRED` | 403 (401 when switching into an organization) | Platform-admin (super admin) rights are required |
+| `PLATFORM_ADMIN_EXISTS` | 409 | The user is already a platform admin |
+| `PLATFORM_ADMIN_NOT_FOUND` | 404 | The user is not a platform admin |
+| `PLATFORM_ADMIN_LAST` | 400 | The last platform admin cannot be removed |
+| `PLATFORM_ADMIN_SELF_REVOKE` | 400 | You cannot remove your own platform-admin rights |
+| `PLATFORM_ADMIN_USER_INACTIVE` | 400 | Inactive users cannot become platform admins |
+| `UPLOAD_ZIP_REQUIRED` | 400 | The onboarding import expects a `.zip` file |
+
+## Content
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `CONTENT_NOT_FOUND` | 404 | The content item was not found in your organization |
+| `CONTENT_SCHEMA_INVALID` | 422 | The data does not match its content type; the body's `errors` array lists each failing field (`path`, `message`, `keyword`) |
+| `CONTENT_SLUG_TAKEN` | 409 | The slug is already used by another item of this type and language |
+| `CONTENT_VERSION_CONFLICT` | 409 | Someone else changed the item since you loaded it — reload, or overwrite |
+| `CONTENT_VERSION_NOT_FOUND` | 404 | This version was not found |
+| `CONTENT_IN_USE` | 403 | Other items still reference this content (`params.count`) |
+| `CONTENT_NOT_PUBLISHED` | 403 | Only published content can be unpublished |
+| `CONTENT_ALREADY_ARCHIVED` | 403 | The content is already archived |
+| `CONTENT_NOT_ARCHIVED` | 403 | Only archived content can be restored from the archive |
+| `CONTENT_RELATION_SELF` | 400 | Content cannot reference itself |
+| `CONTENT_RELATION_SELF_PARENT` | 400 | Content cannot be its own parent |
+| `CONTENT_RELATION_CIRCULAR` | 400 | The relation would create a cycle |
+| `CONTENT_RELATION_TARGET_NOT_FOUND` | 404 | Some referenced content items were not found |
+| `COMMENT_NOT_FOUND` | 404 | The comment was not found |
+| `COMMENT_PARENT_NOT_FOUND` | 404 | The comment being replied to was not found |
+| `COMMENT_NOT_OWNER` | 403 | You can only change or delete your own comments |
+| `LAYOUT_NOT_FOUND` | 404 | The layout was not found |
+
+## Content types & Schema Registry
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `CONTENT_TYPE_NOT_FOUND` | 404 | The content type (`params.contentTypeId`) was not found |
+| `CONTENT_TYPE_EXISTS` | 409 | The content type already exists in the target organization |
+| `CONTENT_TYPE_DEFINITION_INVALID` | 400 | The content type definition (schema, form or teaser mapping) is not valid |
+| `CONTENT_TYPE_ABSTRACT` | 400 | The content type is abstract and cannot hold content |
+| `CONTENT_TYPE_INHERITANCE_CIRCULAR` | 400 | Circular content type inheritance |
+| `CONTENT_TYPE_IN_USE` | 409 | The type cannot be deleted while content uses it (`params.count`) |
+| `CONTENT_TYPE_IN_USE_DISABLE` | 409 | The type cannot be disabled while content uses it (`params.count`) |
+| `REGISTRY_TYPE_NOT_FOUND` | 400 | The type was not found in the Schema Registry |
+| `REGISTRY_SIGNATURE_MISSING` | 403 | The registry schema is not signed, but signatures are required |
+| `REGISTRY_SIGNATURE_INVALID` | 403 | The registry schema failed signature verification |
+| `REGISTRY_SIGNATURE_KEY_MISSING` | 403 | Signature verification is enabled, but no public key is configured |
+
+## Localization & translation
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `LOCALE_NOT_FOUND` | 404 | The language (`params.locale`) was not found |
+| `LOCALE_EXISTS` | 409 | The language already exists |
+| `LOCALE_IN_USE` | 400 | The language is still used by content (`params.count`) |
+| `LOCALE_DEFAULT_UNDELETABLE` | 400 | The default language cannot be deleted |
+| `LOCALE_SELF_FALLBACK` | 400 | A language cannot be its own fallback |
+| `LOCALE_FALLBACK_NOT_FOUND` | 400 | The fallback language does not exist |
+| `LOCALE_FALLBACK_CIRCULAR` | 400 | The fallback would create a loop |
+| `LOCALE_DATE_FORMAT_INVALID` | 400 | The date format (`params.pattern`) is not valid |
+| `LOCALE_TIME_FORMAT_INVALID` | 400 | The time format (`params.pattern`) is not valid |
+| `CONTENT_VARIANT_EXISTS` | 409 | A variant for this language already exists |
+| `TRANSLATION_CONSENT_REQUIRED` | 400 | An admin must accept the data-processing consent before content is sent to an external provider |
+| `TRANSLATION_PROVIDER_NOT_CONFIGURED` | 400 | The selected translation provider is not configured |
+| `TRANSLATION_PROVIDER_UNSUPPORTED` | 400 | The provider (`params.provider`) is not supported |
+| `TRANSLATION_PROVIDER_UNAVAILABLE` | 400 | The selected provider requires the AI plugin to be installed and active |
+| `TRANSLATION_FIELD_EXCLUDED` | 403 | This field is excluded from machine translation |
+| `TRANSLATION_TASK_EXISTS` | 409 | A translation into this language is already in progress |
+| `TRANSLATION_TASK_NOT_FOUND` | 404 | The translation task was not found |
+
+## Assets & uploads
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `ASSET_NOT_FOUND` | 404 | The asset was not found |
+| `ASSET_IN_USE` | 403 | Content items still use the asset (`params.count`) |
+| `ASSET_TAGS_REQUIRED` | 403 | Tag actions need at least one tag |
+| `ASSET_FOLDER_NOT_FOUND` | 404 | The folder was not found |
+| `ASSET_FOLDER_PARENT_NOT_FOUND` | 404 | The parent folder was not found |
+| `ASSET_FOLDER_NAME_TAKEN` | 409 | A folder with this name already exists here |
+| `ASSET_FOLDER_NOT_EMPTY` | 409 | The folder still contains assets (`params.count`) |
+| `ASSET_FOLDER_HAS_SUBFOLDERS` | 409 | The folder still has subfolders (`params.count`) |
+| `ASSET_FOLDER_SELF_PARENT` | 409 | A folder cannot be its own parent |
+| `ASSET_FOLDER_CIRCULAR` | 409 | A folder cannot be moved into one of its own subfolders |
+| `UPLOAD_FILE_MISSING` | 400 | No file was uploaded |
+| `UPLOAD_TYPE_NOT_ALLOWED` | 415 | Files of this type (`params.mimeType`) are not allowed |
+| `UPLOAD_TYPE_MISMATCH` | 415 | The file content does not match its declared type |
+| `UPLOAD_EXECUTABLE_REJECTED` | 415 | Executables and scripts are not allowed |
+| `UPLOAD_SVG_DISABLED` | 415 | SVG uploads are disabled |
+
+## Publishing, Discovery Nodes & Content Pod
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `DISCOVERY_NODE_NOT_FOUND` | 404 | The Discovery Node was not found |
+| `DISCOVERY_NODE_IN_USE` | 409 | Content is still published to this node (`params.count`) — unpublish it or disable the node first |
+| `PUBLISH_RECORD_NOT_FOUND` | 404 | There is no failed publication to retry for this item and node |
+| `PUBLISHER_KEY_NOT_FOUND` | 404 | The publisher key was not found |
+| `PUBLISHER_KEY_REVOKED` | 404 | The publisher key has been revoked |
+| `POD_NOT_CONFIGURED` | 404 | No Content Pod is set up for this organization |
+| `POD_ALREADY_CONFIGURED` | 409 | A Content Pod is already set up |
+| `POD_ITEM_LIMIT` | 403 | The pod's item limit is reached (`params.count` / `params.limit`). Updates of items already in the pod do not count |
+| `POD_STORAGE_LIMIT` | 403 | The pod's storage quota is reached (`params.usedMb` / `params.quotaMb`) |
+| `POD_MODE_UNCHANGED` | 400 | The pod is already in this mode |
+| `POD_NOT_DYNAMIC` | 400 | Scripts can only be deployed to dynamic pods |
+| `POD_HOSTING_ERROR` | status of the Pod Hosting API (default 502) | The Pod Hosting API reported an error |
+
+## Webhooks
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `WEBHOOK_NOT_FOUND` | 404 | The webhook was not found |
+| `WEBHOOK_DELIVERY_NOT_FOUND` | 404 | The delivery was not found |
+| `WEBHOOK_DEAD_LETTER_NOT_FOUND` | 404 | The failed delivery was not found |
+| `WEBHOOK_URL_INVALID` | 400 | The webhook URL is not valid |
+| `WEBHOOK_URL_SCHEME` | 400 | Only `http` and `https` URLs are supported |
+| `WEBHOOK_HOST_UNRESOLVED` | 400 | The webhook host could not be resolved |
+| `WEBHOOK_HOST_PRIVATE` | 400 | Webhooks to private or internal addresses are not allowed |
+| `WEBHOOK_HOST_BLOCKED` | 400 | This webhook host is not allowed |
+
+## Backup & export
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `BACKUP_NOT_FOUND` | 404 | The backup was not found |
+| `BACKUP_FILE_MISSING` | 404 | The backup file is missing on the server |
+| `BACKUP_NOT_DOWNLOADABLE` | 400 | This backup cannot be downloaded |
+| `BACKUP_NOT_RESTORABLE` | 400 | This backup cannot be restored |
+| `BACKUP_ARCHIVE_INVALID` | 400 | The uploaded file is not a valid backup archive |
+| `BACKUP_INTEGRITY_FAILED` | 400 | The backup failed its integrity check and will not be restored |
+
+## Federation
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `FEDERATION_NOT_CONFIGURED` | 503 | Federation is not configured for this installation (`FEDERATION_GATEWAY_URL`) |
+| `FEDERATION_UNREACHABLE` | 503 | The Federation Gateway cannot be reached |
+| `FEDERATION_ACTOR_MISSING` | 400 | Federation is not set up for this organization yet |
+| `PUBLISHER_NOT_FOUND` | 404 | The publisher / actor was not found |
+
+## Consumer features
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `ACCOUNT_DELETE_LAST_ADMIN` | 409 | You are the only admin of your organization — make another member an admin before deleting your account |
+| `DATA_EXPORT_NOT_FOUND` | 404 | The data export was not found or has expired (download links are valid for 24 hours) |
+| `SYNC_TOKEN_INVALID` | 404 | The device sync token is invalid, expired or already used |
+| `SYNC_CODE_INVALID` | 404 | The short pairing code is invalid, expired or already used |
+| `PUBLISHER_NOT_FOUND` | 404 | The publisher was not found on the Discovery Nodes |
+| `POD_PROXY_FAILED` | 400 | Loading the full content from the publisher's Content Pod failed |
+
+## Plugins
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `PLUGIN_NOT_FOUND` | 404 | No loaded plugin has this id |
+| `PLUGIN_ASSET_NOT_FOUND` | 404 | The requested plugin UI asset does not exist |
+| `PLUGIN_CATALOG_NOT_FOUND` | 404 | The plugin has no translation catalog for this language |
+
+## Pro plugin codes
+
+Pro plugins return the same error body and define their own codes, typically prefixed with the plugin's area — for example:
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `AI_PROVIDER_FAILED` | 502 | The AI provider answered with an HTTP error (`params.provider`, `params.status`). The provider's response body is logged, never returned |
+| `AI_PROVIDER_UNREACHABLE` | 502 | The AI provider could not be reached |
+| `AI_SOURCE_URL_BLOCKED` | 400 | An image or audio URL for the AI points at a private or internal address (`params.hostname`) |
+| `AI_REQUEST_INVALID` | 400 | The AI request is incomplete or malformed |
+| `BULK_OPERATION_NOT_FOUND` | 404 | The bulk operation was not found |
+| `BULK_NOTHING_TO_UNDO` | 400 | The bulk operation recorded no previous state to restore |
+| `BULK_ALREADY_UNDONE` | 400 | The bulk operation was already undone |
+| `BULK_ZIP_TOO_LARGE` | 400 | The selected assets exceed the ZIP download limit (`params.size` / `params.limit` MB) |
+
+See the [Studio Pro documentation](https://studio-pro-docs.roadbeat.net/introduction) for each plugin's codes.
+
+## Related
+
+<Columns cols={2}>
+  <Card title="API Overview" icon="book" href="/api-reference/overview">
+    Response envelope, error body, pagination and rate limits.
+  </Card>
+  <Card title="Common Errors" icon="alert-triangle" href="/help-center/troubleshooting/common-errors">
+    Causes and fixes for the errors you are most likely to meet.
+  </Card>
+</Columns>

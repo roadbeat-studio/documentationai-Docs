@@ -88,6 +88,12 @@
                 "badge": "New"
               },
               {
+                "title": "Accessibility",
+                "path": "guides/accessibility",
+                "icon": "accessibility",
+                "badge": "New"
+              },
+              {
                 "title": "AI Assistant",
                 "path": "guides/ai-assistant",
                 "icon": "sparkles",
@@ -245,6 +251,12 @@
                 "title": "Authentication",
                 "path": "api-reference/authentication",
                 "icon": "lock"
+              },
+              {
+                "title": "Error Codes",
+                "path": "api-reference/error-codes",
+                "icon": "circle-alert",
+                "badge": "New"
               },
               {
                 "title": "Delivery API",

@@ -85,6 +85,10 @@ This guide walks you through building a plugin that extends roadbeat Studio. Plu
   </Step>
 </Steps>
 
+<Callout kind="alert">
+  Plugin backends are loaded **once, when the API starts**. After rebuilding a plugin, restart the API — the dev watcher (`nest start --watch`) only watches Studio's own sources, and touching a file is not enough. New SQL migrations are also applied on that restart.
+</Callout>
+
 ## RoadbeatPlugin Interface
 
 The `RoadbeatPlugin` interface is the contract between CE and plugins:
@@ -118,7 +122,7 @@ interface RoadbeatPlugin {
 | `getEditorExtensions()` | Content editor sidebar panels or toolbar actions |
 | `getDashboardWidgets()` | Dashboard widget components |
 | `getEventHandlers()` | Event listener registrations |
-| `getPrismaSchemaPath()` | Path to SQL migration file for database tables |
+| `getPrismaSchemaPath()` | Optional pointer to a schema file. The host's migration runner does not use it — it applies every `migrations/*.sql` file in the plugin directory (see [Database Extensions](#database-extensions)) |
 | `onPluginInit()` | Called after module registration, before app starts |
 | `onPluginDestroy()` | Called during graceful shutdown |
 
@@ -178,6 +182,8 @@ export class MyService {
     | `user.afterCreate` | After user creation |
     | `user.afterUpdate` | After user update |
     | `user.afterDelete` | After user deletion |
+
+    In `UserEventPayload`, `userId` is the affected user and `actorId` the admin who made the change (absent for system and self-service changes) — audit trails must attribute to `actorId`. `user.afterUpdate` also carries `previousRole` and `previousStatus`.
   </Tab>
   <Tab title="Publishing" icon="send">
     | Event | Description |
@@ -239,17 +245,71 @@ export class MyService {
 
 ## Database Extensions
 
-Plugins can create their own database tables using SQL migration files:
+Plugins create their own database tables with plain SQL migration files in a `migrations/` folder next to the plugin's `manifest.json`:
 
-```typescript
-getPrismaSchemaPath(): string {
-  return path.join(__dirname, '../migrations/001_create_tables.sql');
-}
+```text
+plugins/my-plugin/
+├── manifest.json
+├── dist/
+└── migrations/
+    ├── 001_create_tables.sql
+    └── 002_add_status_column.sql
 ```
+
+The Studio API applies them at startup, in file-name order, before your plugin module initializes, and records each file in the `plugin_migrations` table — see [Plugin database migrations](/plugins/overview#plugin-database-migrations). Write them so they can meet an existing schema:
+
+- **Never edit an applied file.** A changed checksum is reported and the file is not re-run; add `003_…sql` instead.
+- **Prefer idempotent DDL** (`CREATE TABLE IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`). The runner also treats "already exists" errors as "applied before" per statement, but other errors roll the whole file back and block your later files.
+- **Cast bound values to the column type** in raw SQL (`$1::uuid`, `make_interval(days => $2::int)`) — PostgreSQL does not infer them reliably from a parameter.
 
 <Callout kind="alert">
   All plugin tables **must** use a `pro_` prefix to avoid conflicts with CE tables (e.g., `pro_audit_logs`, `pro_workflow_states`).
 </Callout>
+
+## Validation and Errors
+
+### DTO validation
+
+Your DTOs are validated by the host's global `ValidationPipe`. Plugins live in their own workspace with their own `node_modules`, so the host resolves `class-transformer` and `class-validator` for code under `PLUGINS_DIR` to **its own copies** before any plugin entry is loaded. That keeps `@Type()` metadata and nested validation (`@ValidateNested()`) working for plugin DTOs — without it, arrays of nested objects arrived as arrays of empty arrays and nested validation silently did nothing.
+
+```typescript
+import { Type } from 'class-transformer';
+import { IsArray, IsString, ValidateNested } from 'class-validator';
+
+class StateDto {
+  @IsString() id!: string;
+  @IsString() name!: string;
+}
+
+export class SaveWorkflowDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StateDto)
+  states!: StateDto[];
+}
+```
+
+### Throwing errors
+
+Throw Nest's HTTP exceptions with a **stable error code**, an English message and — when the message contains values — `params`:
+
+```typescript
+import { NotFoundException } from '@nestjs/common';
+
+throw new NotFoundException({
+  code: 'MY_PLUGIN_ITEM_NOT_FOUND',
+  message: `Item ${id} not found`,
+  params: { id },
+});
+```
+
+- The host's exception filter passes `code`, `message` and `params` through unchanged, so clients — including the Studio UI — translate by `code` and fall back to `message`. See [Error Codes](/api-reference/error-codes).
+- Your exceptions keep their status. They are built against the plugin's own `@nestjs/common`, so they are not `instanceof` the host's `HttpException`; the filter recognizes them by shape (`getStatus()` / `getResponse()`).
+- Do not `throw new Error(...)` for client errors — it becomes a `500 INTERNAL_ERROR`. Map upstream failures (for example an external provider answering with an HTTP error) to a coded `502` instead.
+
+### Translating error texts in your UI
+
+Add one `errors.codes.<CODE>` entry per code to your plugin's UI catalogs (all 24 languages), using the same `{{param}}` placeholders as `params`. The admin UI's error helper resolves the translated text, falls back to the API's `message`, and finally to a generic text.
 
 ## Admin UI Extensions
 
@@ -273,11 +333,59 @@ npm run build
 
 CE serves the bundle at `/api/v1/plugins/my-plugin/ui/main.js`.
 
+### Menu Items
+
+Menu items, menu groups and admin routes take a **label per locale** (`{ "en": "Workflows", "de": "Workflows", … }`). The sidebar, the dashboard cards and the breadcrumbs show the active interface language, then its base language, then English, then the first value you provided.
+
+```typescript
+getMenuItems(): PluginMenuItem[] {
+  return [
+    {
+      section: 'content',
+      group: 'editorial',            // optional: a PluginMenuGroup id
+      label: { en: 'Workflows', de: 'Workflows', fr: 'Flux de travail' },
+      icon: 'git-branch',            // Lucide icon name
+      route: '/workflows',
+      order: 10,                     // lower comes first; default 100
+    },
+  ];
+}
+```
+
+An item without `group`, or whose group no active plugin defines, appears in the built-in **More** group, so it is always reachable.
+
+### Styling with Tailwind
+
+Plugin UIs ship **no stylesheet**: their custom elements render inside the host and use the host's Tailwind build. Tailwind only generates classes it finds in its content files, so the host scans `apps/web/plugin-classes.txt` — a committed list of every class token used in the plugin frontends. If your UI uses a class the host's own templates do not, regenerate the list:
+
+```bash
+# from the studio repository
+pnpm --filter web plugin-classes                         # default: ../studio-pro/plugins
+node apps/web/scripts/plugin-classes.mjs <pluginsDir> --check   # exit 1 when the list is outdated
+```
+
+<Callout kind="info">
+  For the official Pro plugins this is automated: the `studio-pro` CI regenerates the list whenever a plugin UI changes and commits it to Studio, so the Docker image — built from Studio's sources only — contains the plugin classes.
+</Callout>
+
+<Callout kind="tip">
+  Only use real Tailwind shades. A class such as `bg-gray-750` does not exist and silently renders nothing.
+</Callout>
+
+## Host Services
+
+Besides the SDK, plugins can inject a few host services by injection token:
+
+| Token | Purpose |
+|-------|---------|
+| `CONTENT_SERVICE` | Read and write content through CE (tenant-scoped, with events) |
+| `CONTENT_SHAPE_SERVICE` | `migrateDataForType(orgId, contentTypeId, data)` moves data keyed by legacy form field ids to the type's storage paths. Use it for content data you store outside the content table (e.g. templates), so it matches the type after field storage moved to schema paths. Idempotent; unknown types are left alone |
+
 ## Best Practices
 
 1. **Only import from `@roadbeat/plugin-sdk`** — never reference CE source
 2. **Use event listeners** for extending behavior, not monkey-patching
-3. **Handle errors gracefully** — a plugin crash should not break CE
+3. **Handle errors gracefully** — a plugin crash should not break CE; throw coded HTTP exceptions, never a bare `Error`, for anything a client can cause
 4. **Respect CE limits** — use `FeatureGateService.getLimit()`
 5. **Version your plugin** with semver and declare minimum CE version in `requires`
 6. **Use `pro_` prefix** for all database tables

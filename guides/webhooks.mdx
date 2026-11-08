@@ -24,43 +24,47 @@ Webhooks allow Studio to send real-time HTTP notifications to external systems w
     ```bash
     POST /api/v1/manage/webhooks
     {
+      "name": "Publish notifications",
       "url": "https://example.com/webhook",
-      "events": ["content.afterPublish", "content.afterUpdate"],
-      "enabled": true
+      "events": ["content.published", "content.updated"]
     }
     ```
+
+    `name` (2–100 characters), `url` and at least one event are required. A new webhook starts `active`.
   </Tab>
 </Tabs>
 
 ## Supported Events
 
-| Event | Trigger |
-|-------|---------|
-| `content.afterCreate` | New content item created |
-| `content.afterUpdate` | Content item updated |
-| `content.afterDelete` | Content item deleted |
-| `content.afterPublish` | Content published |
-| `content.afterUnpublish` | Content unpublished |
-| `asset.afterUpload` | New asset uploaded |
-| `asset.afterDelete` | Asset deleted |
-| `user.afterCreate` | New user created |
-| `user.afterLogin` | User logged in |
+Subscribe with these event names:
+
+| Event | Trigger | `data` fields |
+|-------|---------|---------------|
+| `content.created` | New content item created | `contentId`, `contentTypeId`, `status` |
+| `content.updated` | Content item updated | `contentId`, `contentTypeId`, `status` |
+| `content.published` | Content published | `contentId`, `contentTypeId` |
+| `content.unpublished` | Content unpublished | `contentId`, `contentTypeId` |
+| `content.deleted` | Content item deleted | `contentId`, `contentTypeId` |
+| `asset.uploaded` | New asset uploaded | `assetId`, `filename`, `mimeType`, `sizeBytes` |
+| `asset.deleted` | Asset deleted | `assetId`, `filename` |
+| `user.created` | New user created | `userId`, `email`, `role` |
+
+<Callout kind="alert">
+  Earlier versions of this page listed the internal plugin event names (`content.afterPublish`, `asset.afterUpload`, …) and a `user.afterLogin` event. Webhooks never matched those names, so a webhook subscribed to them receives nothing — re-subscribe with the names above. There is no login webhook event.
+</Callout>
 
 ## Payload Format
 
-Every webhook delivery includes a JSON payload:
+Every webhook delivery includes a JSON payload. The event name is also sent in the `X-Webhook-Event` header:
 
 ```json
 {
-  "event": "content.afterPublish",
-  "timestamp": "2026-01-24T14:30:00Z",
+  "event": "content.published",
   "data": {
     "contentId": "uuid",
-    "contentTypeId": "news",
-    "organizationId": "org-uuid",
-    "userId": "user-uuid",
-    "status": "published"
-  }
+    "contentTypeId": "news"
+  },
+  "timestamp": "2026-01-24T14:30:00.000Z"
 }
 ```
 
@@ -221,10 +225,16 @@ POST /api/v1/manage/webhooks/dead-letters/:id/dismiss
 # List all webhooks
 GET /api/v1/manage/webhooks
 
-# Update a webhook
+# Update a webhook — e.g. move it and pause it
 PUT /api/v1/manage/webhooks/:id
-{ "url": "https://new-endpoint.com/hook", "enabled": false }
+{ "url": "https://new-endpoint.com/hook", "status": "inactive" }
+
+# Resume it
+PUT /api/v1/manage/webhooks/:id
+{ "status": "active" }
 
 # Delete a webhook
 DELETE /api/v1/manage/webhooks/:id
 ```
+
+A webhook's `status` is `active` or `inactive`; only `active` webhooks receive deliveries. In **Settings → Webhooks** the switch on each webhook toggles between the two and the list shows the current status. There is no `enabled` field — the API rejects unknown fields with `400`.

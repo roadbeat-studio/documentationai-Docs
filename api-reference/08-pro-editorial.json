@@ -7906,6 +7906,11 @@
           "requiresComment": {
             "type": "boolean",
             "example": false
+          },
+          "noSelfApproval": {
+            "type": "boolean",
+            "example": true,
+            "description": "Four-eyes rule: the content author cannot take this transition (IMP-PRO-WF-03). The service enforced it, but the DTO rejected the field, so it could not be set."
           }
         },
         "required": [

@@ -1,6 +1,6 @@
 ---
 title: Monitoring & Observability
-description: Health probes, Prometheus metrics, distributed tracing, and self-hostable error tracking for a production roadbeat Studio deployment.
+description: Health probes, Prometheus metrics, distributed tracing, crash logging, and self-hostable error tracking for a production roadbeat Studio deployment.
 ---
 
 ## Overview
@@ -118,6 +118,50 @@ sentry.io by default. With no DSN the SDK is completely inert.
   European data sovereignty is a product requirement: keep error, trace, and
   metric data on infrastructure you control. GlitchTip is a lightweight,
   self-hostable, Sentry-compatible option that fits this model.
+</Callout>
+
+## Crash Logging
+
+Process-level failures never disappear silently. Studio installs crash handlers
+as the very first step of startup — before any module is imported — so even a
+failing import or a broken bootstrap leaves a trace. Every event is written,
+with its stack (and `Caused by:` chain), to three places:
+
+1. **stderr** — visible in `docker logs` / your container runtime
+2. **The application logger** (Pino) — once it is up, so it reaches your log shipping
+3. **A crash log file** — appended synchronously, so the entry survives the exit
+
+| Event | What happens |
+|-------|--------------|
+| Uncaught exception | Logged, then the process exits with code `1` (its state may be corrupt) |
+| Unhandled promise rejection | Logged; the API **keeps running**, so a forgotten `await` in a background job cannot take the whole API down. Set `CRASH_ON_UNHANDLED_REJECTION=true` to exit instead |
+| Fatal bootstrap error | Logged with its context, then the process exits |
+| Process exit | The exit code is recorded |
+
+The crash log file also notes each process's lifecycle — a `starting` line and
+`listening on port N after X.Xs` — tagged with the timestamp and `pid`. That
+makes restarts and startup gaps visible next to the crashes, and tells
+"the API was gone" apart from "the API never started" (a process killed from
+outside leaves no exit line, but the next `starting` line shows the gap).
+
+```text
+[2026-11-06T14:12:03.511Z] pid=21408 starting
+[2026-11-06T14:12:15.902Z] pid=21408 listening on port 3000 after 12.4s
+[2026-11-06T15:40:27.118Z] pid=21408 unhandledRejection
+Error: connect ECONNREFUSED 127.0.0.1:3300
+    at ...
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CRASH_LOG_FILE` | dev: `studio/logs/api-crash.log`; production: none | Crash log file. In production a file is written only when this is set; stderr and the logger always receive the entries |
+| `CRASH_ON_UNHANDLED_REJECTION` | `false` | `true` exits the process on an unhandled rejection |
+
+<Callout kind="tip">
+  In containers, stderr is usually enough. Set `CRASH_LOG_FILE` to a path on a
+  persistent volume if you want the crash history to survive container
+  recreation. A read-only filesystem never turns a logged crash into a second
+  one — a failed file write is ignored and stderr still has the entry.
 </Callout>
 
 ## Audit Trail

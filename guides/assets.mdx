@@ -73,6 +73,12 @@ Re-uploading a byte-identical file within an organization returns the **existing
 asset (response carries `deduplicated: true`) instead of storing a second copy —
 saving storage against the quota.
 
+The Asset Library and the asset picker tell you when this happens: an info
+message names the existing asset (*"x.png is already in the library as
+y.png — no new file was added"*), the success message counts only files that
+were actually added, and for a single duplicate the library opens the existing
+asset.
+
 ### Video posters (Community Edition)
 
 When the system `ffmpeg`/`ffprobe` binaries are available and `VIDEO_PROBE=true`,

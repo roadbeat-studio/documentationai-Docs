@@ -750,6 +750,120 @@
         ]
       }
     },
+    "/api/v1/consumer/content-types/names": {
+      "get": {
+        "operationId": "ContentTypesRegistryController_names",
+        "summary": "Content type names in the UI language (Accept-Language, cached 1 h)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Name of each content type in the request's language (English where the registry has none); an empty map when the registry is unreachable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "blog-post": "Blogbeitrag",
+                        "event": "Veranstaltung"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer/content-types"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/consumer/content-types/value-labels": {
+      "get": {
+        "operationId": "ContentTypesRegistryController_valueLabels",
+        "summary": "Filter value and heading labels in the UI language for ?keys=field:value,value,@field (max 200)",
+        "parameters": [
+          {
+            "name": "keys",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Label per requested key; unknown keys are left out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "example": {
+                        "event_type:exhibition": "Ausstellung",
+                        "culture": "Kultur",
+                        "@event_type": "Veranstaltungsart"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer/content-types"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/consumer/content-types/categories": {
       "get": {
         "operationId": "ContentTypesRegistryController_categories",
@@ -936,6 +1050,80 @@
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/ConsumerRegionDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer/geo"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/consumer/geo/regions/{countryCode}/i18n/{locale}": {
+      "get": {
+        "operationId": "GeoController_regionsI18n",
+        "summary": "Region names in one language (Redis cached, 1h TTL)",
+        "parameters": [
+          {
+            "name": "countryCode",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region names for the requested locale, keyed by ISO 3166-2 code; English where the Context Directory has no translation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "regions": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "example": {
+                            "DE-BY": "Bayern",
+                            "DE-NW": "Nordrhein-Westfalen"
+                          }
+                        }
                       }
                     }
                   }
@@ -1285,6 +1473,64 @@
                       "$ref": "#/components/schemas/ConsumerOperationResultDto"
                     }
                   }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer"
+        ]
+      }
+    },
+    "/api/v1/consumer/goals/{goalId}/progress": {
+      "post": {
+        "operationId": "GoalsController_updateProgress",
+        "parameters": [
+          {
+            "name": "goalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGoalProgressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Progress check-in saved; the goal is completed once the target is reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsumerGoalDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1990,6 +2236,44 @@
         ]
       }
     },
+    "/api/v1/consumer/sync/code/{code}": {
+      "get": {
+        "operationId": "SyncController_getPackageByCode",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The package for the short pairing code shown next to the QR (XXXX-XXXX; case, dashes and I/L/O are forgiven). Unauthenticated and single-use like the token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsumerSyncPackageDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer"
+        ]
+      }
+    },
     "/api/v1/consumer/sync/qr": {
       "get": {
         "operationId": "SyncController_getQrData",
@@ -2140,6 +2424,82 @@
         ]
       }
     },
+    "/api/v1/consumer/notifications/{id}/archive": {
+      "put": {
+        "operationId": "ConsumerNotificationsController_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The notification is archived (hidden from the list and the unread count; also reported when the ID does not exist).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer"
+        ]
+      }
+    },
+    "/api/v1/consumer/notifications/{id}/unarchive": {
+      "put": {
+        "operationId": "ConsumerNotificationsController_unarchive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An archived notification is restored (undo).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsumerOperationResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer"
+        ]
+      }
+    },
     "/api/v1/consumer/notifications/read-all": {
       "put": {
         "operationId": "ConsumerNotificationsController_markAllAsRead",
@@ -2157,6 +2517,35 @@
                   "properties": {
                     "data": {
                       "$ref": "#/components/schemas/ConsumerOperationResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer"
+        ]
+      }
+    },
+    "/api/v1/consumer/notifications/push": {
+      "get": {
+        "operationId": "ConsumerNotificationsController_getPushStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Browser push is not available in Studio: always { available: false }.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsumerPushStatusDto"
                     }
                   }
                 }
@@ -2427,6 +2816,38 @@
                   "properties": {
                     "data": {
                       "$ref": "#/components/schemas/ConsumerOperationResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer"
+        ]
+      }
+    },
+    "/api/v1/consumer/bookmarks/index": {
+      "get": {
+        "operationId": "BookmarksController_getIndex",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Every bookmarked teaser with its collections, newest first — without teaser data. The library uses it for the bookmarked state on all screens (the paged list is only what is on screen).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerBookmarkIndexEntryDto"
+                      }
                     }
                   }
                 }
@@ -4278,6 +4699,26 @@
           "collectionIds"
         ]
       },
+      "ConsumerBookmarkIndexEntryDto": {
+        "type": "object",
+        "properties": {
+          "teaserId": {
+            "type": "string",
+            "description": "Bookmarked teaser ID"
+          },
+          "collectionIds": {
+            "description": "Collections the bookmark is in",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "teaserId",
+          "collectionIds"
+        ]
+      },
       "ConsumerBookmarkListDto": {
         "type": "object",
         "properties": {
@@ -4896,9 +5337,29 @@
             "description": "When the goal was created",
             "format": "date-time"
           },
+          "subcategoryId": {
+            "type": "string",
+            "description": "Subcategory (filterset) id of the goal",
+            "example": "health-fitness-activities"
+          },
+          "groupId": {
+            "type": "string",
+            "description": "Category of the goal tree the goal belongs to — Compass and Discover group goals by it (F02). Missing for custom goals.",
+            "example": "health-wellness"
+          },
+          "groupName": {
+            "type": "string",
+            "description": "Name of that category",
+            "example": "Health & Wellness"
+          },
+          "groupPosition": {
+            "type": "number",
+            "description": "Order of the category (tree order, then its place in the tree)",
+            "example": 1003
+          },
           "contentQueries": {
             "type": "array",
-            "description": "Content queries resolved from the goal definition with `{{param}}` placeholders substituted. Returned by the portfolio endpoint only; an empty array when the goal has no template or its definition could not be resolved.",
+            "description": "Content queries resolved from the goal definition with `{{param}}` placeholders substituted. Returned by the portfolio, create, update and progress endpoints; an empty array when the goal has no template or its definition could not be resolved.",
             "items": {
               "type": "object",
               "additionalProperties": true
@@ -5582,13 +6043,18 @@
           },
           "teaserCount": {
             "type": "number",
-            "description": "Teasers indexed for this publisher (highest count across nodes wins)",
+            "description": "Teasers indexed for this publisher (from the search index)",
             "example": 128
           },
           "publishFrequency": {
             "type": "string",
             "description": "How often the publisher publishes",
             "example": "daily"
+          },
+          "itemsLast90Days": {
+            "type": "number",
+            "description": "Items published in the last 90 days (basis of the publishing frequency); profile only, missing when the index cannot be asked",
+            "example": 9
           },
           "registeredAt": {
             "type": "string",
@@ -5676,6 +6142,44 @@
           "id",
           "title",
           "contentType"
+        ]
+      },
+      "ConsumerPushStatusDto": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "description": "Whether this host can send browser push notifications",
+            "example": false
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "VAPID public key for pushManager.subscribe",
+            "nullable": true,
+            "example": null
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Browser push switched on (and a browser subscribed)",
+            "example": false
+          },
+          "subscriptions": {
+            "type": "number",
+            "description": "Subscribed browsers",
+            "example": 0
+          },
+          "promptDue": {
+            "type": "boolean",
+            "description": "Offer browser push now (after the 3rd sign-in)",
+            "example": false
+          }
+        },
+        "required": [
+          "available",
+          "publicKey",
+          "enabled",
+          "subscriptions",
+          "promptDue"
         ]
       },
       "ConsumerReadinessDto": {
@@ -5937,6 +6441,11 @@
             "type": "string",
             "description": "First active filterset of the goal, used as its category; empty when none"
           },
+          "treeId": {
+            "type": "string",
+            "description": "Goal tree the goal was added from",
+            "example": "personal"
+          },
           "name": {
             "type": "string",
             "description": "Goal text as shown to the user"
@@ -6084,17 +6593,23 @@
           "qrContent": {
             "type": "string",
             "description": "String to encode into the QR code — the deep link of a freshly created token",
-            "example": "roadbeat://sync/9f8c…"
+            "example": "roadbeat://sync/9f8c…?studio=https%3A%2F%2Fstudio.example.org"
           },
           "expiresAt": {
             "type": "string",
             "description": "When the encoded token expires",
             "format": "date-time"
+          },
+          "code": {
+            "type": "string",
+            "description": "Short pairing code to type instead of scanning",
+            "example": "K7QM-2XBD"
           }
         },
         "required": [
           "qrContent",
-          "expiresAt"
+          "expiresAt",
+          "code"
         ]
       },
       "ConsumerSyncTokenDto": {
@@ -6104,6 +6619,11 @@
             "type": "string",
             "description": "Single-use pairing token (64 hex characters)"
           },
+          "code": {
+            "type": "string",
+            "description": "Short pairing code to type instead of scanning (same token)",
+            "example": "K7QM-2XBD"
+          },
           "expiresAt": {
             "type": "string",
             "description": "When the token expires (10 minutes after creation)",
@@ -6111,12 +6631,13 @@
           },
           "syncUrl": {
             "type": "string",
-            "description": "Deep link the mobile app opens to claim the package",
-            "example": "roadbeat://sync/9f8c…"
+            "description": "Deep link the mobile app opens to claim the package; `studio` names the Studio to redeem it at",
+            "example": "roadbeat://sync/9f8c…?studio=https%3A%2F%2Fstudio.example.org"
           }
         },
         "required": [
           "token",
+          "code",
           "expiresAt",
           "syncUrl"
         ]
@@ -6749,6 +7270,11 @@
             "type": "string",
             "description": "Goal ID from the user portfolio (optional for all-goals/random)"
           },
+          "query": {
+            "type": "string",
+            "example": "marathon",
+            "description": "Free text within the goal(s): hits must match the text and a content query (not in random mode)"
+          },
           "contentQueries": {
             "description": "Resolved content_queries from goal definition (with substituted params)",
             "type": "array",
@@ -6768,6 +7294,24 @@
           "randomSeed": {
             "type": "number",
             "description": "Seed for random mode (same seed = same order within session)"
+          },
+          "sort": {
+            "type": "string",
+            "example": "date",
+            "enum": [
+              "relevance",
+              "date",
+              "title"
+            ],
+            "description": "Sort of the goal feed (ignored in random mode). Default: relevance."
+          },
+          "sortOrder": {
+            "type": "string",
+            "example": "desc",
+            "enum": [
+              "asc",
+              "desc"
+            ]
           },
           "page": {
             "type": "number"
@@ -6892,6 +7436,29 @@
             "description": "Target Discovery Node URL (omit for federated)"
           }
         }
+      },
+      "UpdateGoalProgressDto": {
+        "type": "object",
+        "properties": {
+          "currentValue": {
+            "type": "number",
+            "example": 3,
+            "description": "Current progress value"
+          },
+          "targetValue": {
+            "type": "number",
+            "example": 10,
+            "description": "Target value (set once, may be changed)"
+          },
+          "unit": {
+            "type": "string",
+            "example": "books",
+            "description": "Unit label"
+          }
+        },
+        "required": [
+          "currentValue"
+        ]
       }
     }
   }

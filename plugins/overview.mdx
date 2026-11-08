@@ -57,6 +57,9 @@ graph TD
   <Step title="Plugin Discovery" icon="search">
     On startup, Studio scans the `PLUGINS_DIR` directory for plugin packages. Each plugin must have a `manifest.json` and an entry point file.
   </Step>
+  <Step title="Database Migrations" icon="database">
+    The SQL migrations of the discovered plugins are applied before Nest initializes any plugin module — see [Plugin database migrations](#plugin-database-migrations).
+  </Step>
   <Step title="License Validation" icon="key">
     The `ROADBEAT_LICENSE_KEY` environment variable is validated offline using an Ed25519 public key embedded in CE. The license token specifies which plugins are allowed.
   </Step>
@@ -76,11 +79,12 @@ Plugins can extend Studio in several ways:
 |-----------|-------------|
 | **NestJS Module** | Register controllers, services, and providers |
 | **Admin Routes** | Add pages to the admin UI |
-| **Menu Items** | Add entries to the sidebar navigation |
+| **Menu Items** | Add entries (localized labels, groups, sort order) to the sidebar navigation |
 | **Editor Extensions** | Add sidebar panels to the content editor |
 | **Dashboard Widgets** | Add widgets to the dashboard |
 | **Event Handlers** | Listen to CE lifecycle events |
-| **Database Tables** | Add tables via migration SQL files |
+| **Database Tables** | Add tables via migration SQL files, applied by the host at startup |
+| **Shared Services** | Inject host services by token — e.g. `CONTENT_SERVICE`, or `CONTENT_SHAPE_SERVICE` to bring stored content data into a type's storage shape |
 
 ## Available Pro Plugins
 
@@ -195,29 +199,69 @@ async checkApproval(event: ContentBeforePublishEvent) {
 
 When an event is prevented, CE throws a `ForbiddenException` with the prevention reason.
 
+## Plugin Database Migrations
+
+Plugins ship their tables as plain SQL files (`migrations/*.sql` in each plugin, plus the shared `packages/plugin-base/migrations`). The Studio API applies them itself — there is no separate migration command to run:
+
+1. On startup, after plugin discovery and **before** Nest initializes any plugin module, the API applies the **plugin-base** migrations first, then each discovered plugin's files in file-name order.
+2. Every applied file is recorded in the `plugin_migrations` table (`plugin`, `name`, `checksum`, `skipped_statements`, `applied_at`). Recorded files are not run again.
+3. Each file runs in **one transaction**, statement by statement with a savepoint per statement. An "already exists" error (or "does not exist" for a `DROP`) means that part was applied earlier — for example on an install that predates the runner — and is skipped, so existing installations are baselined automatically.
+4. Any other error rolls the whole file back, records nothing, and skips that plugin's later migrations. The API still starts; the failure is logged.
+5. A file whose content changed after it was applied is **reported, not re-run** — ship a new migration file instead of editing an applied one.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PLUGIN_MIGRATIONS` | on | `off` skips the step (e.g. when a deploy step applies the files) |
+| `PLUGIN_BASE_MIGRATIONS_DIR` | `<PLUGINS_DIR>/../packages/plugin-base/migrations` | Where the plugin-base migrations live |
+
+<Callout kind="info">
+  Before this runner existed, plugin tables had to be created by hand and a missing one only surfaced at runtime (for example, every content export failed). Upgrading needs no action — existing tables are detected and the files are recorded as applied.
+</Callout>
+
 ## Plugin Manifest
 
-The plugin manifest at `GET /api/v1/plugins/manifest` exposes loaded plugin information to the frontend:
+The plugin manifest at `GET /api/v1/plugins/manifest` exposes loaded plugin information to the frontend (abridged):
 
 ```json
 {
-  "plugins": [
-    {
-      "id": "pro-workflows",
-      "name": "Editorial Workflows",
-      "version": "1.0.0",
-      "adminRoutes": [{ "path": "workflows", "label": "Workflows" }],
-      "menuItems": [{ "section": "content", "label": "Workflows" }],
-      "editorExtensions": [{ "id": "workflow-status", "type": "sidebar-panel" }]
-    }
-  ],
-  "license": {
+  "data": {
+    "edition": "pro",
     "tier": "team",
-    "features": ["pro-workflows", "pro-audit"],
-    "maxUsers": 15,
-    "expiresAt": "2027-01-01T00:00:00Z"
+    "activePluginIds": ["pro-workflows", "pro-audit"],
+    "plugins": [
+      {
+        "id": "pro-workflows",
+        "name": "Editorial Workflows",
+        "version": "0.1.0",
+        "active": true,
+        "adminRoutes": [{ "path": "workflows", "label": { "en": "Workflows", "de": "Workflows" }, "order": 100 }],
+        "menuItems": [
+          {
+            "section": "content",
+            "group": "editorial",
+            "label": { "en": "Workflows", "de": "Workflows" },
+            "icon": "git-branch",
+            "route": "/workflows",
+            "order": 10
+          }
+        ],
+        "menuGroups": [{ "id": "editorial", "label": { "en": "Editorial" }, "order": 20 }],
+        "editorExtensions": [{ "id": "workflow-status", "type": "sidebar-panel", "order": 100 }],
+        "uiBaseUrl": "/api/v1/plugins/pro-workflows/ui",
+        "dependenciesSatisfied": true
+      }
+    ],
+    "limits": { "max_users": 15, "max_api_keys": 10, "max_webhooks": 10 }
   }
 }
 ```
 
-The frontend uses this to conditionally render Pro UI elements.
+The frontend uses this to conditionally render Pro UI elements:
+
+- **Labels are localized.** Menu groups, menu items and breadcrumbs carry a label per locale; the admin UI picks the active interface language, then its base language, then English, then the first available value.
+- **Order is honored.** Every menu item, admin route and editor extension carries `order` (default `100`, lower comes first), and items are sorted by it within their section or group.
+- **Nothing becomes unreachable.** A menu item without a group — or with a group no active plugin defines — is listed in a built-in **More** group instead of being hidden.
+
+## Errors from Plugins
+
+Plugin endpoints answer with the same [error body](/api-reference/overview#error-responses) as CE endpoints, including a stable `code` (see [Error Codes](/api-reference/error-codes)). Plugins are built against their own copy of `@nestjs/common`, so their exception classes are not the host's — the host's exception filter recognizes any HTTP exception by its shape, so a plugin's `404`, `403` or `409` reaches the client with its real status instead of a generic `500`.

@@ -48,21 +48,49 @@ For list endpoints, the `meta` object includes pagination information. For singl
 
 ### Error Responses
 
-Errors return an appropriate HTTP status code with a structured error body. `code` is a stable, machine-readable error code; `requestId` echoes the `X-Request-Id` header for support and log correlation:
+Errors return an appropriate HTTP status code with a structured error body:
+
+```json
+{
+  "statusCode": 409,
+  "error": "Conflict",
+  "code": "CONTENT_TYPE_IN_USE",
+  "message": "Cannot delete content type \"event\": 12 content item(s) still reference it. Delete or reassign the content first.",
+  "params": { "contentTypeId": "event", "count": 12 },
+  "timestamp": "2026-11-08T12:34:56.789Z",
+  "path": "/api/v1/manage/content-types/event",
+  "requestId": "req_a1b2c3"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `statusCode` | The HTTP status, repeated in the body |
+| `error` | The HTTP reason phrase (`Not Found`, `Conflict`, …) |
+| `code` | **Stable, machine-readable error code.** Branch on this, never on `message` |
+| `message` | English, human-readable description. A string for most errors; an array of strings (one per violation) for request-body validation errors |
+| `params` | The values interpolated into `message`, e.g. `{ "count": 12 }` — present only when the error has any. Use them to build a translated message from `code` |
+| `timestamp`, `path` | When and where the error happened |
+| `requestId` | Echoes the `X-Request-Id` header for support and log correlation (`null` when none was sent) |
+| `errors` | Per-field details — only on content validation errors, see below |
+
+Every error thrown by Studio itself carries a **specific** code (`CONTENT_NOT_FOUND`, `USER_EMAIL_TAKEN`, `QUOTA_USER_LIMIT`, …). The few errors without one get a code derived from the status: a request-body validation failure becomes `VALIDATION_FAILED`, other errors `BAD_REQUEST`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `PAYLOAD_TOO_LARGE`, `UNSUPPORTED_MEDIA_TYPE`, `UNPROCESSABLE_ENTITY`, `TOO_MANY_REQUESTS`, `UPSTREAM_UNAVAILABLE` (`502`/`504`), `SERVICE_UNAVAILABLE` or `INTERNAL_ERROR`. Codes are stable across releases and are what the Studio UI translates into the interface language.
+
+<Card title="Error Codes" icon="list" href="/api-reference/error-codes" horizontal={true} cta="Browse codes">
+  Every error code with its HTTP status and meaning, grouped by area.
+</Card>
 
 ```json
 {
   "statusCode": 400,
   "error": "Bad Request",
-  "code": "BAD_REQUEST",
-  "message": ["email must be a valid email"],
-  "timestamp": "2026-08-08T12:34:56.789Z",
+  "code": "VALIDATION_FAILED",
+  "message": ["email must be an email", "name should not be empty"],
+  "timestamp": "2026-11-08T12:34:56.789Z",
   "path": "/api/v1/manage/users",
   "requestId": "req_a1b2c3"
 }
 ```
-
-`message` is a string for most errors and an array of strings for validation errors (one entry per violation).
 
 | Status Code | Meaning |
 |-------------|---------|
@@ -71,9 +99,12 @@ Errors return an appropriate HTTP status code with a structured error body. `cod
 | `403` | Forbidden — insufficient permissions for this action |
 | `404` | Not Found — resource does not exist |
 | `409` | Conflict — duplicate resource (e.g., email already taken) |
+| `415` | Unsupported Media Type — upload type not allowed |
 | `422` | Unprocessable Entity — content failed content-type validation |
 | `429` | Too Many Requests — rate limit exceeded |
 | `500` | Internal Server Error — unexpected server error |
+| `502` | Bad Gateway — an upstream service failed (e.g. a Pro AI provider) |
+| `503` | Service Unavailable — a required service is not configured or unreachable |
 
 **Content validation errors** (creating, updating or publishing content) return `422` when the data does not satisfy its content type — including the cross-field rules (`after_field`, `before_field`), conditional requirements (`requiredIf`, `requiredUnless`) and referenced-item checks (`asset_exists`, `reference_exists`):
 
@@ -83,9 +114,9 @@ The body carries an additional `errors` array — one entry per rule that failed
 {
   "statusCode": 422,
   "error": "Unprocessable Entity",
-  "code": "UNPROCESSABLE_ENTITY",
+  "code": "CONTENT_SCHEMA_INVALID",
   "message": "Content does not match its content type schema",
-  "timestamp": "2026-08-08T12:34:56.789Z",
+  "timestamp": "2026-11-08T12:34:56.789Z",
   "path": "/api/v1/manage/content",
   "requestId": "req_a1b2c3",
   "errors": [
@@ -95,7 +126,9 @@ The body carries an additional `errors` array — one entry per rule that failed
 }
 ```
 
-`errors` appears only on validation failures that produce field-level detail; it is absent from other errors.
+`errors` appears only on validation failures that produce field-level detail; it is absent from other errors. The Studio content editor lists these entries against their field labels.
+
+Plugin endpoints use the same body. Pro plugins build their exceptions against their own copy of NestJS; Studio recognizes them by shape, so a plugin's `404` or `409` keeps its status and code instead of turning into a `500`.
 
 ## Management API
 
@@ -154,13 +187,16 @@ See [Delivery API](/api-reference/delivery-api) for details.
 
 ## Rate Limiting
 
-All endpoints are rate-limited by default:
+All endpoints are rate-limited by default. Each request is counted in one bucket — per **user** for signed-in requests, per **API key** for Delivery API requests, per **IP** otherwise:
 
 | Scope | Limit |
 |-------|-------|
-| **Global** | 100 requests per minute per IP |
+| **Global** | 100 requests per minute per user (JWT), per API key, or per IP (anonymous) |
 | **Auth login** | 5 requests per minute per IP |
 | **Password forgot** | 3 requests per minute per IP |
+| **Password reset** | 5 requests per minute per IP |
+
+Several editors behind the same office NAT each get their own budget. A forged, expired or malformed token counts as anonymous and falls into the IP bucket. The global limit is configurable — see [Configuration → Rate Limiting](/deployment/configuration#rate-limiting).
 
 Rate limit headers are included in responses:
 
@@ -203,7 +239,7 @@ A few high-volume endpoints use cursor pagination instead, replacing `meta` with
 
 ## Filtering
 
-List endpoints accept an allow-listed `filter[field]=value` convention. Each endpoint publishes the exact fields (and types) it will filter on; a field that isn't allow-listed is ignored rather than passed to the database, so filtering can never be used to probe unindexed or unintended columns.
+List endpoints accept an allow-listed `filter[field]=value` convention. Each endpoint publishes the exact fields (and types) it will filter on. A field that isn't allow-listed is **rejected** with `400 QUERY_FILTER_UNKNOWN` (the message lists the allowed fields), never passed to the database, so filtering can never be used to probe unindexed or unintended columns. Likewise, a malformed value is rejected (`QUERY_FILTER_NOT_BOOLEAN`, `QUERY_FILTER_NOT_NUMBER`, `QUERY_FILTER_VALUE_INVALID`), as is a `sortBy` outside the endpoint's sortable columns (`QUERY_SORT_INVALID`).
 
 ```bash
 # Only active API keys

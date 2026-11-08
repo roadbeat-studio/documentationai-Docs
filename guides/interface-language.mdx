@@ -40,13 +40,52 @@ The selected language is also applied to the page's `lang` attribute, which help
 
 ## Discovery screens follow your language
 
-The goal-driven discovery screens inside Studio — **Compass**, **Discover**, **Publishers**, and **Bookmarks** — are built on the shared roadbeat consumer experience, which carries its own translations across all 24 EU languages.
+The goal-driven discovery area inside Studio is built on the shared roadbeat consumer experience, which carries its own translations across all 24 EU languages. Every screen of it follows the Studio interface language:
+
+- **Compass** — horizons, goal cards, categories and the goal editor
+- **Discover** — cards in every layout, filters, sort, pagination, calendar, map, the content reader and "Why am I seeing this?"
+- **Publishers**, **Notifications** and **Bookmarks**
+- **Profile** and **Settings**, **My Data** (export and account deletion), **Get the app**
+- **Help & FAQ**, **About**, the cookie banner and error pages
+
+Dates use the locale's own format and relative times ("vor 5 Minuten") come from the browser's `Intl` APIs instead of fixed English texts.
+
+Texts that come from other roadbeat services are requested in your language too: content type names and filter values from the Schema Registry, goal and goal-category texts and region names from the Context Directory, and multilingual teaser titles from the Discovery Nodes. Where a service has no translation, the English text is shown.
 
 <Callout kind="tip">
-  When you switch the Studio interface language, these embedded discovery screens switch with it automatically — you only pick a language once. The same consumer experience also runs standalone in the [roadbeat Web Client](/guides/consumer-features), where its language follows that app's own switcher.
+  When you switch the Studio interface language, the discovery screens switch with it automatically — you only pick a language once. The same consumer experience also runs standalone in the [roadbeat Web Client](/guides/consumer-features), where its language follows that app's own switcher.
 </Callout>
 
-Installed **Pro plugins** follow the interface language the same way — switch once and every plugin UI updates live. See the Pro docs' [Languages](https://studio-pro-docs.roadbeat.net/languages) page.
+Installed **Pro plugins** follow the interface language the same way — switch once and every plugin UI updates live, including plugin menu entries, breadcrumbs and filter names. See the Pro docs' [Languages](https://studio-pro-docs.roadbeat.net/languages) page.
+
+## Counts read correctly in every language
+
+Counted texts ("1 file", "5 files") use the plural rules of the interface language rather than English singular/plural. Studio picks the right form with the browser's `Intl.PluralRules`, so languages with more than two forms are handled:
+
+| Language | Forms used |
+|----------|-----------|
+| English, German, most others | one / other |
+| Polish | one / few / many |
+| Czech, Slovak, Croatian, Lithuanian, Romanian | one / few / other |
+| Slovenian | one / two / few / other |
+| Latvian | zero / one / other |
+| Irish, Maltese | all five |
+
+Numbers inside these texts are formatted for the locale (`1.234 Dateien`). Portuguese follows European Portuguese rules.
+
+## Error messages in your language
+
+Every error the Studio API returns carries a stable, machine-readable `code` (for example `CONTENT_SLUG_TAKEN`) plus the values it mentions (`params`). The admin UI translates the error by its code into the interface language — instead of showing the API's English message — and names what went wrong ("This slug is already used by another item of this type and language.") rather than a generic "Save failed". If a code has no translation yet, the API's English message is shown.
+
+See [Error Codes](/api-reference/error-codes) for the full list.
+
+## Tone and terminology
+
+The translations follow one house style per language:
+
+- **Formal address** — the UI addresses users formally wherever the language distinguishes it, e.g. German *Sie*, Dutch *u*, Spanish *usted*, Hungarian *Ön*, Romanian *dumneavoastră* and formal Estonian — buttons and error messages included.
+- **Local abbreviations for "AI"** where the language's software uses one — for example Croatian *UI*, Bulgarian *ИИ*, Romanian and Maltese *IA*, Greek *ΤΝ*.
+- **Consistent terms** — Spanish uses *Configuración* for Settings throughout; German uses paired or neutral forms where people are addressed; Dutch uses *inhoud* / *inhoudstype* for content / content type.
 
 ## Available languages
 
@@ -70,8 +109,27 @@ Because Studio is open source and self-hostable, operators can add an interface 
   </Step>
 </Steps>
 
+Counted strings are objects of CLDR plural categories rather than plain strings. Provide every category your language uses (an unused one falls back to `other`):
+
+```json
+{
+  "assets": {
+    "library": {
+      "fileCount": {
+        "one": "{{count}} plik",
+        "few": "{{count}} pliki",
+        "many": "{{count}} plików",
+        "other": "{{count}} pliku"
+      }
+    }
+  }
+}
+```
+
+Error messages live under `errors.codes.<CODE>` and use the same `{{param}}` placeholders as the API's `params`.
+
 <Callout kind="tip">
-  Keep the key structure of every language file identical to `en.json`. Missing keys fall back to the default language, and Studio's build validates that every translation key referenced in the UI exists.
+  Keep the key structure of every language file identical to `en.json`. Missing keys fall back to the default language. Run `pnpm --filter web i18n:check` to verify key parity for the admin UI and the consumer catalogs — it fails on any missing or extra key (`i18n:check:strict` also flags strings left identical to English).
 </Callout>
 
 ## Related

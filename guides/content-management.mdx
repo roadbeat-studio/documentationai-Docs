@@ -68,6 +68,12 @@ To publish a content item:
   Publishing also triggers the **publishing pipeline** which distributes signed teasers to Discovery Nodes. See [Publishing](/guides/publishing) for details.
 </Callout>
 
+Publishing validates strictly against the content type's schema. If the server rejects the item, the editor lists each problem against its field — see [Content Editor → Validation](/editors/content-editor#validation).
+
+### Scheduled publishing (Pro)
+
+With the `pro-scheduling` plugin, you can schedule a publish or unpublish from the editor sidebar, or group items into a scheduled **release**. The scheduler runs these actions in the background on behalf of your organization, with the same validation and Discovery Node distribution as a manual publish; scheduled items and releases also appear in the activity feed.
+
 ### Unpublishing
 
 Click **Unpublish** to take content offline. The status reverts to `draft` and the content is removed from the Delivery API. If the content was distributed to Discovery Nodes, a withdrawal request is sent.
@@ -113,6 +119,10 @@ Content-Type: application/json
   24 hours before expiry, so they can extend or renew it in time. Changing the
   expiry re-arms that warning.
 - Set `expiresAt` to `null` on update to clear a previously scheduled expiry.
+
+### Deleting
+
+Deleting an item removes it permanently. If it was published, Studio also **withdraws its teasers from every Discovery Node** it was distributed to and removes it from your [Content Pod](/guides/content-pod), so deleted content doesn't stay discoverable. Use [Archive](#archiving) instead if you may need the item again.
 
 <Callout kind="info">
   Expiration enforcement runs in Community Edition — a CE field that takes effect
@@ -201,6 +211,15 @@ The content list supports powerful filtering:
 | **Search** | Full-text search across title and fields |
 | **Created By** | Filter by author |
 | **Date Range** | Filter by creation or modification date |
+
+Only enabled content types are offered in **New Content**; content of a type that was disabled under **Settings → Content Types** stays listed and editable. See [Content Types → Enabling and disabling](/guides/content-types#enabling-and-disabling).
+
+### Saved Views (Pro)
+
+With the `pro-saved-views` plugin, the content list can store filter combinations as named views:
+
+- **Save view** — saves the current filters, search text, sorting, page size and view mode under a name. No filter JSON needed.
+- **Apply a view** — click its chip above the list. Views created on the **Saved Views** page store their filters under `config.filters`; the list applies those as well as views with top-level filters.
 
 ### Content Type-Specific Filters
 

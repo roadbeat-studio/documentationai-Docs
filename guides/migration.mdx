@@ -1,6 +1,6 @@
 ---
 title: Migration
-description: Migrate data between Studio instances using the built-in Migration Wizard with export progress tracking and conflict resolution.
+description: Migrate data between Studio instances with the Migration Wizard, and repair legacy content so it matches its content type schema.
 ---
 
 ## Overview
@@ -130,6 +130,58 @@ The Migration Wizard uses these API endpoints under the hood:
 
 <Callout kind="info">
   All endpoints require JWT authentication. The organization context is derived from the authenticated user's token.
+</Callout>
+
+## Repairing content to match its schema
+
+Studio [enforces the registry schemas](/guides/content-types#schema-enforcement) on create and publish. Demo content and content written by older Studio versions may not conform, which means it can no longer be published. Self-hosters can repair such items **in place** with a re-runnable script.
+
+What the script does, per item:
+
+1. Repairs **mojibake** — UTF-8 text that was once read as Windows-1252 (`NÃ¤chte` → `Nächte`)
+2. Stamps the Studio-owned `identifier` block, exactly as publishing does (non-v4 ids are brought into v4 shape where the schema requires it)
+3. Moves a legacy `data.classification` into the type's taxonomy block and `data.hero_image` to the type's hero-image field
+4. Repairs the rest with a **schema-guided repair** — renames, type coercion, enum mapping, nested moves, ISO codes for country names (`Germany` → `DE`), and missing required values filled from context where possible (organization name, the item's own texts, slug and dates); values that still need a human are marked for review in the report
+
+Only items that end up **valid** are written. Ids, versions, links and `updated_at` stay unchanged and nothing is deleted.
+
+<Steps>
+  <Step title="Check conformance (optional)">
+    See how much content of a type conforms to its current schema:
+
+    ```bash
+    GET /api/v1/manage/content-types/:id/conformance
+    ```
+  </Step>
+  <Step title="Dry run">
+    The script is **dry-run by default**. From `apps/api` in a Studio checkout with access to the database:
+
+    ```bash
+    npx ts-node scripts/migrate-content-to-schema.ts --org <organization-id> --type <content-type-id>
+    ```
+
+    It writes a report of every change (default `logs/content-migration-report.txt` at the root of the Studio checkout) with a summary: already valid, repaired, needing review, still invalid.
+  </Step>
+  <Step title="Apply">
+    Review the report, then run again with `--apply`:
+
+    ```bash
+    npx ts-node scripts/migrate-content-to-schema.ts --apply --org <organization-id>
+    ```
+
+    Before the first write, the original data of every item to be changed is saved next to the report (`…-backup-<timestamp>.json`). All writes run in **one transaction**.
+  </Step>
+</Steps>
+
+| Option | Description |
+|---|---|
+| `--apply` | Write the repairs (without it: dry run) |
+| `--org <id>` | Limit to one organization |
+| `--type <id>` | Limit to one content type |
+| `--report <file>` | Report path (the backup is written next to it) |
+
+<Callout kind="tip">
+  The script is safe to re-run: items that are already valid are left alone, so a second run should report every item as valid.
 </Callout>
 
 ## Best Practices

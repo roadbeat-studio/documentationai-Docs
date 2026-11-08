@@ -46,8 +46,37 @@ Content-Type: application/json
 ```
 
 <Callout kind="info">
-  The login endpoint is rate-limited to **5 requests per minute** per IP to prevent brute-force attacks.
+  The login endpoint is rate-limited to **5 requests per minute** per IP to prevent brute-force attacks. In local development only (`NODE_ENV=development`), logins from the same machine skip this limit so test runs can sign in repeatedly — see `LOGIN_THROTTLE_LOOPBACK_BYPASS` in [Configuration](/deployment/configuration#rate-limiting).
 </Callout>
+
+### Who can sign in
+
+Sign-in also depends on the **organization's status**. The same rule applies to login, organization selection and switching, token refresh, password reset, SSO and every authenticated request:
+
+| Organization status | Sign-in |
+|---------------------|---------|
+| `active` | Permitted |
+| `onboarding` | Permitted — setup is still in progress (e.g. an organization just created through the onboarding flow) |
+| `suspended` | Denied |
+| `archived` | Denied |
+| `pending` | Denied — awaiting configuration |
+
+A denied organization answers `401 ORG_DEACTIVATED` when you sign in to it by its slug, refresh a token, or call the API with an existing token.
+
+### Login errors
+
+Failed logins return a coded error, so a client can tell the user what actually happened:
+
+| Status | Code | Meaning |
+|--------|------|---------|
+| `401` | `AUTH_INVALID_CREDENTIALS` | Wrong email or password — also when no active account in an organization that may sign in matches (deliberately indistinguishable) |
+| `401` | `AUTH_ACCOUNT_LOCKED` | Locked after too many failed attempts (see below) |
+| `401` | `ORG_DEACTIVATED` | Signing in to a specific organization that is suspended, archived or pending |
+| `401` | `AUTH_PASSWORD_LOGIN_BLOCKED` | Password sign-in is not allowed for this account (e.g. SSO is enforced) |
+| `401` | `AUTH_CAPTCHA_FAILED` | CAPTCHA check failed (when a CAPTCHA provider is configured) |
+| `429` | `TOO_MANY_REQUESTS` | Login rate limit reached |
+
+The Studio login screen maps these — and network failures, gateway errors (`502`/`504`) and unexpected server errors — to separate messages in the interface language. Only a real credentials error says "Invalid email or password".
 
 ### Account Lockout
 
@@ -413,7 +442,7 @@ Authorization: Bearer YOUR_JWT_TOKEN
 </Callout>
 
 <Callout kind="info">
-  CE supports up to **2 API keys** per organization. Pro has unlimited API keys.
+  CE supports up to **2 active API keys** per organization. Pro has unlimited API keys. Only **active** keys count against the limit — a revoked key no longer blocks creating a new one, and re-activating a revoked key checks the limit again.
 </Callout>
 
 ### Using API Keys
@@ -444,6 +473,8 @@ Each API key has scoped permissions:
 | `content.read` | List and get published content |
 | `content-types.read` | List and get content type schemas |
 | `assets.read` | List and get asset metadata |
+
+Scopes are accepted in either notation — the dot form shown above (`content.read`) or the colon form (`content:read`) — when creating or updating a key, and a key granted one form satisfies endpoints that require the other. An unknown scope is rejected with `400 API_KEY_PERMISSION_INVALID`, whose message lists the valid scopes.
 
 ### Managing API Keys
 
@@ -503,7 +534,13 @@ DELETE /api/v1/manage/api-keys/:id
 
 <Expandable title="429 Too Many Requests — Rate limit exceeded" default-open="false">
   - Wait for the rate limit window to reset (check `X-RateLimit-Reset` header)
-  - The login endpoint has a stricter limit of 5 requests/minute
-  - The forgot-password endpoint is limited to 3 requests/minute
+  - Signed-in requests are limited per user (100/minute by default), not per IP — colleagues behind the same network do not use up your budget
+  - The login endpoint has a stricter limit of 5 requests/minute per IP
+  - The forgot-password endpoint is limited to 3 requests/minute per IP
   - Consider implementing exponential backoff in your client
+</Expandable>
+
+<Expandable title="401 Unauthorized — Organization is deactivated (ORG_DEACTIVATED)" default-open="false">
+  - The organization is `suspended`, `archived` or `pending` — a platform admin must reactivate it
+  - Organizations in `onboarding` status can sign in; if yours cannot, check its status in Platform Admin
 </Expandable>

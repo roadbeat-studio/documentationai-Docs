@@ -21,15 +21,27 @@ The fastest way to add content types is to import them from the central **Schema
     Click the **Import from Registry** button in the top-right corner. This opens the Registry Browser overlay.
   </Step>
   <Step title="Browse and search">
-    Browse by category (e.g., News & Publications, Events & Activities) or use the search bar. Each content type shows its description, category, and version.
+    Browse by category (e.g., News & Publications, Events & Activities) or use the search bar. Each content type shows its description, category, and version. Titles, descriptions and category labels follow your [interface language](/guides/interface-language).
   </Step>
   <Step title="Import">
     Click **Import to Studio** on the content type you want. Studio fetches the metadata schema, form schema, and teaser schema, then creates the content type locally.
   </Step>
 </Steps>
 
+### Installed types and re-importing
+
+Types that are already installed in your organization are marked **Installed** with their installed version (e.g. *Installed · v1.0.1*) in the Registry Browser instead of offering a second import. To pull a newer registry version, click **Re-import**: Studio asks for confirmation first, because a re-import replaces the type's metadata, form and teaser schema with the registry version — **local schema changes are lost**. Existing content of the type is kept.
+
+### What an import brings along
+
+Registry metadata schemas reference shared definitions (organization, SEO, media, taxonomy, …) that live in separate registry documents. On import, Studio **embeds** every common schema a type references — also transitively — inside the type's own schema under `$defs["rb-common:<id>"]`, keeping each document's `$id`. The type's `$ref`s resolve against these embedded copies, so validation works offline and never needs the registry at runtime. See [Schema enforcement](#schema-enforcement).
+
 <Callout kind="info">
-  The Schema Registry connection is configured via the `SCHEMA_REGISTRY_URL` environment variable (default: `http://localhost:3200`).
+  The Schema Registry connection is configured via the `SCHEMA_REGISTRY_URL` environment variable (default: `http://localhost:3200`). Studio checks reachability against the registry's `/health` endpoint (`GET /api/v1/manage/schema-registry/ping`).
+</Callout>
+
+<Callout kind="tip">
+  Type lists, the sidebar, the content filters and **Settings → Content Types** load **all** installed types — there is no 50/100 cap, so an organization with every registry type plus local types sees all of them.
 </Callout>
 
 ## Content Type Builder
@@ -122,6 +134,21 @@ Validation failures come back as a single `422 Unprocessable Entity` with a per-
 
 Invalid **drafts** are tolerated where the content type allows it, but **publishing is always strict** — invalid content (including dangling asset/reference ids) can never go live. The content type definition itself is also validated when you save it: an uncompilable schema, an invalid version, or a form/teaser mapping that points at a missing property is rejected with a clear error.
 
+In the content editor, a rejected save or publish lists every error against the **label of the field** it belongs to, so editors can fix the item without reading JSON paths — see [Content Editor → Validation](/editors/content-editor#validation).
+
+### Schema enforcement
+
+Registry content types are validated against their **full** metadata schema, including the common definitions embedded at import:
+
+- **Create** validates the data as it is stored — after Studio has stamped the Studio-owned `identifier` block (`<type>_id`, `slug`, `uuid`) from the item's id and slug, so editors never have to fill it in.
+- **Publish** stamps a missing identifier on older content, persists it, and then validates strictly.
+- A `$ref` that still cannot be resolved is neutralized and logged; **the rest of the schema is still enforced** — validation is never silently skipped.
+- Each validation compiles the schema independently, so the same registry type in a second organization, or an updated type, is validated just like the first.
+
+<Callout kind="info">
+  Content written before schemas were enforced may not conform. Self-hosters can repair it with the content-to-schema migration script — see [Migration → Repairing content to match its schema](/guides/migration#repairing-content-to-match-its-schema).
+</Callout>
+
 <Callout kind="tip">
   **Inheritance & composition.** A content type can `extends` one or more abstract base types and apply reusable `mixins`, so shared field bundles (SEO, publishable metadata, geolocation) live in one place. The effective schema is computed by merging bases → mixins → own fields → overrides; circular graphs are rejected and abstract types can't hold content.
 </Callout>
@@ -171,6 +198,34 @@ The form schema controls how the content editor renders. It supports:
 }
 ```
 
+Registry form schemas address their fields with **JSONPath-style** paths (`$.time.start`); Studio normalizes these to plain property paths for form fields and teaser mappings.
+
+### Storage paths
+
+Registry forms give fields a form-local name (`field_id`, e.g. `quote_text`) and declare where the value lives in the metadata schema (`schema_path`, e.g. `$.content.text`). Studio stores every value **at its `schema_path`**, so stored content always has the shape the metadata schema describes.
+
+When a content type is saved or imported, its definition is normalized once:
+
+- each field's `field_id` becomes its storage path; the registry name is kept as `form_field_id`
+- `….code` paths of `{ code, label }` options point at the whole object
+- every reference to a field — layout, field groups, conditions, cross-field and business rules, teaser mapping, slug source and display field — is rewritten to the storage path
+- the form schema is marked with `"x-studio-storage": "schema_path/1"`; normalizing is idempotent
+
+```json
+{
+  "x-studio-storage": "schema_path/1",
+  "fields": [
+    { "field_id": "content.text", "form_field_id": "quote_text", "schema_path": "$.content.text" }
+  ]
+}
+```
+
+At startup, Studio normalizes every content type that lacks the marker and moves existing content **and its version history** to the storage paths (bare option codes become `{ code, label }` objects). Re-importing or updating a type that relocates fields migrates that type's content the same way.
+
+<Callout kind="tip">
+  Set `CONTENT_SHAPE_MIGRATION=off` to skip the startup pass (for example while debugging a large instance). Saving a content type still normalizes it.
+</Callout>
+
 ## Content Type Categories
 
 Content types are organized into 14 categories:
@@ -198,6 +253,21 @@ Content types are organized into 14 categories:
 
 Content types can be modified after creation. Changes to the schema affect how existing content is validated — be careful when removing or renaming fields that already have data.
 
+### Enabling and disabling
+
+Admins can switch individual content types off for their organization under **Settings → Content Types**. A disabled type:
+
+- is hidden from the sidebar and from the **New Content** menu, so no new items of that type can be created
+- keeps all existing content — it stays listed in the content list and remains editable
+- stays installed; switching it back on restores it immediately
+
+The switch stores `settings.disabled` on the content type. The same is available via the API (admin role):
+
+```bash
+POST /api/v1/manage/content-types/:id/disable
+POST /api/v1/manage/content-types/:id/enable
+```
+
 ### Deleting
 
 <Callout kind="alert">
@@ -212,9 +282,20 @@ Content types are available via the Management API:
 # List all content types
 GET /api/v1/manage/content-types
 
-# Get a specific content type
-GET /api/v1/manage/content-types/:typeId
+# Get a specific content type (full schema)
+GET /api/v1/manage/content-types/:id
+
+# Disable / enable a type for your organization (admin)
+POST /api/v1/manage/content-types/:id/disable
+POST /api/v1/manage/content-types/:id/enable
+
+# Import a type from the Schema Registry (admin)
+POST /api/v1/manage/schema-registry/import/:typeId
 ```
+
+<Callout kind="info">
+  To keep the list small, `GET /manage/content-types` leaves out the embedded registry common schemas (`$defs["rb-common:*"]`). `GET /manage/content-types/:id` returns the complete schema, as used for validation.
+</Callout>
 
 And via the Delivery API for frontends:
 

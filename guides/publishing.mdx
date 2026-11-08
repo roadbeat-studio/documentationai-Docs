@@ -35,6 +35,39 @@ When you publish content, Studio executes this pipeline:
   </Step>
 </Steps>
 
+## How Teaser Fields Are Filled
+
+The teaser generator reads each field from the content type's **teaser mapping** (the `teaserSchema` the Schema Registry ships with the type) first, and only then falls back to well-known field names. Mapped paths may be written in plain form (`content.text`) or JSONPath form (`$.content.text`).
+
+### Classification
+
+| Teaser field | Source, in order |
+|---|---|
+| `primary_category` | The mapped primary category → the mapped `categories` (first entry) → legacy `data.classification` / `data.category` of older content → the type's **registry category** → the content type id |
+| `categories`, `topics`, `tags` | The mapped fields, merged with the legacy `data.classification` keys of older content |
+
+Category values may be plain codes or `{ code, label }` objects — the teaser always carries the code.
+
+<Callout kind="info">
+  Discovery Nodes reject a teaser without a primary category (`MISSING_PRIMARY_CATEGORY`). Because the generator falls back to the type's registry category and finally to the type id, every teaser Studio sends has one — content types whose classification lives in their own fields or in the common taxonomy block are classified correctly.
+</Callout>
+
+### Dates
+
+| Teaser field | Source, in order |
+|---|---|
+| `date_published` / `date_modified` | The content item's publish and update timestamps |
+| `event_date` | The mapped `temporal.event_date` path → `dates.event_date` → `schedule.start_date` → `startDate` → `dates.start_date` |
+| `expires_at` | The mapped `temporal.expires_at` path → `dates.expires_at` — **nothing else** |
+
+<Callout kind="alert">
+  An end date (for example `dates.end_date` of a festival) never becomes `expires_at` on its own. Discovery Nodes hide expired teasers from filtered searches, so an end date used as expiry would make past events disappear. Map `temporal.expires_at` explicitly if a type's content should expire.
+</Callout>
+
+### Geography
+
+Country values in content may be ISO codes or English country names. The teaser's `geographic.country_codes` always holds **ISO 3166-1 alpha-2** codes: two-letter codes are upper-cased (`de` → `DE`), names are converted (`Germany` → `DE`), duplicates are dropped, and values that cannot be resolved are kept as they are. This keeps country filters on Discovery Nodes — such as the Web Client's "Only from my country" — complete.
+
 ## Discovery Nodes
 
 Discovery Nodes are the search infrastructure of the roadbeat network. You configure which nodes to publish to in **Settings → Discovery Nodes**.
@@ -122,6 +155,8 @@ If distribution to a Discovery Node fails, you can retry manually:
 POST /api/v1/manage/publishing/content/:id/retry/:nodeId
 ```
 
+The content must belong to your organization: a content id of another organization answers `404 CONTENT_NOT_FOUND`, and `404 PUBLISH_RECORD_NOT_FOUND` means there is no failed publication of that content on that node.
+
 Studio also supports automatic retries with configurable backoff:
 
 ```bash
@@ -149,6 +184,20 @@ The publishing pipeline is triggered automatically when:
 - Content is unpublished or deleted (sends withdrawal to Discovery Nodes)
 
 This is handled by the `PublishingEventListener` which listens to `content.afterPublish`, `content.afterUnpublish`, and `content.afterDelete` events.
+
+<Callout kind="info">
+  **Deleting content withdraws its teasers.** Studio reads the item's publish records before the delete and withdraws the teaser from every node it was published to, so deleted content does not stay discoverable. A withdrawal that fails is logged with its teaser id. If the organization has a Content Pod, the item is removed from the pod as well.
+</Callout>
+
+## Publisher Profile ("About" Text)
+
+Discovery Nodes show a publisher profile for every organization. Its **About** text comes from the organization's **description** in **Settings → Organization**:
+
+- When the description changes, Studio sends it to all of the organization's **enabled** Discovery Nodes, labelled with the organization's default language (for example `de` for `de-AT`; `en` if none is set). An empty description clears the About text.
+- Before writing, Studio asks each node whom its publisher key belongs to (`GET /api/v1/publishers/me` on the node) and updates the profile (`PUT /api/v1/publishers/me/description`) only when the key belongs to this organization. Another organization's save can therefore never change your profile.
+- Failures are logged per node and do not block saving the organization settings.
+
+The description is also returned by Studio's consumer publisher API, so the profile shows the same text in the Discover area.
 
 ## API Reference
 

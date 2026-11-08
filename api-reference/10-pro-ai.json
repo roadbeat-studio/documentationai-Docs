@@ -140,7 +140,7 @@
       "post": {
         "operationId": "AiController_chat",
         "summary": "Streaming chat completion (SSE; supports tool calls)",
-        "description": "Server-Sent Events, **not** a JSON body — so the standard `{ data }` envelope does not apply and no typed response schema is declared. `Content-Type: text/event-stream`; each event is `data: <ChatChunk JSON>`, where a chunk carries `delta` / `toolCalls` / `finishReason` / `usage` / `model`. The FIRST chunk carries only `provenance` (IMP-AI-07: which provider, residency, model, and whether the payload was redacted) before any tokens flow. The stream ends with `data: [DONE]`; a mid-stream failure emits `event: error` with `{ message }` and then closes.",
+        "description": "Server-Sent Events, **not** a JSON body — so the standard `{ data }` envelope does not apply and no typed response schema is declared. `Content-Type: text/event-stream`; each event is `data: <ChatChunk JSON>`, where a chunk carries `delta` / `toolCalls` / `finishReason` / `usage` / `model`. The FIRST chunk carries only `provenance` (IMP-AI-07: which provider, residency, model, and whether the payload was redacted) before any tokens flow. The stream ends with `data: [DONE]`; a mid-stream failure emits `event: error` with `{ code, message, params? }` and then closes.",
         "parameters": [],
         "requestBody": {
           "required": true,

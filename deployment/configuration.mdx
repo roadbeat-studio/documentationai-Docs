@@ -7,6 +7,10 @@ description: Environment variables and configuration options for roadbeat Studio
 
 roadbeat Studio is configured primarily through **environment variables** set in a `.env` file or via your deployment platform. All configuration is validated on startup using Joi schemas — missing required variables cause the application to fail fast with a clear error message.
 
+<Callout kind="info">
+  In a source checkout, the API reads exactly **one** `.env` file: the one at the root of the `studio` workspace (copy `.env.example` there). A per-app `apps/api/.env` is not read. Real environment variables (Docker, CI) always take precedence over values from `.env`.
+</Callout>
+
 ## Required Variables
 
 These variables must be set for Studio to start:
@@ -110,16 +114,29 @@ Redis is used for caching, session storage, and BullMQ job queues.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `SCHEMA_REGISTRY_URL` | `http://localhost:3200` | Schema Registry endpoint |
-| `DISCOVERY_NODE_URLS` | `http://localhost:3300` | Comma-separated Discovery Node URLs |
+| `DISCOVERY_NODE_URLS` | `http://localhost:3300` | Comma-separated Discovery Node URLs (also the nodes the consumer Discover screens search) |
+| `DISCOVERY_NODE_PUBLISHER_KEY` | — | Publisher key sent as `X-Publisher-Key` with every teaser push. The Discovery Node must have a `publishers` row whose `api_key_hash` is the SHA-256 of this key — without it every push is rejected with `401` |
 | `PUBLISHING_MAX_RETRIES` | `3` | Max retry attempts for failed publishes |
+
+## Content Types
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CONTENT_SHAPE_MIGRATION` | on | At startup, Studio normalizes every content type not yet marked as storing its fields at their schema path (`x-studio-storage: schema_path/1`) and moves that type's existing content and version history to the storage paths. The pass is idempotent. Set `off` to skip it — e.g. when you run it as a separate deploy step |
 
 ## Consumer Features
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CONTEXT_DIRECTORY_URL` | `http://localhost:3100` | Context Directory endpoint |
-| `CONTEXT_DIRECTORY_TIMEOUT` | `5000` | CD request timeout in ms |
+| `CONTEXT_DIRECTORY_TIMEOUT` | `10000` | CD request timeout in ms |
+| `CONTEXT_DIRECTORY_SERVICE_KEY` | dev: `roadbeat-dev-cd-service-key` | Shared key Studio sends as `X-Service-Key` to the Context Directory's system-to-system endpoints (`POST /auth/register-or-link`). **Required in production** — there is no default there, and it must equal the Context Directory's `CD_SERVICE_KEY` |
 | `FEDERATION_TIMEOUT_MS` | `5000` | Federated search timeout |
+| `DISCOVER_DEBUG` | `false` | Development only: adds the raw Discovery Node requests (`_debug`) to consumer search responses, shown as a debug panel in Discover. Leave off in production |
+
+<Callout kind="alert">
+  The Context Directory refuses `register-or-link` without a valid service key (it fails closed), so consumer sign-up and account linking stop working on a production node that does not set `CONTEXT_DIRECTORY_SERVICE_KEY`. Set the same value on Studio and on the Context Directory.
+</Callout>
 
 ## CDN (Optional)
 
@@ -148,6 +165,10 @@ Redis is used for caching, session storage, and BullMQ job queues.
 |----------|---------|-------------|
 | `ROADBEAT_LICENSE_KEY` | — | Ed25519-signed license JWT |
 | `PLUGINS_DIR` | `./plugins` | Directory containing plugin packages |
+| `PLUGIN_MIGRATIONS` | on | The API applies the SQL migrations of the discovered plugins at startup, before the plugin modules initialize. Set `off` if a deploy step applies them instead |
+| `PLUGIN_BASE_MIGRATIONS_DIR` | `<PLUGINS_DIR>/../packages/plugin-base/migrations` | Location of the shared plugin-base migrations, which run before any plugin's own files |
+
+See [Plugin System → Plugin database migrations](/plugins/overview#plugin-database-migrations) for how applied files are tracked.
 
 ### Pro plugin secrets
 
@@ -179,6 +200,10 @@ Redis is used for caching, session storage, and BullMQ job queues.
 |----------|---------|-------------|
 | `LOG_LEVEL` | `debug` | Pino log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` |
 | `LOG_PRETTY` | `true` | Pretty-print logs (disable in production) |
+| `CRASH_LOG_FILE` | dev: `studio/logs/api-crash.log` | File that uncaught exceptions, unhandled rejections and fatal bootstrap errors are appended to (with stack). Outside production it defaults to `logs/api-crash.log` in the workspace; in production a file is written only when you set this |
+| `CRASH_ON_UNHANDLED_REJECTION` | `false` | Unhandled promise rejections are logged and the API keeps running. Set `true` to exit with code 1 instead (Node's default behaviour) |
+
+See [Monitoring → Crash logging](/deployment/monitoring#crash-logging).
 
 ## Multi-Tenancy
 
@@ -196,10 +221,23 @@ Redis is used for caching, session storage, and BullMQ job queues.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `THROTTLE_TTL` | `60000` | Rate limit window in ms |
-| `THROTTLE_LIMIT` | `100` | Max requests per window per org+IP |
+| `THROTTLE_LIMIT` | `100` | Max requests per window per bucket (see below) |
+| `LOGIN_THROTTLE_LOOPBACK_BYPASS` | `true` | Development only: with `NODE_ENV=development`, logins from this machine skip the 5-per-minute login limit so E2E runs and scripts can sign in repeatedly. Set `false` to keep the limit. Never applies outside `development` |
+
+Each request is counted in exactly one bucket:
+
+| Request | Bucket |
+|---------|--------|
+| Delivery API (API key) | `apikey:{keyId}` — one budget per key, using the key's own rate limit |
+| Signed in (JWT) | `org:{orgId}:user:{userId}` — one budget per user |
+| Anonymous, or an invalid/expired token | client IP |
 
 <Callout kind="info">
-  Rate limiting is **org-aware**. The throttle key is `org:{orgId}:{ip}` for authenticated requests, so one organization's traffic cannot exhaust another's rate limit budget.
+  Rate limiting is **per user** for signed-in traffic. The global guard verifies the bearer token itself (with the current and previous JWT secret) before any controller runs, so several editors behind one NAT or office proxy no longer share a single budget — a page load in Studio makes 7–10 API calls. Forged, expired or malformed tokens count as anonymous and fall back to the IP bucket.
+</Callout>
+
+<Callout kind="tip">
+  The loopback bypass checks the **socket** peer, not `req.ip`, and every `X-Forwarded-For`, `X-Real-IP` and `Forwarded` address must be loopback too. The `NODE_ENV` gate matters: behind a reverse proxy every production request arrives from a loopback peer.
 </Callout>
 
 ## Machine Translation (Optional)
@@ -284,9 +322,15 @@ STORAGE_PROVIDER=local
 # Publishing
 SCHEMA_REGISTRY_URL=http://localhost:3200
 DISCOVERY_NODE_URLS=http://localhost:3300
+DISCOVERY_NODE_PUBLISHER_KEY=your-publisher-key
 
 # Consumer
 CONTEXT_DIRECTORY_URL=http://localhost:3100
+# Required in production; must equal the Context Directory's CD_SERVICE_KEY
+# CONTEXT_DIRECTORY_SERVICE_KEY=change-this-to-a-long-random-string
+
+# Crash logging (optional)
+# CRASH_LOG_FILE=/var/log/studio/api-crash.log
 
 # Federation (optional — enables ActivityPub)
 # FEDERATION_GATEWAY_URL=http://localhost:3500
@@ -346,3 +390,7 @@ LOG_PRETTY=true
 - [ ] `MAIL_BASE_URL` matches your public Studio URL
 - [ ] `FEDERATION_GATEWAY_URL` points to a secured gateway (HTTPS, not publicly reachable without auth)
 - [ ] `FED_ADMIN_TOKEN` is a unique, random string (min 64 chars)
+- [ ] `DISCOVERY_NODE_PUBLISHER_KEY` is set and registered on every Discovery Node you publish to
+- [ ] `CONTEXT_DIRECTORY_SERVICE_KEY` is set to the same value as the Context Directory's `CD_SERVICE_KEY` (consumer features)
+- [ ] `DISCOVER_DEBUG` is unset or `false`
+- [ ] `CRASH_LOG_FILE` points at a persistent, writable path if you want a crash log next to your log shipping
