@@ -4877,7 +4877,7 @@
             "description": "User display name"
           },
           "avatarUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar URL; null when the user has none",
             "nullable": true
           }
@@ -4920,18 +4920,18 @@
             "description": "Comment body. May contain inline mention tokens of the form `@[<user-uuid>]`."
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "Parent comment UUID for a threaded reply; null for a top-level comment",
             "nullable": true
           },
           "resolvedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the thread was resolved; null while open",
             "format": "date-time",
             "nullable": true
           },
           "resolvedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the resolving user; null while open",
             "nullable": true
           },
@@ -4982,18 +4982,18 @@
             "description": "Comment body. May contain inline mention tokens of the form `@[<user-uuid>]`."
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "Parent comment UUID for a threaded reply; null for a top-level comment",
             "nullable": true
           },
           "resolvedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the thread was resolved; null while open",
             "format": "date-time",
             "nullable": true
           },
           "resolvedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the resolving user; null while open",
             "nullable": true
           },
@@ -5054,7 +5054,7 @@
             "example": "news"
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "The ancestor's own parent UUID; null at the root",
             "nullable": true
           }
@@ -5107,7 +5107,7 @@
             "example": "en"
           },
           "variantGroupId": {
-            "type": "object",
+            "type": "string",
             "description": "Locale variant group this item belongs to; null when it has no variants",
             "nullable": true
           },
@@ -5116,7 +5116,7 @@
             "description": "Monotonic edit version (increments on update)"
           },
           "schemaVersion": {
-            "type": "object",
+            "type": "string",
             "description": "The content-type schema version this item was authored/last-validated against; null when unstamped",
             "nullable": true,
             "example": "1.0.0"
@@ -5126,28 +5126,28 @@
             "description": "UUID of the creating user"
           },
           "updatedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the last updating user",
             "nullable": true
           },
           "publishedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the publishing user",
             "nullable": true
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "scheduledAt": {
-            "type": "object",
+            "type": "string",
             "description": "Scheduled publish time (Pro scheduling plugin)",
             "format": "date-time",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this content expires (auto-unpublish/archive)",
             "format": "date-time",
             "nullable": true
@@ -5162,13 +5162,13 @@
             "nullable": true
           },
           "expiryWarnedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the 24h pre-expiry warning fired",
             "format": "date-time",
             "nullable": true
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "Parent content UUID (hierarchy)",
             "nullable": true
           },
@@ -5177,7 +5177,7 @@
             "description": "Sort position among siblings"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Materialized hierarchy path, e.g. \"/parent-slug/child-slug\"",
             "nullable": true
           },
@@ -5264,7 +5264,7 @@
             "example": "en"
           },
           "variantGroupId": {
-            "type": "object",
+            "type": "string",
             "description": "Locale variant group this item belongs to; null when it has no variants",
             "nullable": true
           },
@@ -5273,7 +5273,7 @@
             "description": "Monotonic edit version (increments on update)"
           },
           "schemaVersion": {
-            "type": "object",
+            "type": "string",
             "description": "The content-type schema version this item was authored/last-validated against; null when unstamped",
             "nullable": true,
             "example": "1.0.0"
@@ -5283,28 +5283,28 @@
             "description": "UUID of the creating user"
           },
           "updatedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the last updating user",
             "nullable": true
           },
           "publishedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the publishing user",
             "nullable": true
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "scheduledAt": {
-            "type": "object",
+            "type": "string",
             "description": "Scheduled publish time (Pro scheduling plugin)",
             "format": "date-time",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this content expires (auto-unpublish/archive)",
             "format": "date-time",
             "nullable": true
@@ -5319,13 +5319,13 @@
             "nullable": true
           },
           "expiryWarnedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the 24h pre-expiry warning fired",
             "format": "date-time",
             "nullable": true
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "Parent content UUID (hierarchy)",
             "nullable": true
           },
@@ -5334,7 +5334,7 @@
             "description": "Sort position among siblings"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Materialized hierarchy path, e.g. \"/parent-slug/child-slug\"",
             "nullable": true
           },
@@ -5444,7 +5444,7 @@
             "example": "en"
           },
           "variantGroupId": {
-            "type": "object",
+            "type": "string",
             "description": "Locale variant group this item belongs to; null when it has no variants",
             "nullable": true
           },
@@ -5453,7 +5453,7 @@
             "description": "Monotonic edit version (increments on update)"
           },
           "schemaVersion": {
-            "type": "object",
+            "type": "string",
             "description": "The content-type schema version this item was authored/last-validated against; null when unstamped",
             "nullable": true,
             "example": "1.0.0"
@@ -5463,28 +5463,28 @@
             "description": "UUID of the creating user"
           },
           "updatedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the last updating user",
             "nullable": true
           },
           "publishedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the publishing user",
             "nullable": true
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "scheduledAt": {
-            "type": "object",
+            "type": "string",
             "description": "Scheduled publish time (Pro scheduling plugin)",
             "format": "date-time",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this content expires (auto-unpublish/archive)",
             "format": "date-time",
             "nullable": true
@@ -5499,13 +5499,13 @@
             "nullable": true
           },
           "expiryWarnedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the 24h pre-expiry warning fired",
             "format": "date-time",
             "nullable": true
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "Parent content UUID (hierarchy)",
             "nullable": true
           },
@@ -5514,7 +5514,7 @@
             "description": "Sort position among siblings"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Materialized hierarchy path, e.g. \"/parent-slug/child-slug\"",
             "nullable": true
           },
@@ -5601,7 +5601,7 @@
             "example": "en"
           },
           "variantGroupId": {
-            "type": "object",
+            "type": "string",
             "description": "Locale variant group this item belongs to; null when it has no variants",
             "nullable": true
           },
@@ -5610,7 +5610,7 @@
             "description": "Monotonic edit version (increments on update)"
           },
           "schemaVersion": {
-            "type": "object",
+            "type": "string",
             "description": "The content-type schema version this item was authored/last-validated against; null when unstamped",
             "nullable": true,
             "example": "1.0.0"
@@ -5620,28 +5620,28 @@
             "description": "UUID of the creating user"
           },
           "updatedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the last updating user",
             "nullable": true
           },
           "publishedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the publishing user",
             "nullable": true
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "scheduledAt": {
-            "type": "object",
+            "type": "string",
             "description": "Scheduled publish time (Pro scheduling plugin)",
             "format": "date-time",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this content expires (auto-unpublish/archive)",
             "format": "date-time",
             "nullable": true
@@ -5656,13 +5656,13 @@
             "nullable": true
           },
           "expiryWarnedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the 24h pre-expiry warning fired",
             "format": "date-time",
             "nullable": true
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "Parent content UUID (hierarchy)",
             "nullable": true
           },
@@ -5671,7 +5671,7 @@
             "description": "Sort position among siblings"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Materialized hierarchy path, e.g. \"/parent-slug/child-slug\"",
             "nullable": true
           },
@@ -5765,7 +5765,7 @@
             "example": "en"
           },
           "variantGroupId": {
-            "type": "object",
+            "type": "string",
             "description": "Locale variant group this item belongs to; null when it has no variants",
             "nullable": true
           },
@@ -5774,7 +5774,7 @@
             "description": "Monotonic edit version (increments on update)"
           },
           "schemaVersion": {
-            "type": "object",
+            "type": "string",
             "description": "The content-type schema version this item was authored/last-validated against; null when unstamped",
             "nullable": true,
             "example": "1.0.0"
@@ -5784,28 +5784,28 @@
             "description": "UUID of the creating user"
           },
           "updatedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the last updating user",
             "nullable": true
           },
           "publishedById": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the publishing user",
             "nullable": true
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "scheduledAt": {
-            "type": "object",
+            "type": "string",
             "description": "Scheduled publish time (Pro scheduling plugin)",
             "format": "date-time",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this content expires (auto-unpublish/archive)",
             "format": "date-time",
             "nullable": true
@@ -5820,13 +5820,13 @@
             "nullable": true
           },
           "expiryWarnedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the 24h pre-expiry warning fired",
             "format": "date-time",
             "nullable": true
           },
           "parentId": {
-            "type": "object",
+            "type": "string",
             "description": "Parent content UUID (hierarchy)",
             "nullable": true
           },
@@ -5835,7 +5835,7 @@
             "description": "Sort position among siblings"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Materialized hierarchy path, e.g. \"/parent-slug/child-slug\"",
             "nullable": true
           },
@@ -5902,7 +5902,7 @@
             "description": "Number of direct children"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Materialized hierarchy path, e.g. \"/parent-slug/child-slug\"",
             "nullable": true
           },
@@ -6042,7 +6042,7 @@
             "nullable": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -6146,7 +6146,7 @@
             "nullable": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -6258,12 +6258,12 @@
             ]
           },
           "registryVersion": {
-            "type": "object",
+            "type": "string",
             "description": "Version reported by the Schema Registry at last sync; null for local layouts",
             "nullable": true
           },
           "syncedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this layout was last synced from the registry",
             "format": "date-time",
             "nullable": true
@@ -6287,12 +6287,12 @@
             }
           },
           "previewImage": {
-            "type": "object",
+            "type": "string",
             "description": "Preview image URL/path",
             "nullable": true
           },
           "license": {
-            "type": "object",
+            "type": "string",
             "description": "License identifier",
             "nullable": true,
             "example": "CC-BY-4.0"
@@ -6385,7 +6385,7 @@
             "nullable": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -6445,7 +6445,7 @@
             }
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -6474,7 +6474,7 @@
             }
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -6599,7 +6599,7 @@
             ]
           },
           "variantGroupId": {
-            "type": "object",
+            "type": "string",
             "description": "Shared group id linking all locale variants; null when the item is not (yet) part of a variant group",
             "nullable": true
           },
@@ -6612,7 +6612,7 @@
             "format": "date-time"
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -6655,7 +6655,7 @@
             "description": "UUID of the user who created this version"
           },
           "changelog": {
-            "type": "object",
+            "type": "string",
             "description": "Optional change note, e.g. \"Restored from v3\"",
             "nullable": true
           },
@@ -7049,7 +7049,7 @@
             "example": "reference"
           },
           "sortOrder": {
-            "type": "object",
+            "type": "number",
             "description": "Position within the field (0-based); null for non-ordered relations",
             "nullable": true
           },
@@ -7141,7 +7141,7 @@
         "type": "object",
         "properties": {
           "parentId": {
-            "type": "object",
+            "type": "string",
             "example": "uuid-of-new-parent",
             "description": "New parent content UUID. Null for root level."
           },
@@ -7163,12 +7163,12 @@
             "description": "Content UUID"
           },
           "slug": {
-            "type": "object",
+            "type": "string",
             "description": "Slug of the offending item",
             "nullable": true
           },
           "schemaVersion": {
-            "type": "object",
+            "type": "string",
             "description": "Schema version the item was authored against; null when unstamped",
             "nullable": true,
             "example": "1.0.0"
@@ -7214,7 +7214,7 @@
             "example": "reference"
           },
           "sortOrder": {
-            "type": "object",
+            "type": "number",
             "description": "Position within the field (0-based); null for non-ordered relations",
             "nullable": true
           },
@@ -7327,7 +7327,7 @@
             "additionalProperties": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -7739,7 +7739,7 @@
         "type": "object",
         "properties": {
           "parentId": {
-            "type": "object",
+            "type": "string",
             "example": "uuid-of-parent-content",
             "description": "Parent content UUID. Set to null to remove parent."
           }
@@ -7913,7 +7913,7 @@
             "description": "Updated URL slug"
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "example": "2026-12-31T23:59:59Z",
             "nullable": true,
             "description": "Content expiry time (ISO 8601), or null to clear (IMP-CONTENT-08)."

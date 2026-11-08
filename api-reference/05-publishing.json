@@ -4378,17 +4378,17 @@
         "type": "object",
         "properties": {
           "stored": {
-            "type": "object",
+            "type": "string",
             "description": "SHA-256 recorded when the backup was created; null for pre-checksum backups",
             "nullable": true
           },
           "computed": {
-            "type": "object",
+            "type": "string",
             "description": "SHA-256 recomputed from the stored archive; null when it could not be read",
             "nullable": true
           },
           "match": {
-            "type": "object",
+            "type": "boolean",
             "description": "Whether the two digests agree; null when either side is unavailable",
             "nullable": true
           }
@@ -4479,13 +4479,13 @@
             "description": "Whether manifest.json exists and parses"
           },
           "version": {
-            "type": "object",
+            "type": "string",
             "description": "Manifest format version; null when absent",
             "nullable": true,
             "example": "1.0"
           },
           "generator": {
-            "type": "object",
+            "type": "string",
             "description": "Generator that wrote the archive; must be `roadbeat-studio`",
             "nullable": true,
             "example": "roadbeat-studio"
@@ -4524,35 +4524,35 @@
             ]
           },
           "label": {
-            "type": "object",
+            "type": "string",
             "description": "Human-readable label (defaults to \"Backup <date>\")",
             "nullable": true
           },
           "storageKey": {
-            "type": "object",
+            "type": "string",
             "description": "Storage key of the archive, `<organizationId>/<backupId>.zip`; null until stored",
             "nullable": true
           },
           "sizeBytes": {
-            "type": "object",
+            "type": "number",
             "description": "Archive size in bytes; null until the archive is written",
             "nullable": true,
             "example": 1048576
           },
           "contentCount": {
-            "type": "object",
+            "type": "number",
             "description": "Content items included",
             "nullable": true,
             "example": 128
           },
           "assetCount": {
-            "type": "object",
+            "type": "number",
             "description": "Asset metadata records included (asset binaries are not archived)",
             "nullable": true,
             "example": 64
           },
           "checksum": {
-            "type": "object",
+            "type": "string",
             "description": "SHA-256 of the stored archive, used for restore-time integrity checks (IMP-OPS-11)",
             "nullable": true
           },
@@ -4561,23 +4561,23 @@
             "description": "Whether the archive is AES-256-GCM encrypted at rest (IMP-OPS-10)"
           },
           "offsiteKey": {
-            "type": "object",
+            "type": "string",
             "description": "Object key of the offsite S3 copy; null when offsite backup is disabled",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "Retention cutoff — pruned after this time; null means keep forever",
             "format": "date-time",
             "nullable": true
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "description": "Failure message when status is `failed`",
             "nullable": true
           },
           "completedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -4737,25 +4737,25 @@
             "nullable": true
           },
           "subdomain": {
-            "type": "object",
+            "type": "string",
             "description": "Pod subdomain (defaults to the organization slug)",
             "nullable": true,
             "example": "acme"
           },
           "customDomain": {
-            "type": "object",
+            "type": "string",
             "description": "Verified custom domain serving the pod; null when none is configured",
             "nullable": true,
             "example": "news.acme.example"
           },
           "baseUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Public base URL the pod is served from",
             "nullable": true,
             "example": "https://pods.roadbeat.net/acme"
           },
           "lastPublishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -4909,12 +4909,12 @@
             ]
           },
           "subdomain": {
-            "type": "object",
+            "type": "string",
             "description": "Pod subdomain",
             "nullable": true
           },
           "baseUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Public base URL of the pod",
             "nullable": true
           },
@@ -4928,7 +4928,7 @@
             ]
           },
           "dynamicRuntime": {
-            "type": "object",
+            "type": "string",
             "description": "Runtime backing the dynamic features; null in static mode",
             "nullable": true
           },
@@ -4941,7 +4941,7 @@
             "description": "Total bytes published to the pod"
           },
           "lastPublishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -5005,12 +5005,12 @@
             ]
           },
           "registryVersion": {
-            "type": "object",
+            "type": "string",
             "description": "Version reported by the Schema Registry at last sync; null for local layouts",
             "nullable": true
           },
           "syncedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this layout was last synced from the registry",
             "format": "date-time",
             "nullable": true
@@ -5034,12 +5034,12 @@
             }
           },
           "previewImage": {
-            "type": "object",
+            "type": "string",
             "description": "Preview image URL/path",
             "nullable": true
           },
           "license": {
-            "type": "object",
+            "type": "string",
             "description": "License identifier",
             "nullable": true,
             "example": "CC-BY-4.0"
@@ -5100,7 +5100,7 @@
             }
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -5228,12 +5228,12 @@
             "description": "Delivery URL (CDN or direct)"
           },
           "width": {
-            "type": "object",
+            "type": "number",
             "description": "Image/video width in pixels; null for non-visual media",
             "nullable": true
           },
           "height": {
-            "type": "object",
+            "type": "number",
             "description": "Image/video height in pixels; null for non-visual media",
             "nullable": true
           },
@@ -5349,7 +5349,7 @@
             ]
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -5409,7 +5409,7 @@
             "additionalProperties": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -5462,7 +5462,7 @@
             "additionalProperties": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -5512,7 +5512,7 @@
             "description": "Whether this is the default layout of its content type"
           },
           "previewImage": {
-            "type": "object",
+            "type": "string",
             "description": "Preview image URL/path",
             "nullable": true
           },
@@ -5530,7 +5530,7 @@
             }
           },
           "license": {
-            "type": "object",
+            "type": "string",
             "description": "License identifier",
             "nullable": true,
             "example": "CC-BY-4.0"
@@ -5604,18 +5604,18 @@
             "example": 0
           },
           "circuitOpenUntil": {
-            "type": "object",
+            "type": "string",
             "description": "Publishing is skipped until this time while the circuit breaker is open",
             "format": "date-time",
             "nullable": true
           },
           "lastError": {
-            "type": "object",
+            "type": "string",
             "description": "Last publish error reported by this node",
             "nullable": true
           },
           "lastPublishAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this node last accepted a publish",
             "format": "date-time",
             "nullable": true
@@ -5715,18 +5715,18 @@
             "example": 0
           },
           "circuitOpenUntil": {
-            "type": "object",
+            "type": "string",
             "description": "Publishing is skipped until this time while the circuit breaker is open",
             "format": "date-time",
             "nullable": true
           },
           "lastError": {
-            "type": "object",
+            "type": "string",
             "description": "Last publish error reported by this node",
             "nullable": true
           },
           "lastPublishAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this node last accepted a publish",
             "format": "date-time",
             "nullable": true
@@ -6792,7 +6792,7 @@
             "description": "Public base URL of the pod (empty string when not derivable)"
           },
           "dynamicRuntime": {
-            "type": "object",
+            "type": "string",
             "description": "Runtime backing the dynamic features; null in static mode",
             "nullable": true,
             "example": "php"
@@ -6807,7 +6807,7 @@
             ]
           },
           "signingKeyId": {
-            "type": "object",
+            "type": "string",
             "description": "Ed25519 publisher key that will sign the pod manifest; null when no key could be provisioned",
             "nullable": true,
             "example": "pk_a1b2c3d4e5f60708"
@@ -6959,18 +6959,18 @@
             "description": "Consecutive failed publish attempts (circuit-breaker telemetry)"
           },
           "circuitOpenUntil": {
-            "type": "object",
+            "type": "string",
             "description": "Until when the circuit breaker stays open; null when closed",
             "format": "date-time",
             "nullable": true
           },
           "lastError": {
-            "type": "object",
+            "type": "string",
             "description": "Last publish error reported by this node",
             "nullable": true
           },
           "lastPublishAt": {
-            "type": "object",
+            "type": "string",
             "description": "When this node last accepted a publish",
             "format": "date-time",
             "nullable": true
@@ -7006,7 +7006,7 @@
             "example": "news-eu-1"
           },
           "teaserId": {
-            "type": "object",
+            "type": "string",
             "description": "Teaser ID on the node",
             "nullable": true
           },
@@ -7020,17 +7020,17 @@
             ]
           },
           "publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "unpublishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "description": "Error message of the last failed attempt",
             "nullable": true
           },
@@ -7086,7 +7086,7 @@
             "format": "date-time"
           },
           "revokedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -7457,12 +7457,12 @@
             "example": 3
           },
           "jobId": {
-            "type": "object",
+            "type": "string",
             "description": "BullMQ job ID of the exhausted job",
             "nullable": true
           },
           "deliveryId": {
-            "type": "object",
+            "type": "string",
             "description": "Receiver-facing idempotency key preserved for replay",
             "nullable": true
           },
@@ -7480,7 +7480,7 @@
             "format": "date-time"
           },
           "resolvedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the entry was replayed or dismissed; null while unresolved",
             "format": "date-time",
             "nullable": true
@@ -7531,7 +7531,7 @@
             "description": "Parent webhook UUID"
           },
           "deliveryId": {
-            "type": "object",
+            "type": "string",
             "description": "Stable receiver-facing idempotency key (`X-Idempotency-Key`), constant across retries and replay (IMP-API-10); null for legacy rows",
             "nullable": true
           },
@@ -7546,13 +7546,13 @@
             "additionalProperties": true
           },
           "statusCode": {
-            "type": "object",
+            "type": "number",
             "description": "HTTP status returned by the receiver; null when the request never completed",
             "nullable": true,
             "example": 200
           },
           "response": {
-            "type": "object",
+            "type": "string",
             "description": "Receiver response body or the transport error message",
             "nullable": true
           },
@@ -7561,7 +7561,7 @@
             "description": "Whether the receiver answered with a 2xx status"
           },
           "duration": {
-            "type": "object",
+            "type": "number",
             "description": "Round-trip time in milliseconds; null when the request failed before completing",
             "nullable": true,
             "example": 143
@@ -7612,13 +7612,13 @@
             }
           },
           "secret": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint for the current HMAC signing secret — the first 8 characters followed by bullets, enough to tell two webhooks apart and useless for forging a signature. The full secret is returned only when the webhook is created and by `POST :id/rotate-secret`. Null when no secret is set.",
             "example": "a1b2c3d4••••••••",
             "nullable": true
           },
           "secretPrevious": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint for the previous signing secret — both secrets verify during a rotation window (IMP-API-01). Null when never rotated.",
             "example": "9f8e7d6c••••••••",
             "nullable": true
@@ -7704,13 +7704,13 @@
             }
           },
           "secret": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint for the current HMAC signing secret — the first 8 characters followed by bullets, enough to tell two webhooks apart and useless for forging a signature. The full secret is returned only when the webhook is created and by `POST :id/rotate-secret`. Null when no secret is set.",
             "example": "a1b2c3d4••••••••",
             "nullable": true
           },
           "secretPrevious": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint for the previous signing secret — both secrets verify during a rotation window (IMP-API-01). Null when never rotated.",
             "example": "9f8e7d6c••••••••",
             "nullable": true
@@ -7796,7 +7796,7 @@
             "example": 200
           },
           "duration": {
-            "type": "object",
+            "type": "number",
             "description": "Round-trip time in milliseconds; absent on transport failure",
             "nullable": true,
             "example": 143

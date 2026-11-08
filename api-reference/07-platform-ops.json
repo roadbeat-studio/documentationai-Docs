@@ -3523,7 +3523,7 @@
             "description": "Owning organization UUID"
           },
           "actorUserId": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the acting user; null for system-originated events",
             "nullable": true
           },
@@ -3538,7 +3538,7 @@
             "example": "user"
           },
           "resourceId": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the affected resource",
             "nullable": true
           },
@@ -3549,7 +3549,7 @@
             "nullable": true
           },
           "ip": {
-            "type": "object",
+            "type": "string",
             "description": "Client IP of the request that caused the event",
             "nullable": true,
             "example": "203.0.113.42"
@@ -3621,7 +3621,7 @@
             "nullable": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -4057,7 +4057,7 @@
             "description": "Inbox URL deliveries are sent to"
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the follow was accepted; null while pending review",
             "format": "date-time",
             "nullable": true
@@ -4087,7 +4087,7 @@
             }
           },
           "nextCursor": {
-            "type": "object",
+            "type": "string",
             "description": "Cursor for the next page; null on the last page",
             "nullable": true
           }
@@ -4121,7 +4121,7 @@
             "description": "ActivityPub IRI of the reporting/blocking remote account"
           },
           "remoteActorHandle": {
-            "type": "object",
+            "type": "string",
             "description": "Fediverse handle of the remote account, when resolvable",
             "nullable": true
           },
@@ -4133,7 +4133,7 @@
             }
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "description": "Reason supplied by the reporter",
             "nullable": true
           },
@@ -4147,17 +4147,17 @@
             ]
           },
           "resolution": {
-            "type": "object",
+            "type": "string",
             "description": "Reason recorded when the event was closed",
             "nullable": true
           },
           "resolvedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "resolvedBy": {
-            "type": "object",
+            "type": "string",
             "description": "Email or UUID of the Studio user who closed the event",
             "nullable": true
           },
@@ -4193,7 +4193,7 @@
             }
           },
           "nextCursor": {
-            "type": "object",
+            "type": "string",
             "description": "Cursor for the next page; null on the last page",
             "nullable": true
           }
@@ -4256,22 +4256,22 @@
             "description": "URL-safe local ID (defaults to the org slug)"
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the actor",
             "nullable": true
           },
           "summary": {
-            "type": "object",
+            "type": "string",
             "description": "Actor summary / bio",
             "nullable": true
           },
           "iconUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
           "imageUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Header image URL",
             "nullable": true
           },
@@ -4280,12 +4280,12 @@
             "description": "Whether outbound federation is switched on"
           },
           "externalSource": {
-            "type": "object",
+            "type": "string",
             "description": "System that owns this actor, e.g. \"studio\"",
             "nullable": true
           },
           "externalSourceId": {
-            "type": "object",
+            "type": "string",
             "description": "Studio organization UUID behind this actor",
             "nullable": true
           },
@@ -4382,7 +4382,7 @@
             "description": "ActivityPub IRI of the reacting remote account"
           },
           "remoteActorHandle": {
-            "type": "object",
+            "type": "string",
             "description": "Fediverse handle of the reacting account, when resolvable",
             "nullable": true
           },
@@ -4391,12 +4391,12 @@
             "description": "IRI of the object that was liked/boosted"
           },
           "objectLinkId": {
-            "type": "object",
+            "type": "string",
             "description": "The federated object (content item link) that was reacted to",
             "nullable": true
           },
           "undoneAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the reaction was undone (Undo activity); null while active",
             "format": "date-time",
             "nullable": true
@@ -4430,7 +4430,7 @@
             }
           },
           "nextCursor": {
-            "type": "object",
+            "type": "string",
             "description": "Cursor for the next page; null on the last page",
             "nullable": true
           }
@@ -4499,7 +4499,7 @@
             "description": "ActivityPub IRI of the remote author"
           },
           "remoteActorHandle": {
-            "type": "object",
+            "type": "string",
             "description": "Fediverse handle of the remote author, when resolvable",
             "nullable": true,
             "example": "@alice@mastodon.example"
@@ -4513,7 +4513,7 @@
             "description": "Plain-text body of the reply"
           },
           "language": {
-            "type": "object",
+            "type": "string",
             "description": "BCP-47 language tag declared by the sender",
             "nullable": true
           },
@@ -4533,22 +4533,22 @@
             ]
           },
           "rejectedReason": {
-            "type": "object",
+            "type": "string",
             "description": "Reason recorded when the reply was rejected",
             "nullable": true
           },
           "reviewedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "reviewedBy": {
-            "type": "object",
+            "type": "string",
             "description": "Email or UUID of the reviewing Studio user",
             "nullable": true
           },
           "objectLinkId": {
-            "type": "object",
+            "type": "string",
             "description": "The federated object (content item link) this reply belongs to",
             "nullable": true
           },
@@ -4587,7 +4587,7 @@
             }
           },
           "nextCursor": {
-            "type": "object",
+            "type": "string",
             "description": "Cursor for the next page; null on the last page",
             "nullable": true
           }
@@ -4991,7 +4991,7 @@
             "description": "Short headline (max 255 chars)"
           },
           "body": {
-            "type": "object",
+            "type": "string",
             "description": "Optional longer body text",
             "nullable": true
           },
@@ -5002,7 +5002,7 @@
             "nullable": true
           },
           "readAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the recipient read the notification; null while unread",
             "format": "date-time",
             "nullable": true
@@ -5110,23 +5110,23 @@
             "nullable": true
           },
           "tier": {
-            "type": "object",
+            "type": "string",
             "description": "Hosting tier of the pod",
             "nullable": true,
             "example": "free"
           },
           "subdomain": {
-            "type": "object",
+            "type": "string",
             "description": "Assigned pod subdomain",
             "nullable": true
           },
           "baseUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Public base URL of the pod",
             "nullable": true
           },
           "dynamicRuntime": {
-            "type": "object",
+            "type": "string",
             "description": "Runtime backing a dynamic pod; null for static pods",
             "nullable": true
           },
@@ -5147,7 +5147,7 @@
             "description": "Maximum number of published items allowed in the pod"
           },
           "status": {
-            "type": "object",
+            "type": "string",
             "description": "Pod provisioning/health status",
             "nullable": true
           }
@@ -5191,23 +5191,23 @@
             ]
           },
           "storageKey": {
-            "type": "object",
+            "type": "string",
             "description": "Storage key of the archive; null while the archive is not yet stored",
             "nullable": true
           },
           "sizeBytes": {
-            "type": "object",
+            "type": "number",
             "description": "Archive size in bytes",
             "nullable": true,
             "example": 10485760
           },
           "contentCount": {
-            "type": "object",
+            "type": "number",
             "description": "Content items included in the archive",
             "nullable": true
           },
           "assetCount": {
-            "type": "object",
+            "type": "number",
             "description": "Assets included in the archive",
             "nullable": true
           },
@@ -5536,22 +5536,22 @@
             "example": 1
           },
           "ownerUserId": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the owning user",
             "nullable": true
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "description": "Custom domain",
             "nullable": true
           },
           "logoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Organization logo URL",
             "nullable": true
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Organization description",
             "nullable": true
           },
@@ -5603,7 +5603,7 @@
             "description": "CE role inside the home organization"
           },
           "avatarUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
@@ -5612,12 +5612,12 @@
             "description": "Home organization UUID"
           },
           "organizationName": {
-            "type": "object",
+            "type": "string",
             "description": "Home organization display name",
             "nullable": true
           },
           "lastLoginAt": {
-            "type": "object",
+            "type": "string",
             "description": "Last successful login",
             "format": "date-time",
             "nullable": true
@@ -5826,7 +5826,7 @@
             "format": "date-time"
           },
           "grantedBy": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the granting super-admin; null for system grants",
             "nullable": true
           },
@@ -5865,7 +5865,7 @@
             }
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true,
             "example": "newspaper"
@@ -5923,12 +5923,12 @@
             ]
           },
           "avatarUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
           "lastLoginAt": {
-            "type": "object",
+            "type": "string",
             "description": "Last successful login",
             "format": "date-time",
             "nullable": true
@@ -6036,22 +6036,22 @@
             "example": 1
           },
           "ownerUserId": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the owning user",
             "nullable": true
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "description": "Custom domain",
             "nullable": true
           },
           "logoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Organization logo URL",
             "nullable": true
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Organization description",
             "nullable": true
           },
@@ -6168,22 +6168,22 @@
             "example": 1
           },
           "ownerUserId": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the owning user",
             "nullable": true
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "description": "Custom domain",
             "nullable": true
           },
           "logoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Organization logo URL",
             "nullable": true
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Organization description",
             "nullable": true
           },
@@ -6465,12 +6465,12 @@
             "example": "git-branch"
           },
           "moduleBundlePath": {
-            "type": "object",
+            "type": "string",
             "description": "Angular module bundle path relative to the plugin's dist/ directory",
             "nullable": true
           },
           "requiredPermission": {
-            "type": "object",
+            "type": "string",
             "description": "Permission required to open the route",
             "nullable": true,
             "example": "workflows.read"
@@ -6533,17 +6533,17 @@
             "additionalProperties": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name",
             "nullable": true
           },
           "componentBundlePath": {
-            "type": "object",
+            "type": "string",
             "description": "Angular component bundle path for sidebar panels",
             "nullable": true
           },
           "handler": {
-            "type": "object",
+            "type": "string",
             "description": "Handler identifier for toolbar actions / publish guards",
             "nullable": true
           },
@@ -6760,7 +6760,7 @@
             ]
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "description": "Why the status is what it is; null when there is nothing to report",
             "nullable": true
           },
@@ -6777,18 +6777,18 @@
             ]
           },
           "tier": {
-            "type": "object",
+            "type": "string",
             "description": "Licensed tier; null when not active",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "License expiry; null when no license",
             "format": "date-time",
             "nullable": true
           },
           "daysUntilExpiry": {
-            "type": "object",
+            "type": "number",
             "description": "Days remaining until expiry; null when no license",
             "nullable": true
           },
@@ -6820,12 +6820,12 @@
             ]
           },
           "tier": {
-            "type": "object",
+            "type": "string",
             "description": "Licensed tier; null for CE",
             "nullable": true
           },
           "organization": {
-            "type": "object",
+            "type": "string",
             "description": "Licensed organization name; null for CE",
             "nullable": true
           },
@@ -6844,13 +6844,13 @@
             }
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "License expiry; null for CE",
             "format": "date-time",
             "nullable": true
           },
           "daysUntilExpiry": {
-            "type": "object",
+            "type": "number",
             "description": "Days remaining until expiry (negative once expired); null for CE",
             "nullable": true
           },
@@ -6882,7 +6882,7 @@
             ]
           },
           "tier": {
-            "type": "object",
+            "type": "string",
             "description": "Licensed tier; null for CE",
             "nullable": true,
             "example": "business"
@@ -6936,7 +6936,7 @@
             "additionalProperties": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name for the collapsed sidebar",
             "nullable": true
           },
@@ -6973,7 +6973,7 @@
             ]
           },
           "group": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the menu group this item belongs to; null when ungrouped",
             "nullable": true
           },
@@ -7084,12 +7084,12 @@
             "description": "Public URL of the asset"
           },
           "folderId": {
-            "type": "object",
+            "type": "string",
             "description": "Containing asset folder UUID",
             "nullable": true
           },
           "folderName": {
-            "type": "object",
+            "type": "string",
             "description": "Containing asset folder name",
             "nullable": true
           },
@@ -7192,7 +7192,7 @@
             "example": "News"
           },
           "contentTypeIcon": {
-            "type": "object",
+            "type": "string",
             "description": "Lucide icon name of the content type",
             "nullable": true
           },
@@ -7620,14 +7620,14 @@
             "maxLength": 200
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "example": "news.example.org",
             "description": "Domain of the organization; null clears it",
             "nullable": true,
             "maxLength": 255
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "example": "Local news from Munich and Upper Bavaria.",
             "description": "Short description; also shown as the \"About\" text of the publisher profile on Discovery Nodes. null clears it.",
             "nullable": true,

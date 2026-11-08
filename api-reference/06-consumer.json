@@ -34,6 +34,7 @@
     "/api/v1/consumer/account/status": {
       "get": {
         "operationId": "ConsumerAuthController_getStatus",
+        "summary": "Context Directory account link status",
         "parameters": [],
         "responses": {
           "200": {
@@ -63,6 +64,7 @@
     "/api/v1/consumer/account/link": {
       "post": {
         "operationId": "ConsumerAuthController_linkAccount",
+        "summary": "Link or provision the Context Directory account",
         "parameters": [],
         "responses": {
           "201": {
@@ -90,6 +92,7 @@
       },
       "delete": {
         "operationId": "ConsumerAuthController_unlinkAccount",
+        "summary": "Remove the Context Directory account link",
         "parameters": [],
         "responses": {
           "200": {
@@ -1321,6 +1324,7 @@
     "/api/v1/consumer/goals": {
       "get": {
         "operationId": "GoalsController_getPortfolio",
+        "summary": "Goal portfolio of the current user",
         "parameters": [],
         "responses": {
           "200": {
@@ -1351,6 +1355,7 @@
       },
       "post": {
         "operationId": "GoalsController_createGoal",
+        "summary": "Create a goal",
         "parameters": [],
         "responses": {
           "201": {
@@ -1380,6 +1385,7 @@
     "/api/v1/consumer/goals/bulk": {
       "post": {
         "operationId": "GoalsController_createGoalsBulk",
+        "summary": "Create several goals at once",
         "parameters": [],
         "responses": {
           "201": {
@@ -1412,6 +1418,7 @@
     "/api/v1/consumer/goals/{goalId}": {
       "patch": {
         "operationId": "GoalsController_updateGoal",
+        "summary": "Update a goal",
         "parameters": [
           {
             "name": "goalId",
@@ -1448,6 +1455,7 @@
       },
       "delete": {
         "operationId": "GoalsController_deleteGoal",
+        "summary": "Delete a goal",
         "parameters": [
           {
             "name": "goalId",
@@ -1486,6 +1494,7 @@
     "/api/v1/consumer/goals/{goalId}/progress": {
       "post": {
         "operationId": "GoalsController_updateProgress",
+        "summary": "Record a progress check-in for a goal",
         "parameters": [
           {
             "name": "goalId",
@@ -1544,6 +1553,7 @@
     "/api/v1/consumer/goals/categories": {
       "get": {
         "operationId": "GoalsController_getCategories",
+        "summary": "Goal trees of the shared catalog",
         "parameters": [],
         "responses": {
           "200": {
@@ -1576,6 +1586,7 @@
     "/api/v1/consumer/goals/trees/{treeId}/categories": {
       "get": {
         "operationId": "GoalsController_getTreeCategories",
+        "summary": "Categories and subcategories of a goal tree",
         "parameters": [
           {
             "name": "treeId",
@@ -1617,6 +1628,7 @@
     "/api/v1/consumer/goals/subcategories/{subcategoryId}": {
       "get": {
         "operationId": "GoalsController_getSubcategoryGoals",
+        "summary": "Goal definitions of a subcategory",
         "parameters": [
           {
             "name": "subcategoryId",
@@ -1655,6 +1667,7 @@
     "/api/v1/consumer/goals/search": {
       "get": {
         "operationId": "GoalsController_searchGoals",
+        "summary": "Search the goal catalog",
         "parameters": [
           {
             "name": "q",
@@ -1701,6 +1714,7 @@
     "/api/v1/consumer/publishers": {
       "get": {
         "operationId": "PublishersController_search",
+        "summary": "Search the federated publisher directory",
         "parameters": [
           {
             "name": "q",
@@ -1763,6 +1777,7 @@
     "/api/v1/consumer/publishers/{id}": {
       "get": {
         "operationId": "PublishersController_getById",
+        "summary": "Publisher profile",
         "parameters": [
           {
             "name": "id",
@@ -1801,6 +1816,7 @@
     "/api/v1/consumer/publishers/{id}/content": {
       "get": {
         "operationId": "PublishersController_getContent",
+        "summary": "A publisher's recent content",
         "parameters": [
           {
             "name": "id",
@@ -1855,6 +1871,7 @@
     "/api/v1/consumer/follows": {
       "get": {
         "operationId": "FollowsController_getFollows",
+        "summary": "Followed publishers",
         "parameters": [],
         "responses": {
           "200": {
@@ -1885,6 +1902,7 @@
       },
       "put": {
         "operationId": "FollowsController_syncFollows",
+        "summary": "Replace the follow list",
         "parameters": [],
         "responses": {
           "200": {
@@ -1917,6 +1935,7 @@
     "/api/v1/consumer/follows/muted": {
       "get": {
         "operationId": "FollowsController_getMutedPublishers",
+        "summary": "Muted publishers",
         "parameters": [],
         "responses": {
           "200": {
@@ -1948,6 +1967,7 @@
       },
       "put": {
         "operationId": "FollowsController_syncMutedPublishers",
+        "summary": "Replace the mute list",
         "parameters": [],
         "responses": {
           "200": {
@@ -1981,6 +2001,7 @@
     "/api/v1/consumer/follows/muted/{publisherId}": {
       "post": {
         "operationId": "FollowsController_addMutedPublisher",
+        "summary": "Mute a publisher",
         "parameters": [
           {
             "name": "publisherId",
@@ -2021,6 +2042,7 @@
       },
       "delete": {
         "operationId": "FollowsController_removeMutedPublisher",
+        "summary": "Unmute a publisher",
         "parameters": [
           {
             "name": "publisherId",
@@ -2063,6 +2085,7 @@
     "/api/v1/consumer/follows/{publisherId}": {
       "post": {
         "operationId": "FollowsController_addFollow",
+        "summary": "Follow a publisher",
         "parameters": [
           {
             "name": "publisherId",
@@ -2102,6 +2125,7 @@
       },
       "delete": {
         "operationId": "FollowsController_removeFollow",
+        "summary": "Unfollow a publisher",
         "parameters": [
           {
             "name": "publisherId",
@@ -2143,6 +2167,7 @@
     "/api/v1/consumer/sync/package": {
       "get": {
         "operationId": "SyncController_getPackage",
+        "summary": "Sync package for the mobile app",
         "parameters": [],
         "responses": {
           "200": {
@@ -2172,6 +2197,7 @@
     "/api/v1/consumer/sync/token": {
       "post": {
         "operationId": "SyncController_createToken",
+        "summary": "Create a single-use pairing token",
         "parameters": [],
         "responses": {
           "201": {
@@ -2201,6 +2227,7 @@
     "/api/v1/consumer/sync/token/{token}": {
       "get": {
         "operationId": "SyncController_getPackageByToken",
+        "summary": "Redeem a pairing token (no authentication)",
         "parameters": [
           {
             "name": "token",
@@ -2239,6 +2266,7 @@
     "/api/v1/consumer/sync/code/{code}": {
       "get": {
         "operationId": "SyncController_getPackageByCode",
+        "summary": "Redeem a short pairing code (no authentication)",
         "parameters": [
           {
             "name": "code",
@@ -2277,6 +2305,7 @@
     "/api/v1/consumer/sync/qr": {
       "get": {
         "operationId": "SyncController_getQrData",
+        "summary": "Deep link for the pairing QR code",
         "parameters": [],
         "responses": {
           "200": {
@@ -2306,6 +2335,7 @@
     "/api/v1/consumer/notifications": {
       "get": {
         "operationId": "ConsumerNotificationsController_getNotifications",
+        "summary": "List notifications",
         "parameters": [
           {
             "name": "type",
@@ -2360,6 +2390,7 @@
     "/api/v1/consumer/notifications/unread-count": {
       "get": {
         "operationId": "ConsumerNotificationsController_getUnreadCount",
+        "summary": "Unread notification count",
         "parameters": [],
         "responses": {
           "200": {
@@ -2389,6 +2420,7 @@
     "/api/v1/consumer/notifications/{id}/read": {
       "put": {
         "operationId": "ConsumerNotificationsController_markAsRead",
+        "summary": "Mark a notification as read",
         "parameters": [
           {
             "name": "id",
@@ -2427,6 +2459,7 @@
     "/api/v1/consumer/notifications/{id}/archive": {
       "put": {
         "operationId": "ConsumerNotificationsController_archive",
+        "summary": "Archive a notification",
         "parameters": [
           {
             "name": "id",
@@ -2465,6 +2498,7 @@
     "/api/v1/consumer/notifications/{id}/unarchive": {
       "put": {
         "operationId": "ConsumerNotificationsController_unarchive",
+        "summary": "Restore an archived notification",
         "parameters": [
           {
             "name": "id",
@@ -2503,6 +2537,7 @@
     "/api/v1/consumer/notifications/read-all": {
       "put": {
         "operationId": "ConsumerNotificationsController_markAllAsRead",
+        "summary": "Mark all notifications as read",
         "parameters": [],
         "responses": {
           "200": {
@@ -2532,6 +2567,7 @@
     "/api/v1/consumer/notifications/push": {
       "get": {
         "operationId": "ConsumerNotificationsController_getPushStatus",
+        "summary": "Browser push availability (not available in Studio)",
         "parameters": [],
         "responses": {
           "200": {
@@ -2561,6 +2597,7 @@
     "/api/v1/consumer/notifications/preferences": {
       "get": {
         "operationId": "ConsumerNotificationsController_getPreferences",
+        "summary": "Notification preferences",
         "parameters": [],
         "responses": {
           "200": {
@@ -2588,6 +2625,7 @@
       },
       "put": {
         "operationId": "ConsumerNotificationsController_updatePreferences",
+        "summary": "Update notification preferences",
         "parameters": [],
         "responses": {
           "200": {
@@ -2617,6 +2655,7 @@
     "/api/v1/consumer/health": {
       "get": {
         "operationId": "HealthController_check",
+        "summary": "Consumer API health with dependency detail",
         "parameters": [],
         "responses": {
           "200": {
@@ -2646,6 +2685,7 @@
     "/api/v1/consumer/health/ready": {
       "get": {
         "operationId": "HealthController_readiness",
+        "summary": "Consumer API readiness probe",
         "parameters": [],
         "responses": {
           "200": {
@@ -2675,6 +2715,7 @@
     "/api/v1/consumer/health/live": {
       "get": {
         "operationId": "HealthController_liveness",
+        "summary": "Consumer API liveness probe",
         "parameters": [],
         "responses": {
           "200": {
@@ -2704,6 +2745,7 @@
     "/api/v1/consumer/bookmarks": {
       "get": {
         "operationId": "BookmarksController_getBookmarks",
+        "summary": "List bookmarks",
         "parameters": [
           {
             "name": "collectionId",
@@ -2764,6 +2806,7 @@
       },
       "post": {
         "operationId": "BookmarksController_addBookmark",
+        "summary": "Bookmark a teaser",
         "parameters": [],
         "responses": {
           "201": {
@@ -2793,6 +2836,7 @@
     "/api/v1/consumer/bookmarks/{teaserId}": {
       "delete": {
         "operationId": "BookmarksController_removeBookmark",
+        "summary": "Remove a bookmark",
         "parameters": [
           {
             "name": "teaserId",
@@ -2831,6 +2875,7 @@
     "/api/v1/consumer/bookmarks/index": {
       "get": {
         "operationId": "BookmarksController_getIndex",
+        "summary": "Index of all bookmarked teasers",
         "parameters": [],
         "responses": {
           "200": {
@@ -2863,6 +2908,7 @@
     "/api/v1/consumer/bookmarks/collections": {
       "get": {
         "operationId": "BookmarksController_getCollections",
+        "summary": "List bookmark collections",
         "parameters": [],
         "responses": {
           "200": {
@@ -2893,6 +2939,7 @@
       },
       "post": {
         "operationId": "BookmarksController_createCollection",
+        "summary": "Create a bookmark collection",
         "parameters": [],
         "responses": {
           "201": {
@@ -2922,6 +2969,7 @@
     "/api/v1/consumer/bookmarks/collections/{id}": {
       "put": {
         "operationId": "BookmarksController_updateCollection",
+        "summary": "Rename a bookmark collection or change its icon",
         "parameters": [
           {
             "name": "id",
@@ -2958,6 +3006,7 @@
       },
       "delete": {
         "operationId": "BookmarksController_deleteCollection",
+        "summary": "Delete a bookmark collection",
         "parameters": [
           {
             "name": "id",
@@ -2996,6 +3045,7 @@
     "/api/v1/consumer/bookmarks/collections/{id}/items": {
       "post": {
         "operationId": "BookmarksController_addToCollection",
+        "summary": "Add a bookmark to a collection",
         "parameters": [
           {
             "name": "id",
@@ -3034,6 +3084,7 @@
     "/api/v1/consumer/bookmarks/collections/{id}/items/{teaserId}": {
       "delete": {
         "operationId": "BookmarksController_removeFromCollection",
+        "summary": "Remove a bookmark from a collection",
         "parameters": [
           {
             "name": "id",
@@ -3080,6 +3131,7 @@
     "/api/v1/consumer/bookmarks/collections/{id}/reorder": {
       "put": {
         "operationId": "BookmarksController_reorderCollection",
+        "summary": "Reorder the bookmarks of a collection",
         "parameters": [
           {
             "name": "id",
@@ -3118,6 +3170,7 @@
     "/api/v1/consumer/bookmarks/sync": {
       "put": {
         "operationId": "BookmarksController_syncToContextDirectory",
+        "summary": "Push bookmarks to the Context Directory",
         "parameters": [],
         "responses": {
           "200": {
@@ -3147,6 +3200,7 @@
     "/api/v1/consumer/user": {
       "get": {
         "operationId": "UserController_getProfile",
+        "summary": "Consumer profile",
         "parameters": [],
         "responses": {
           "200": {
@@ -3174,6 +3228,7 @@
       },
       "put": {
         "operationId": "UserController_updateProfile",
+        "summary": "Update the consumer profile",
         "parameters": [],
         "responses": {
           "200": {
@@ -3203,6 +3258,7 @@
     "/api/v1/consumer/user/password": {
       "put": {
         "operationId": "UserController_changePassword",
+        "summary": "Change the Context Directory password",
         "parameters": [],
         "responses": {
           "200": {
@@ -3232,6 +3288,7 @@
     "/api/v1/consumer/user/preferences": {
       "get": {
         "operationId": "UserController_getPreferences",
+        "summary": "Consumer preferences",
         "parameters": [],
         "responses": {
           "200": {
@@ -3259,6 +3316,7 @@
       },
       "put": {
         "operationId": "UserController_updatePreferences",
+        "summary": "Update consumer preferences",
         "parameters": [],
         "responses": {
           "200": {
@@ -3288,6 +3346,7 @@
     "/api/v1/consumer/user/export": {
       "post": {
         "operationId": "UserController_requestExport",
+        "summary": "Request a GDPR data export",
         "parameters": [],
         "responses": {
           "201": {
@@ -3317,6 +3376,7 @@
     "/api/v1/consumer/user/export/{token}": {
       "get": {
         "operationId": "UserController_downloadExport",
+        "summary": "Download a GDPR data export",
         "parameters": [
           {
             "name": "token",
@@ -3359,6 +3419,7 @@
     "/api/v1/consumer/user/delete/status": {
       "get": {
         "operationId": "UserController_deletionStatus",
+        "summary": "Account deletion status",
         "parameters": [],
         "responses": {
           "200": {
@@ -3388,6 +3449,7 @@
     "/api/v1/consumer/user/delete": {
       "post": {
         "operationId": "UserController_requestDeletion",
+        "summary": "Schedule account deletion",
         "parameters": [],
         "responses": {
           "201": {
@@ -3417,6 +3479,7 @@
     "/api/v1/consumer/user/delete/cancel": {
       "post": {
         "operationId": "UserController_cancelDeletion",
+        "summary": "Cancel a scheduled account deletion",
         "parameters": [],
         "responses": {
           "201": {
@@ -3446,6 +3509,7 @@
     "/api/v1/consumer/ap/identity": {
       "get": {
         "operationId": "ApController_getIdentity",
+        "summary": "Fediverse identity",
         "parameters": [],
         "responses": {
           "200": {
@@ -3473,6 +3537,7 @@
       },
       "post": {
         "operationId": "ApController_ensureIdentity",
+        "summary": "Create the Fediverse identity",
         "parameters": [],
         "responses": {
           "201": {
@@ -3500,6 +3565,7 @@
       },
       "patch": {
         "operationId": "ApController_updateIdentity",
+        "summary": "Update the Fediverse identity",
         "parameters": [],
         "responses": {
           "200": {
@@ -3529,6 +3595,7 @@
     "/api/v1/consumer/ap/lookup": {
       "get": {
         "operationId": "ApController_lookupActor",
+        "summary": "Look up a Fediverse actor by handle",
         "parameters": [
           {
             "name": "handle",
@@ -3567,6 +3634,7 @@
     "/api/v1/consumer/ap/follows": {
       "get": {
         "operationId": "ApController_getFollows",
+        "summary": "Followed Fediverse actors",
         "parameters": [],
         "responses": {
           "200": {
@@ -3597,6 +3665,7 @@
       },
       "post": {
         "operationId": "ApController_followActor",
+        "summary": "Follow a Fediverse actor",
         "parameters": [],
         "responses": {
           "201": {
@@ -3624,6 +3693,7 @@
       },
       "delete": {
         "operationId": "ApController_unfollowActor",
+        "summary": "Unfollow a Fediverse actor",
         "parameters": [
           {
             "name": "actorIri",
@@ -3666,6 +3736,7 @@
     "/api/v1/consumer/ap/blocks": {
       "get": {
         "operationId": "ApController_getBlocks",
+        "summary": "Blocked Fediverse actors",
         "parameters": [],
         "responses": {
           "200": {
@@ -3696,6 +3767,7 @@
       },
       "post": {
         "operationId": "ApController_blockActor",
+        "summary": "Block a Fediverse actor",
         "parameters": [],
         "responses": {
           "201": {
@@ -3723,6 +3795,7 @@
       },
       "delete": {
         "operationId": "ApController_unblockActor",
+        "summary": "Unblock a Fediverse actor",
         "parameters": [
           {
             "name": "actorIri",
@@ -3765,6 +3838,7 @@
     "/api/v1/consumer/ap/posts": {
       "get": {
         "operationId": "ApController_getPosts",
+        "summary": "Fediverse timeline posts",
         "parameters": [
           {
             "name": "page",
@@ -3835,6 +3909,7 @@
     "/api/v1/consumer/ap/posts/{objectIri}": {
       "get": {
         "operationId": "ApController_getPost",
+        "summary": "A single Fediverse post",
         "parameters": [
           {
             "name": "objectIri",
@@ -3873,6 +3948,7 @@
     "/api/v1/consumer/ap/posts/ingest": {
       "post": {
         "operationId": "ApController_ingestPost",
+        "summary": "Store a Fediverse post",
         "parameters": [],
         "responses": {
           "201": {
@@ -3902,6 +3978,7 @@
     "/api/v1/consumer/ap/posts/ingest-batch": {
       "post": {
         "operationId": "ApController_ingestPostBatch",
+        "summary": "Store a batch of Fediverse posts",
         "parameters": [],
         "responses": {
           "201": {
@@ -3931,6 +4008,7 @@
     "/api/v1/consumer/ap/actions": {
       "get": {
         "operationId": "ApController_getActions",
+        "summary": "The user's actions on Fediverse objects",
         "parameters": [],
         "responses": {
           "200": {
@@ -3961,6 +4039,7 @@
       },
       "post": {
         "operationId": "ApController_createAction",
+        "summary": "Record an action on a Fediverse object",
         "parameters": [],
         "responses": {
           "201": {
@@ -3988,6 +4067,7 @@
       },
       "delete": {
         "operationId": "ApController_deleteAction",
+        "summary": "Remove an action from a Fediverse object",
         "parameters": [
           {
             "name": "objectIri",
@@ -4147,7 +4227,7 @@
             ]
           },
           "activityIri": {
-            "type": "object",
+            "type": "string",
             "description": "IRI of the federated activity; null while the action stayed local",
             "nullable": true
           },
@@ -4156,7 +4236,7 @@
             "description": "Whether the action was federated to the Fediverse"
           },
           "content": {
-            "type": "object",
+            "type": "string",
             "description": "Reply text; null for non-reply actions",
             "nullable": true
           },
@@ -4189,17 +4269,17 @@
             "example": "@someone@mastodon.social"
           },
           "displayName": {
-            "type": "object",
+            "type": "string",
             "description": "Display name",
             "nullable": true
           },
           "summary": {
-            "type": "object",
+            "type": "string",
             "description": "Profile summary / bio",
             "nullable": true
           },
           "iconUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
@@ -4213,7 +4293,7 @@
             "description": "Inbox URL of the actor"
           },
           "sharedInboxUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Shared inbox URL of the instance",
             "nullable": true
           },
@@ -4253,17 +4333,17 @@
             "description": "ActivityPub actor IRI that is blocked"
           },
           "handle": {
-            "type": "object",
+            "type": "string",
             "description": "Fediverse handle of the blocked actor",
             "nullable": true
           },
           "displayName": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the blocked actor",
             "nullable": true
           },
           "reason": {
-            "type": "object",
+            "type": "string",
             "description": "Reason the user gave for the block",
             "nullable": true
           },
@@ -4298,12 +4378,12 @@
             "description": "Fediverse handle of the followed actor"
           },
           "displayName": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the followed actor",
             "nullable": true
           },
           "iconUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL of the followed actor",
             "nullable": true
           },
@@ -4318,7 +4398,7 @@
             "example": "accepted"
           },
           "acceptedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the remote actor accepted the follow; null while pending",
             "format": "date-time",
             "nullable": true
@@ -4363,17 +4443,17 @@
             "description": "Host the identity federates through"
           },
           "displayName": {
-            "type": "object",
+            "type": "string",
             "description": "Public display name",
             "nullable": true
           },
           "summary": {
-            "type": "object",
+            "type": "string",
             "description": "Profile summary / bio",
             "nullable": true
           },
           "iconUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
@@ -4437,12 +4517,12 @@
             "example": "@someone@mastodon.social"
           },
           "actorName": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the authoring actor",
             "nullable": true
           },
           "actorIconUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL of the authoring actor",
             "nullable": true
           },
@@ -4457,27 +4537,27 @@
             "example": "Note"
           },
           "content": {
-            "type": "object",
+            "type": "string",
             "description": "Post content as HTML",
             "nullable": true
           },
           "contentText": {
-            "type": "object",
+            "type": "string",
             "description": "Post content with HTML stripped",
             "nullable": true
           },
           "summary": {
-            "type": "object",
+            "type": "string",
             "description": "Content warning / summary",
             "nullable": true
           },
           "url": {
-            "type": "object",
+            "type": "string",
             "description": "Permalink of the post on its origin instance",
             "nullable": true
           },
           "inReplyTo": {
-            "type": "object",
+            "type": "string",
             "description": "IRI of the post this one replies to",
             "nullable": true
           },
@@ -4489,7 +4569,7 @@
             }
           },
           "language": {
-            "type": "object",
+            "type": "string",
             "description": "Language of the post",
             "nullable": true,
             "example": "en"
@@ -4596,7 +4676,7 @@
             "example": "Read later"
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Icon name chosen for the collection",
             "nullable": true
           },
@@ -4636,7 +4716,7 @@
             "description": "ID of the bookmarked teaser"
           },
           "note": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text note the user attached",
             "nullable": true
           },
@@ -4816,7 +4896,7 @@
             "description": "True when the content lives on a foreign domain and must be opened there"
           },
           "signatureValid": {
-            "type": "object",
+            "type": "boolean",
             "description": "Signature verification outcome; null when the content carries no `_signature` block",
             "nullable": true
           }
@@ -5690,7 +5770,7 @@
             "description": "True when a Mapbox token is configured and the 3D globe is available"
           },
           "token": {
-            "type": "object",
+            "type": "string",
             "description": "Mapbox public access token for client-side use; null when unconfigured",
             "nullable": true
           }
@@ -5721,7 +5801,7 @@
             "description": "Notification headline"
           },
           "body": {
-            "type": "object",
+            "type": "string",
             "description": "Notification body text",
             "nullable": true
           },
@@ -5732,7 +5812,7 @@
             "nullable": true
           },
           "actionUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Frontend route to open when the notification is clicked",
             "nullable": true
           },
@@ -6750,6 +6830,16 @@
               "external"
             ]
           },
+          "matchedGoalIds": {
+            "description": "Goal searches only: the goals whose content queries matched this hit (\"why am I seeing this?\"). Set when the content queries of the request carry a `goal_id`; absent otherwise.",
+            "example": [
+              "8d3c2f4e-1b7a-4c55-9a0e-2f6d1c9b7e10"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "slug": {
             "type": "string",
             "description": "URL slug of the content item"
@@ -6997,6 +7087,16 @@
               "studio",
               "external"
             ]
+          },
+          "matchedGoalIds": {
+            "description": "Goal searches only: the goals whose content queries matched this hit (\"why am I seeing this?\"). Set when the content queries of the request carry a `goal_id`; absent otherwise.",
+            "example": [
+              "8d3c2f4e-1b7a-4c55-9a0e-2f6d1c9b7e10"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -7276,10 +7376,11 @@
             "description": "Free text within the goal(s): hits must match the text and a content query (not in random mode)"
           },
           "contentQueries": {
-            "description": "Resolved content_queries from goal definition (with substituted params)",
             "type": "array",
+            "description": "Resolved content_queries from goal definition (with substituted params). Give each query the `goal_id` of the goal it belongs to — hits then report `matchedGoalIds`; without one, `goalId` is used.",
             "items": {
-              "type": "string"
+              "type": "object",
+              "additionalProperties": true
             }
           },
           "filters": {

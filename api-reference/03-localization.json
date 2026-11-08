@@ -2149,7 +2149,7 @@
             "description": "Whether the locale is enabled for content editing"
           },
           "fallbackLocale": {
-            "type": "object",
+            "type": "string",
             "description": "Locale to fall back to when a field has no value in this locale",
             "example": "en",
             "nullable": true
@@ -2164,13 +2164,13 @@
             "example": "ltr"
           },
           "dateFormat": {
-            "type": "object",
+            "type": "string",
             "description": "Date format pattern (null falls back to CLDR defaults)",
             "example": "DD.MM.YYYY",
             "nullable": true
           },
           "timeFormat": {
-            "type": "object",
+            "type": "string",
             "description": "Time format pattern (null falls back to CLDR defaults)",
             "example": "HH:mm",
             "nullable": true
@@ -2576,7 +2576,7 @@
             ]
           },
           "assigneeId": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the assigned translator",
             "nullable": true
           },
@@ -2586,12 +2586,12 @@
             "example": 0
           },
           "dueDate": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "completedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the task was marked completed",
             "format": "date-time",
             "nullable": true

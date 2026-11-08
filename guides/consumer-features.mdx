@@ -441,23 +441,27 @@ The drawer displays:
 
 #### Goal Matching Logic
 
-The drawer determines matched goals using a three-tier strategy:
+The drawer determines matched goals in this order, using the first step that finds a goal:
 
 <Steps>
-  <Step title="Direct match" title-type="p">
-    If the content was found via a **goal-based search** (`POST /discover/by-goal`), the teaser carries the originating `goalId`. This provides a guaranteed match.
+  <Step title="Goals reported by the Discovery Node" title-type="p">
+    Every goal feed in Discover — all goals, a goal group, a single goal and *Surprise me* — tags each content query it sends to `POST /discover/by-goal` with the `goal_id` of its goal. The Discovery Node reports which of those queries matched a hit, and the teaser's `matchedGoalIds` lists exactly those goals (see [Search API](#search-api)). This is an exact answer, also when a hit matched several goals of a group.
+  </Step>
+
+  <Step title="Single-goal search" title-type="p">
+    If the content was found in the feed of **one goal**, that goal is the match.
   </Step>
 
   <Step title="Active goal tab" title-type="p">
     If the user has a **goal tab selected** in the Discover view, that goal is used as the match context.
   </Step>
 
-  <Step title="Fuzzy matching" title-type="p">
-    As a fallback, the system compares the content's **badges and content type** against the user's goal names and categories using partial substring matching. For example, a teaser with the badge "technology" would match a goal named "Follow developments in technology".
+  <Step title="Word matching" title-type="p">
+    As a last resort (for example for results of a plain search), the drawer compares the content's **badges and content type** with the words of the user's goal names. Words shorter than four letters and common words ("follow", "explore", "week", …) are ignored, and word stems count ("culture" matches "cultural", "event" matches "events"), so a teaser with the badge "technology" matches a goal named "Follow developments in technology". A goal also matches when one of its category tags for this content type appears in the teaser's badges or title. Goals tied to a place that does not fit the teaser's location are left out.
   </Step>
 </Steps>
 
-Clients that send goal-tagged content queries to `POST /discover/by-goal` (the mobile app does) get an exact answer without guessing: each hit's `matchedGoalIds` lists the goals whose queries matched it (see [Search API](#search-api)).
+Other clients get the same exact answer by sending goal-tagged content queries — the mobile app does.
 
 The drawer, like the bookmark popover and the goal editor, is a modal dialog: Escape closes it and focus returns to the card that opened it.
 

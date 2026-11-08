@@ -2319,7 +2319,7 @@
             }
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "Expiration timestamp; null when the key never expires",
             "format": "date-time",
             "nullable": true
@@ -2394,13 +2394,13 @@
             }
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "Expiration timestamp; null when the key never expires",
             "format": "date-time",
             "nullable": true
           },
           "lastUsedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the key was last used (debounced, updated at most once per minute)",
             "format": "date-time",
             "nullable": true
@@ -2521,7 +2521,7 @@
             ]
           },
           "avatarUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
@@ -2543,7 +2543,7 @@
             ]
           },
           "lastLoginAt": {
-            "type": "object",
+            "type": "string",
             "description": "Timestamp of the last successful login",
             "format": "date-time",
             "nullable": true
@@ -2606,7 +2606,7 @@
             "example": "free"
           },
           "logoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Organization logo URL",
             "nullable": true
           }
@@ -3101,22 +3101,22 @@
             "example": 1
           },
           "ownerUserId": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the owning user",
             "nullable": true
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "description": "Custom domain",
             "nullable": true
           },
           "logoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Organization logo URL",
             "nullable": true
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Organization description",
             "nullable": true
           },
@@ -3208,22 +3208,22 @@
             "example": 1
           },
           "ownerUserId": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the owning user",
             "nullable": true
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "description": "Custom domain",
             "nullable": true
           },
           "logoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Organization logo URL",
             "nullable": true
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Organization description",
             "nullable": true
           },
@@ -3302,11 +3302,11 @@
             "description": "Session (refresh token) ID"
           },
           "ip": {
-            "type": "object",
+            "type": "string",
             "description": "IP address where the session was created"
           },
           "userAgent": {
-            "type": "object",
+            "type": "string",
             "description": "User agent of the session"
           },
           "createdAt": {
@@ -3423,14 +3423,14 @@
             "maxLength": 200
           },
           "domain": {
-            "type": "object",
+            "type": "string",
             "example": "news.example.org",
             "description": "Domain of the organization; null clears it",
             "nullable": true,
             "maxLength": 255
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "example": "Local news from Munich and Upper Bavaria.",
             "description": "Short description; also shown as the \"About\" text of the publisher profile on Discovery Nodes. null clears it.",
             "nullable": true,
@@ -3517,7 +3517,7 @@
             ]
           },
           "avatarUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
@@ -3533,7 +3533,7 @@
             ]
           },
           "lastLoginAt": {
-            "type": "object",
+            "type": "string",
             "description": "Timestamp of the last successful login",
             "format": "date-time",
             "nullable": true
@@ -3824,7 +3824,7 @@
             "description": "Notification title"
           },
           "readAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -3849,12 +3849,12 @@
             "description": "Session (refresh token) UUID"
           },
           "ip": {
-            "type": "object",
+            "type": "string",
             "description": "IP address the session was created from",
             "nullable": true
           },
           "userAgent": {
-            "type": "object",
+            "type": "string",
             "description": "User agent of the session",
             "nullable": true
           },
@@ -3867,7 +3867,7 @@
             "format": "date-time"
           },
           "revokedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -3893,7 +3893,7 @@
             "format": "date-time"
           },
           "usedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -3929,7 +3929,7 @@
             "description": "Role within the organization"
           },
           "avatarUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
@@ -3944,7 +3944,7 @@
             "description": "Account status"
           },
           "lastLoginAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -3993,7 +3993,7 @@
             ]
           },
           "avatarUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Avatar image URL",
             "nullable": true
           },
@@ -4009,7 +4009,7 @@
             ]
           },
           "lastLoginAt": {
-            "type": "object",
+            "type": "string",
             "description": "Timestamp of the last successful login",
             "format": "date-time",
             "nullable": true
