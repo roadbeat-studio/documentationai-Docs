@@ -171,10 +171,6 @@ The auto-scoper covers these 15 models: `user`, `content`, `contentType`, `conte
 
 Prisma reports the **schema model name** (`ContentType`, `ApiKey`) to the query extension, while the list above uses the client accessor names (`contentType`, `apiKey`). The service normalizes the model name before the lookup. A unit test pins every scoped model, plus the global models that must stay unscoped, against the names Prisma actually passes, and an E2E regression suite checks that the management lists (content types, content, users) and the dashboard counts contain only the signed-in organization's data.
 
-<Callout kind="danger">
-  Studio versions before November 2026 compared the two name forms verbatim, so **no** query was auto-scoped: services that relied on the auto-scoper could return or change rows of every organization. Update to a current version; there is no configuration workaround.
-</Callout>
-
 ### Background Jobs
 
 Work that runs outside an HTTP request — scheduled publishing, scheduled releases, queue processors — has no request to take the organization from. Such jobs pass the organization explicitly and run inside `runWithTenant(organizationId, …)`, which sets the tenant context only when none is active; inside a request, the request's context stays in charge.
