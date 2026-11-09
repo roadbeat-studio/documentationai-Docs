@@ -3420,7 +3420,7 @@
             "additionalProperties": true
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "description": "Error message when the action failed",
             "nullable": true
           },
@@ -3492,12 +3492,12 @@
             "description": "User who opened the session"
           },
           "title": {
-            "type": "object",
+            "type": "string",
             "description": "Operator-chosen title",
             "nullable": true
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "description": "Requested model; null uses the gateway default",
             "nullable": true,
             "example": "mistral-small3.2"
@@ -3576,12 +3576,12 @@
             "description": "User who opened the session"
           },
           "title": {
-            "type": "object",
+            "type": "string",
             "description": "Operator-chosen title",
             "nullable": true
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "description": "Requested model; null uses the gateway default",
             "nullable": true,
             "example": "mistral-small3.2"
@@ -3719,7 +3719,7 @@
             "format": "date-time"
           },
           "userId": {
-            "type": "object",
+            "type": "string",
             "description": "Acting user; null for system-initiated events",
             "nullable": true
           },
@@ -3737,7 +3737,7 @@
             ]
           },
           "subject": {
-            "type": "object",
+            "type": "string",
             "description": "What the event was about — flow id, connector key, consent id, anomaly type",
             "nullable": true
           },
@@ -3746,7 +3746,7 @@
             "description": "Whether the recorded action mutates state irreversibly"
           },
           "egressTarget": {
-            "type": "object",
+            "type": "string",
             "description": "Host the egress decision applied to",
             "nullable": true,
             "example": "hooks.slack.com"
@@ -3876,17 +3876,17 @@
             }
           },
           "keyHint": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint for the vaulted secret — never the secret itself",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "lastUsedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -3956,19 +3956,19 @@
             }
           },
           "keyHint": {
-            "type": "object",
+            "type": "string",
             "description": "Non-reversible masked hint for the vaulted secret — never the secret itself. Null when the vault entry carries no hint.",
             "example": "sk-1…wxyz",
             "nullable": true
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the OAuth access token expires; null for non-expiring credentials",
             "format": "date-time",
             "nullable": true
           },
           "lastUsedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When a flow last leased this credential",
             "format": "date-time",
             "nullable": true
@@ -4038,7 +4038,7 @@
             "format": "uuid"
           },
           "organizationId": {
-            "type": "object",
+            "type": "string",
             "description": "null = global/native connector shared by all orgs; set = org-owned (OpenAPI/MCP import)",
             "nullable": true
           },
@@ -4216,13 +4216,13 @@
             "format": "date-time"
           },
           "expiresAt": {
-            "type": "object",
+            "type": "string",
             "description": "Set only for the '30d' lifetime",
             "format": "date-time",
             "nullable": true
           },
           "revokedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the consent was revoked; null while it stands",
             "format": "date-time",
             "nullable": true
@@ -4359,7 +4359,7 @@
             "example": "Publish to Slack"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Optional description",
             "nullable": true
           },
@@ -4384,7 +4384,7 @@
             "example": "activepieces"
           },
           "engineRef": {
-            "type": "object",
+            "type": "string",
             "description": "Engine-side workflow id, set once the flow has been activated (compiled)",
             "nullable": true
           },
@@ -4475,7 +4475,7 @@
             "example": "Publish to Slack"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Optional description",
             "nullable": true
           },
@@ -4500,7 +4500,7 @@
             "example": "activepieces"
           },
           "engineRef": {
-            "type": "object",
+            "type": "string",
             "description": "Engine-side workflow id, set once the flow has been activated (compiled)",
             "nullable": true
           },
@@ -4567,7 +4567,7 @@
             "example": 3
           },
           "changelog": {
-            "type": "object",
+            "type": "string",
             "description": "Change note recorded with this version",
             "nullable": true
           },
@@ -4715,7 +4715,7 @@
             }
           },
           "secretHint": {
-            "type": "object",
+            "type": "string",
             "description": "Non-reversible masked hint for the vaulted client secret — never the secret itself. Null when the vault entry carries no hint.",
             "nullable": true
           }
@@ -4862,18 +4862,18 @@
             ]
           },
           "initiatedBy": {
-            "type": "object",
+            "type": "string",
             "description": "User who started the run; null for system/event-triggered runs",
             "nullable": true
           },
           "startedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the worker claimed the run; null while queued",
             "format": "date-time",
             "nullable": true
           },
           "finishedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the run reached a terminal state; null while queued/running",
             "format": "date-time",
             "nullable": true
@@ -4946,18 +4946,18 @@
             ]
           },
           "initiatedBy": {
-            "type": "object",
+            "type": "string",
             "description": "User who started the run; null for system/event-triggered runs",
             "nullable": true
           },
           "startedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the worker claimed the run; null while queued",
             "format": "date-time",
             "nullable": true
           },
           "finishedAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the run reached a terminal state; null while queued/running",
             "format": "date-time",
             "nullable": true
@@ -5027,23 +5027,23 @@
             "description": "Whether this step sent data to an external system"
           },
           "inputHash": {
-            "type": "object",
+            "type": "string",
             "description": "sha256 of the step input — a hash, never the payload (privacy by design)",
             "nullable": true
           },
           "outputHash": {
-            "type": "object",
+            "type": "string",
             "description": "sha256 of the step output — a hash, never the payload",
             "nullable": true
           },
           "durationMs": {
-            "type": "object",
+            "type": "number",
             "description": "Step wall-clock duration in milliseconds",
             "nullable": true,
             "example": 412
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "description": "Error message when the step failed",
             "nullable": true
           },
@@ -5151,24 +5151,24 @@
             "description": "A disabled trigger is never fired"
           },
           "slug": {
-            "type": "object",
+            "type": "string",
             "description": "inbound_webhook only — the public path segment of `POST /api/v1/hooks-pro/:slug`",
             "nullable": true
           },
           "secretHint": {
-            "type": "object",
+            "type": "string",
             "description": "inbound_webhook only — non-reversible masked hint for the vaulted HMAC secret. Never the secret; the plaintext is returned only once, at create time.",
             "example": "whsec",
             "nullable": true
           },
           "nextFireAt": {
-            "type": "object",
+            "type": "string",
             "description": "schedule / polling connector_event — next due fire time (UTC)",
             "format": "date-time",
             "nullable": true
           },
           "lastFiredAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the trigger last fired",
             "format": "date-time",
             "nullable": true
@@ -5258,24 +5258,24 @@
             "description": "A disabled trigger is never fired"
           },
           "slug": {
-            "type": "object",
+            "type": "string",
             "description": "inbound_webhook only — the public path segment of `POST /api/v1/hooks-pro/:slug`",
             "nullable": true
           },
           "secretHint": {
-            "type": "object",
+            "type": "string",
             "description": "inbound_webhook only — non-reversible masked hint for the vaulted HMAC secret. Never the secret; the plaintext is returned only once, at create time.",
             "example": "whsec",
             "nullable": true
           },
           "nextFireAt": {
-            "type": "object",
+            "type": "string",
             "description": "schedule / polling connector_event — next due fire time (UTC)",
             "format": "date-time",
             "nullable": true
           },
           "lastFiredAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the trigger last fired",
             "format": "date-time",
             "nullable": true

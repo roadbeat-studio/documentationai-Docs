@@ -3680,7 +3680,7 @@
         ],
         "responses": {
           "201": {
-            "description": "The task with `status: completed` plus `completed_by` / `completed_at` set.",
+            "description": "The task with `status: completed` plus `completed_by` / `completed_at` set. 403 `TASK_VIEWER_READONLY` for viewers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3734,7 +3734,7 @@
         ],
         "responses": {
           "201": {
-            "description": "The task with `status: cancelled`.",
+            "description": "The task with `status: cancelled`. 403 `TASK_VIEWER_READONLY` for viewers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3798,7 +3798,7 @@
         },
         "responses": {
           "201": {
-            "description": "The task with the new `assignee_id`. 404 when the assignee is not a member of the same organization.",
+            "description": "The task with the new `assignee_id`. 404 when the assignee is not a member of the same organization; 403 `TASK_VIEWER_READONLY` for viewers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5033,8 +5033,9 @@
           "contentTypeIds": {
             "example": [
               "news",
-              "blog-post"
+              "event"
             ],
+            "description": "Content types this workflow applies to: new content of these types starts in it, and existing content of these types can be started by hand. Values are content type ids as listed by `GET /api/v1/manage/content-types` (e.g. `news`) — not display names.",
             "type": "array",
             "items": {
               "type": "string"
@@ -5259,7 +5260,7 @@
             "format": "date-time"
           },
           "user_name": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the holder (joined from users — name only, data minimization). Null when the user has no name.",
             "nullable": true
           },
@@ -5323,7 +5324,7 @@
             "description": "Auto-applied for its content type (at most one per org + type)"
           },
           "created_by_id": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the creating user; null when that user was deleted",
             "nullable": true
           },
@@ -5371,7 +5372,7 @@
             "description": "UUID of the acting user (the admin, or the requester)"
           },
           "previous_holder_id": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the user who held the lock at that moment; null when nobody did",
             "nullable": true
           },
@@ -5380,12 +5381,12 @@
             "format": "date-time"
           },
           "actor_name": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the actor (joined); null when the user was deleted",
             "nullable": true
           },
           "previous_holder_name": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the previous holder (joined); null when unknown",
             "nullable": true
           }
@@ -5603,13 +5604,13 @@
             "example": "Europe/Berlin"
           },
           "next_run_at": {
-            "type": "object",
+            "type": "string",
             "description": "Next occurrence in UTC. `null` while a poller replica holds the claim, or while the schedule is inactive.",
             "format": "date-time",
             "nullable": true
           },
           "last_run_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the previous occurrence ran; null before the first run",
             "format": "date-time",
             "nullable": true
@@ -5666,7 +5667,7 @@
             "example": "March Product Launch"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text description",
             "nullable": true
           },
@@ -5683,13 +5684,13 @@
             ]
           },
           "scheduled_at": {
-            "type": "object",
+            "type": "string",
             "description": "Planned publication instant in UTC; null while the release is a draft",
             "format": "date-time",
             "nullable": true
           },
           "published_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the release was last executed (also set on a failed run)",
             "format": "date-time",
             "nullable": true
@@ -5835,7 +5836,7 @@
             "description": "Release name"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text description",
             "nullable": true
           },
@@ -5852,12 +5853,12 @@
             ]
           },
           "scheduled_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "published_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -5939,7 +5940,7 @@
             "description": "Content UUID"
           },
           "contentSlug": {
-            "type": "object",
+            "type": "string",
             "description": "Slug of the content item; null when the content no longer exists",
             "nullable": true
           },
@@ -5964,7 +5965,7 @@
             "description": "Whether the workflow state allows publishing. Always true for non-publish actions and when pro-workflows is not installed."
           },
           "workflowState": {
-            "type": "object",
+            "type": "string",
             "description": "Current workflow state id; null when the content has no workflow instance",
             "nullable": true,
             "example": "approved"
@@ -6083,13 +6084,13 @@
             "description": "UUID of the scheduling user (the action executes as them)"
           },
           "executed_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the action actually ran (also set when it failed terminally)",
             "format": "date-time",
             "nullable": true
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "description": "Message of the last failed attempt; null while healthy",
             "nullable": true
           },
@@ -6344,7 +6345,7 @@
             "format": "date-time"
           },
           "actor_name": {
-            "type": "object",
+            "type": "string",
             "description": "Display name of the actor (joined); null when the user was deleted",
             "nullable": true
           }
@@ -6380,7 +6381,7 @@
             "description": "Organization the policy belongs to (primary key)"
           },
           "keep_last": {
-            "type": "object",
+            "type": "number",
             "description": "Keep at most this many versions per content item (newest first); null = unlimited. The current version is never pruned.",
             "nullable": true,
             "example": 20
@@ -6390,7 +6391,7 @@
             "description": "Never prune snapshots whose status is `published`"
           },
           "max_age_days": {
-            "type": "object",
+            "type": "number",
             "description": "Prune versions older than this many days; null = no age limit",
             "nullable": true,
             "example": 365
@@ -6478,7 +6479,7 @@
             "description": "UUID of the authoring user"
           },
           "createdByName": {
-            "type": "object",
+            "type": "string",
             "description": "Org-scoped display name for `createdBy` (names only — no emails); null when the user is unknown or outside the organization.",
             "nullable": true
           },
@@ -6492,7 +6493,7 @@
             "example": 12
           },
           "changeCount": {
-            "type": "object",
+            "type": "number",
             "description": "Top-level fields that differ from the preceding version; null for the oldest version on the page.",
             "nullable": true,
             "example": 3
@@ -6720,10 +6721,10 @@
             "nullable": true
           },
           "content_type_ids": {
-            "description": "Content type ids this workflow applies to; empty array = all types",
+            "description": "Content type ids this workflow applies to (e.g. `news`, as listed by `GET /api/v1/manage/content-types`). An empty array binds no type, so the workflow applies to nothing.",
             "example": [
               "news",
-              "blog-post"
+              "event"
             ],
             "type": "array",
             "items": {
@@ -7227,7 +7228,7 @@
             "description": "Task UUID"
           },
           "workflow_instance_id": {
-            "type": "object",
+            "type": "string",
             "description": "Workflow instance UUID; null for a manual task",
             "nullable": true
           },
@@ -7245,17 +7246,17 @@
             "example": "review"
           },
           "title": {
-            "type": "object",
+            "type": "string",
             "description": "Short summary",
             "nullable": true
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Longer task description",
             "nullable": true
           },
           "assignee_id": {
-            "type": "object",
+            "type": "string",
             "description": "Assigned user UUID; null when unassigned",
             "nullable": true
           },
@@ -7270,29 +7271,29 @@
             ]
           },
           "due_date": {
-            "type": "object",
+            "type": "string",
             "description": "SLA due date; null when the task has no deadline",
             "format": "date-time",
             "nullable": true
           },
           "completed_by": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the completing user",
             "nullable": true
           },
           "completed_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "reminded_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the overdue reminder was emitted (exactly-once claim, IMP-PRO-WF-08)",
             "format": "date-time",
             "nullable": true
           },
           "escalated_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the task was escalated past its SLA window (IMP-PRO-WF-08)",
             "format": "date-time",
             "nullable": true
@@ -7322,25 +7323,25 @@
             }
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "UUID of the user who created a manual task",
             "nullable": true
           },
           "created_by_name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "assignee_name": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "content_id": {
-            "type": "object",
+            "type": "string",
             "description": "Linked content: a manual task’s own link, else the workflow instance’s content",
             "nullable": true
           },
           "content_slug": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "content_title": {
@@ -7349,7 +7350,7 @@
             "nullable": true
           },
           "current_state": {
-            "type": "object",
+            "type": "string",
             "description": "Current state of the instance (joined); null for a manual task",
             "example": "in_review",
             "nullable": true
@@ -7722,11 +7723,11 @@
             "type": "string"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "dueDate": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "priority": {
@@ -7739,7 +7740,7 @@
             ]
           },
           "contentId": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "description": "Manual tasks only"
           },
@@ -7767,6 +7768,7 @@
             "example": [
               "news"
             ],
+            "description": "Content types this workflow applies to: new content of these types starts in it, and existing content of these types can be started by hand. Values are content type ids as listed by `GET /api/v1/manage/content-types` (e.g. `news`) — not display names. Omit to keep the current bindings; `[]` unbinds all.",
             "type": "array",
             "items": {
               "type": "string"

@@ -1853,6 +1853,7 @@
     "/api/v1/pro/audit/export": {
       "get": {
         "operationId": "AuditController_exportLogs",
+        "summary": "Export audit logs as a JSON or CSV file",
         "parameters": [],
         "responses": {
           "200": {
@@ -2413,6 +2414,7 @@
     "/api/v1/pro/audit/compliance/export": {
       "post": {
         "operationId": "AuditController_exportComplianceReport",
+        "summary": "Export a compliance report as a JSON or CSV file",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2556,7 +2558,7 @@
         },
         "responses": {
           "200": {
-            "description": "The re-read `pro_sso_configs` row, masked exactly as `GET /pro/sso/config` masks it: `client_secret` becomes a fixed bullet string and `scim_token_hash` / `scim_token_hint` are removed entirely. The certificate is NOT truncated here. `scim_token` never carries a usable token on this endpoint — it is the `<hint>••••••••` preview when a hashed token exists, otherwise `null`; enabling SCIM through this endpoint stores a hash only, the plaintext is obtained from POST /pro/sso/config/regenerate-scim-token.",
+            "description": "The re-read `pro_sso_configs` row, masked exactly as `GET /pro/sso/config` masks it: `client_secret` becomes a fixed bullet string and `scim_token_hash` / `scim_token_hint` are removed entirely. The certificate is NOT truncated here. When this update enables SCIM and the configuration has no token yet, a token is minted and `scim_token` carries it in plaintext — shown once, like on create; only its hash is stored. Otherwise `scim_token` is the `<hint>••••••••` preview when a hashed token exists, else `null` — re-enabling SCIM keeps an existing token valid; POST /pro/sso/config/regenerate-scim-token replaces it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2927,16 +2929,7 @@
       "post": {
         "operationId": "SSOController_publicLoginMethod",
         "summary": "Public pre-auth probe: does this email have to log in via SSO?",
-        "parameters": [
-          {
-            "name": "x-forwarded-for",
-            "required": true,
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -2968,6 +2961,16 @@
           },
           "400": {
             "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than 30 probes from this IP within the current minute: code `RATE_LIMITED`, `params: { limit: 30, retryAfterSeconds }`. The `Retry-After` header carries the same number of seconds until the window resets.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3207,6 +3210,26 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "SCIM error body. `scimType` is `invalidFilter` for an unsupported filter and `invalidValue` for a body or parameter that failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "SCIM error body — the bearer token is missing or unknown. Sent with `WWW-Authenticate: Bearer realm=\"SCIM\"`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3233,6 +3256,36 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProSsoScimUserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "SCIM error body. `scimType` is `invalidFilter` for an unsupported filter and `invalidValue` for a body or parameter that failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "SCIM error body — the bearer token is missing or unknown. Sent with `WWW-Authenticate: Bearer realm=\"SCIM\"`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SCIM error body with `scimType: \"uniqueness\"` — a user with this `userName` already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
                 }
               }
             }
@@ -3275,6 +3328,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "SCIM error body — the bearer token is missing or unknown. Sent with `WWW-Authenticate: Bearer realm=\"SCIM\"`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SCIM error body — no user with this id in the organization the token belongs to.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3309,6 +3382,36 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProSsoScimUserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "SCIM error body. `scimType` is `invalidFilter` for an unsupported filter and `invalidValue` for a body or parameter that failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "SCIM error body — the bearer token is missing or unknown. Sent with `WWW-Authenticate: Bearer realm=\"SCIM\"`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SCIM error body — no user with this id in the organization the token belongs to.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
                 }
               }
             }
@@ -3349,6 +3452,36 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "SCIM error body. `scimType` is `invalidFilter` for an unsupported filter and `invalidValue` for a body or parameter that failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "SCIM error body — the bearer token is missing or unknown. Sent with `WWW-Authenticate: Bearer realm=\"SCIM\"`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SCIM error body — no user with this id in the organization the token belongs to.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3376,8 +3509,25 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "No content — the operation succeeded."
+          "401": {
+            "description": "SCIM error body — the bearer token is missing or unknown. Sent with `WWW-Authenticate: Bearer realm=\"SCIM\"`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SCIM error body — no user with this id in the organization the token belongs to.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProSsoScimErrorDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4512,13 +4662,13 @@
             "example": "org_01HZX9K7Q2"
           },
           "user_id": {
-            "type": "object",
+            "type": "string",
             "description": "Actor who performed the action. Null for system-generated events with no user context. After a GDPR erasure scrub (migration 005) this holds the deterministic pseudonym `erased-user-<16 hex>` instead of the original user ID — an HMAC-SHA-256 of the user ID keyed by the server-side `AUDIT_PSEUDONYM_SECRET` plus the organization ID. Pseudonyms are stable for a given secret, so activity still correlates; changing (or first setting) the secret changes newly minted pseudonyms, so a subject erased on both sides of that change appears under two values.",
             "nullable": true,
             "example": "usr_01HZX9K7Q2"
           },
           "user_email": {
-            "type": "object",
+            "type": "string",
             "description": "Actor e-mail at the time of the event. Null when unknown; replaced by the `erased-user-<16 hex>` pseudonym after an erasure scrub.",
             "nullable": true,
             "example": "editor@example.org"
@@ -4534,13 +4684,13 @@
             "example": "content"
           },
           "resource_id": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the affected entity, when the event targets one. Rewritten to the `erased-user-<16 hex>` pseudonym for rows pointing at an erased subject.",
             "nullable": true,
             "example": "cnt_01HZX9K7Q2"
           },
           "resource_label": {
-            "type": "object",
+            "type": "string",
             "description": "Human-readable label for the affected entity (slug, title, e-mail). E-mail-like substrings belonging to an erased subject are pseudonymized in place.",
             "nullable": true,
             "example": "summer-festival-2026"
@@ -4572,13 +4722,13 @@
             }
           },
           "ip_address": {
-            "type": "object",
+            "type": "string",
             "description": "Client IP (first entry of X-Forwarded-For, else the socket address). Null when unavailable, and nulled outright on the subject's own rows by a GDPR erasure scrub.",
             "nullable": true,
             "example": "203.0.113.7"
           },
           "user_agent": {
-            "type": "object",
+            "type": "string",
             "description": "Client user-agent. Null when unavailable, and nulled on the subject's own rows by a GDPR erasure scrub.",
             "nullable": true,
             "example": "Mozilla/5.0 (X11; Linux x86_64)"
@@ -4617,13 +4767,13 @@
             "example": "system"
           },
           "prev_hash": {
-            "type": "object",
+            "type": "string",
             "description": "Tamper-evidence chain link: the `entry_hash` of the preceding entry in this organization's chain (IMP-PRO-AUDIT-04). Null on the first chained row and on legacy rows written before migration 004. A non-null value on the oldest surviving row is legitimate only when a `retention_checkpoint` entry records that same hash as its `tailHash`.",
             "nullable": true,
             "example": "9f2c1a...e41b"
           },
           "entry_hash": {
-            "type": "object",
+            "type": "string",
             "description": "Tamper-evidence chain link: unkeyed SHA-256 over `prev_hash` plus the canonicalized row fields (IMP-PRO-AUDIT-04). Null for rows written before migration 004 — those are counted as `legacyRows`, not failures, by GET /pro/audit/verify. This is a digest of data the caller can already read; no secret or signing key is involved, so it cannot be used to prove authorship — anyone able to write the table can recompute it.",
             "nullable": true,
             "example": "c17d84...9ab0"
@@ -4763,7 +4913,7 @@
             "example": "info"
           },
           "last_cleanup_at": {
-            "type": "object",
+            "type": "string",
             "description": "When enforcement last ran for this policy; null if it never has.",
             "format": "date-time",
             "nullable": true
@@ -4839,7 +4989,7 @@
             "example": "Critical auth events"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Optional longer explanation.",
             "nullable": true
           },
@@ -4977,7 +5127,7 @@
             "example": "usr_01HZX9K7Q2"
           },
           "user_email": {
-            "type": "object",
+            "type": "string",
             "description": "Actor e-mail as recorded on those rows; null when never captured.",
             "nullable": true,
             "example": "editor@example.org"
@@ -5013,7 +5163,7 @@
             "example": 17
           },
           "firstBrokenId": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the first entry whose recomputed hash or `prev_hash` link does not match — the earliest point of tampering. Null when the whole chain verifies.",
             "nullable": true,
             "example": null
@@ -5088,34 +5238,34 @@
             "description": "Owning organization ID (multi-tenant scope)"
           },
           "logo_url": {
-            "type": "object",
+            "type": "string",
             "description": "Logo URL — same-origin path or https only (IMP-PRO-WL-08)",
             "nullable": true,
             "example": "/api/v1/assets/8f2c1d7e/serve"
           },
           "logo_dark_url": {
-            "type": "object",
+            "type": "string",
             "description": "Dark-mode logo URL",
             "nullable": true
           },
           "favicon_url": {
-            "type": "object",
+            "type": "string",
             "description": "Favicon URL",
             "nullable": true
           },
           "app_title": {
-            "type": "object",
+            "type": "string",
             "description": "Browser/app title override",
             "nullable": true,
             "example": "Acme CMS"
           },
           "login_background_url": {
-            "type": "object",
+            "type": "string",
             "description": "Login page background image URL",
             "nullable": true
           },
           "login_logo_url": {
-            "type": "object",
+            "type": "string",
             "description": "Login page logo URL",
             "nullable": true
           },
@@ -5145,7 +5295,7 @@
             "nullable": true
           },
           "active_theme_id": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the active `pro_themes` row; always a theme of the same organization (enforced in the service and by a database trigger, migration 002)",
             "nullable": true
           },
@@ -5189,34 +5339,34 @@
             "description": "Owning organization ID (multi-tenant scope)"
           },
           "logo_url": {
-            "type": "object",
+            "type": "string",
             "description": "Logo URL — same-origin path or https only (IMP-PRO-WL-08)",
             "nullable": true,
             "example": "/api/v1/assets/8f2c1d7e/serve"
           },
           "logo_dark_url": {
-            "type": "object",
+            "type": "string",
             "description": "Dark-mode logo URL",
             "nullable": true
           },
           "favicon_url": {
-            "type": "object",
+            "type": "string",
             "description": "Favicon URL",
             "nullable": true
           },
           "app_title": {
-            "type": "object",
+            "type": "string",
             "description": "Browser/app title override",
             "nullable": true,
             "example": "Acme CMS"
           },
           "login_background_url": {
-            "type": "object",
+            "type": "string",
             "description": "Login page background image URL",
             "nullable": true
           },
           "login_logo_url": {
-            "type": "object",
+            "type": "string",
             "description": "Login page logo URL",
             "nullable": true
           },
@@ -5246,7 +5396,7 @@
             "nullable": true
           },
           "active_theme_id": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the active `pro_themes` row; always a theme of the same organization (enforced in the service and by a database trigger, migration 002)",
             "nullable": true
           },
@@ -5337,7 +5487,7 @@
             "example": "publish"
           },
           "decidingRuleId": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the rule that decided; null when the CE default decided",
             "nullable": true
           },
@@ -5418,18 +5568,18 @@
             "description": "Owning organization ID (multi-tenant scope)"
           },
           "role": {
-            "type": "object",
+            "type": "string",
             "description": "Role the rule applies to; null when the rule is user-scoped only",
             "example": "editor",
             "nullable": true
           },
           "user_id": {
-            "type": "object",
+            "type": "string",
             "description": "User the rule applies to; null when the rule applies to everyone with `role`",
             "nullable": true
           },
           "content_type_id": {
-            "type": "object",
+            "type": "string",
             "description": "Content type the rule targets; null makes it the fallback rule for every content type",
             "nullable": true
           },
@@ -5463,7 +5613,7 @@
             "example": false
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text explanation of the rule",
             "nullable": true
           },
@@ -5533,7 +5683,7 @@
         "type": "object",
         "properties": {
           "ruleId": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the rule applied in this step; null for the CE default baseline step",
             "nullable": true
           },
@@ -5598,34 +5748,34 @@
         "type": "object",
         "properties": {
           "appTitle": {
-            "type": "object",
+            "type": "string",
             "description": "Browser/app title override",
             "nullable": true,
             "example": "Acme CMS"
           },
           "logoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Logo URL",
             "nullable": true,
             "example": "/assets/logo.svg"
           },
           "logoDarkUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Dark-mode logo URL",
             "nullable": true
           },
           "faviconUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Favicon URL",
             "nullable": true
           },
           "loginBackgroundUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Login page background image URL",
             "nullable": true
           },
           "loginLogoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Login page logo URL",
             "nullable": true
           },
@@ -5705,7 +5855,7 @@
         "type": "object",
         "properties": {
           "contentTypeId": {
-            "type": "object",
+            "type": "string",
             "description": "Content type the permissions were resolved for",
             "nullable": true
           },
@@ -5739,7 +5889,7 @@
             ]
           },
           "ruleId": {
-            "type": "object",
+            "type": "string",
             "description": "ID of the deciding rule; null when the CE default decided",
             "nullable": true
           },
@@ -5942,7 +6092,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "object",
+            "type": "string",
             "description": "Row ID in `pro_custom_roles`; null for a CE built-in role that has no system mirror row yet",
             "nullable": true
           },
@@ -5973,13 +6123,13 @@
             }
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "description": "Hex colour used to badge the role in the UI",
             "example": "#F97316",
             "nullable": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Icon name used in the UI",
             "nullable": true
           },
@@ -6006,7 +6156,7 @@
             "example": 3
           },
           "createdAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the role row was created; null for CE built-ins without a mirror row",
             "format": "date-time",
             "nullable": true
@@ -6113,7 +6263,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "object",
+            "type": "string",
             "description": "Row ID in `pro_custom_roles`; null for a CE built-in role that has no system mirror row yet",
             "nullable": true
           },
@@ -6144,13 +6294,13 @@
             }
           },
           "color": {
-            "type": "object",
+            "type": "string",
             "description": "Hex colour used to badge the role in the UI",
             "example": "#F97316",
             "nullable": true
           },
           "icon": {
-            "type": "object",
+            "type": "string",
             "description": "Icon name used in the UI",
             "nullable": true
           },
@@ -6177,7 +6327,7 @@
             "example": 3
           },
           "createdAt": {
-            "type": "object",
+            "type": "string",
             "description": "When the role row was created; null for CE built-ins without a mirror row",
             "format": "date-time",
             "nullable": true
@@ -6675,7 +6825,7 @@
           },
           "scim_token": {
             "type": "object",
-            "description": "On `POST /pro/sso/config`: the plaintext SCIM bearer token, shown EXACTLY ONCE and only when SCIM was enabled at creation — masking preserves it deliberately, and it is the only place it ever appears. Everywhere else, including `PUT /pro/sso/config`, this is the non-usable hint `<hint>••••••••` when a hashed token exists and `null` when none does; only the hash is persisted, so use POST /pro/sso/config/regenerate-scim-token to obtain a fresh token. `scim_token_hash` and `scim_token_hint` are removed from the response entirely.",
+            "description": "The plaintext SCIM bearer token (64 hex characters), shown EXACTLY ONCE, when this write minted one: `POST /pro/sso/config` with `scimEnabled: true`, or `PUT /pro/sso/config` with `scimEnabled: true` while the configuration has no token yet. Masking preserves it deliberately; only the hash is persisted, so this response is the only place it ever appears. Otherwise — including a `PUT` that re-enables SCIM with an existing token, which keeps that token valid — this is the non-usable hint `<hint>••••••••` when a hashed token exists and `null` when none does; use POST /pro/sso/config/regenerate-scim-token to obtain a fresh token. `scim_token_hash` and `scim_token_hint` are removed from the response entirely.",
             "nullable": true
           },
           "scim_last_used_at": {
@@ -6884,6 +7034,52 @@
         },
         "required": [
           "value"
+        ]
+      },
+      "ProSsoScimErrorDto": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "description": "Always the SCIM error message URN",
+            "example": [
+              "urn:ietf:params:scim:api:messages:2.0:Error"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "The HTTP status code, as a string (RFC 7644)",
+            "example": "409"
+          },
+          "scimType": {
+            "type": "string",
+            "description": "RFC 7644 detail error keyword: `invalidFilter` for an unsupported filter, `uniqueness` for an existing `userName`, `invalidValue` for a request body or parameter that failed validation. Absent for 401, 404 and 5xx.",
+            "enum": [
+              "invalidFilter",
+              "tooMany",
+              "uniqueness",
+              "mutability",
+              "invalidSyntax",
+              "invalidPath",
+              "noTarget",
+              "invalidValue",
+              "invalidVers",
+              "sensitive"
+            ],
+            "example": "uniqueness"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable explanation. 5xx errors carry only the HTTP status text — internals stay in the server log.",
+            "example": "User with userName ada@example.com already exists"
+          }
+        },
+        "required": [
+          "schemas",
+          "status"
         ]
       },
       "ProSsoScimFeatureSupportDto": {
@@ -7433,7 +7629,7 @@
             "description": "Owning organization ID (multi-tenant scope)"
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User who created the theme; null after that user was erased — the FK is `ON DELETE SET NULL` and the column is nullable since migration 003 (GDPR Art. 17)",
             "nullable": true
           },
@@ -7443,7 +7639,7 @@
             "example": "Ocean"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text description",
             "nullable": true,
             "example": "Cool blue and cyan palette"
@@ -7499,7 +7695,7 @@
             "example": "default"
           },
           "custom_css": {
-            "type": "object",
+            "type": "string",
             "description": "Additional raw CSS injected into the admin UI of this organization; validated against the sanitizer policy on write (IMP-PRO-WL-04). Never exposed on the unauthenticated public-branding route.",
             "nullable": true
           },

@@ -2076,7 +2076,7 @@
         ],
         "responses": {
           "200": {
-            "description": "GraphQL-shaped result. `data` holds the record for a `findOne` query (null when nothing matched) or `{ items, total }` for `findMany`; records carry the content fields plus the `_`-prefixed system fields. When the GraphQL API is disabled for the organization the handler instead returns `{ errors: [...] }`, which the envelope wraps — the errors then appear at `data.errors` and `extensions` is absent. Requires `Authorization: Bearer <delivery token>`: 401 for a missing, invalid, revoked or expired token, 404 for an unknown query hash, 400 for an undeclared variable or a depth/cost violation.",
+            "description": "GraphQL-shaped result. `data` holds the record for a `findOne` query (null when nothing matched) or `{ items, total }` for `findMany`; records carry the content fields plus the `_`-prefixed system fields. When the GraphQL API is disabled for the organization the handler instead returns `{ errors: [...] }`, which the envelope wraps — the errors then appear at `data.errors` and `extensions` is absent. Requires `Authorization: Bearer <delivery token>`: 401 for a missing, invalid, revoked or expired token, 404 for an unknown query hash, 400 for an undeclared variable or a depth/cost violation, 429 `RATE_LIMITED` (with `Retry-After` in seconds) beyond the organization's `rate_limit_per_min` for this token.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3236,7 +3236,7 @@
         },
         "responses": {
           "201": {
-            "description": "The created webhook **including the full HMAC-SHA256 signing secret** — this is the show-once reveal; every later read masks it.",
+            "description": "The created webhook **including the full HMAC-SHA256 signing secret** — this is the show-once reveal; every later read masks it. The calling admin becomes the user content written by the webhook is attributed to (`created_by_id`). 400 for a configuration that cannot work: `INCOMING_WEBHOOK_ACTION_UNSUPPORTED` (`trigger_workflow`), `INCOMING_WEBHOOK_NO_CONTENT_TYPE`, `INCOMING_WEBHOOK_CONTENT_TYPE_UNKNOWN` / `_ABSTRACT` / `_DISABLED` (`config.contentTypeId` is a content-type ID of this organization such as `news`), `INCOMING_WEBHOOK_CONFIG_INVALID` (`params.field`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -3362,7 +3362,7 @@
         },
         "responses": {
           "200": {
-            "description": "The updated webhook with `secret` masked to `<first4>…<last4>` — same shape as list/get, whether or not any field actually changed. The full secret is only ever returned by create and regenerate-secret.",
+            "description": "The updated webhook with `secret` masked to `<first4>…<last4>` — same shape as list/get, whether or not any field actually changed. The full secret is only ever returned by create and regenerate-secret. The resulting configuration is validated like on create (an active `trigger_workflow` webhook is refused; deactivating or deleting one works). A webhook without `created_by_id` gets the saving admin.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3582,7 +3582,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Execution acknowledgement with the action result. Requires `x-webhook-signature`; when `x-webhook-timestamp` is sent it is part of the signed string and must be inside the replay window. Bad or missing signatures answer 401, unknown/inactive slugs 404.",
+            "description": "Execution acknowledgement with the action result. Requires `x-webhook-signature`; when `x-webhook-timestamp` is sent it is part of the signed string and must be inside the replay window. Bad or missing signatures answer 401, unknown/inactive slugs 404 `INCOMING_WEBHOOK_NOT_FOUND`. Content actions run through Studio's content service, so its validation errors (e.g. 422) and `404 CONTENT_NOT_FOUND` (update of an id outside this organization, or a malformed id) come back to the sender; `422 INCOMING_WEBHOOK_ACTION_UNSUPPORTED` for a legacy `trigger_workflow` webhook, `422 INCOMING_WEBHOOK_NO_ACTOR` when the organization has no active admin, `503 INCOMING_WEBHOOK_HOST_UNSUPPORTED` on a Studio host that cannot write content outside a signed-in request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3843,7 +3843,7 @@
             ]
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User who created the environment",
             "nullable": true
           },
@@ -3896,7 +3896,7 @@
         "type": "object",
         "properties": {
           "statusCode": {
-            "type": "object",
+            "type": "number",
             "description": "HTTP status of the proxied request; null when the request never completed",
             "nullable": true,
             "example": 200
@@ -3916,7 +3916,7 @@
             "nullable": true
           },
           "errorMessage": {
-            "type": "object",
+            "type": "string",
             "description": "Transport error or timeout message; null on a completed request",
             "nullable": true,
             "example": "Request timed out (30s)"
@@ -3986,7 +3986,7 @@
             "nullable": true
           },
           "status_code": {
-            "type": "object",
+            "type": "number",
             "description": "Response status; null when the request never completed",
             "nullable": true,
             "example": 200
@@ -4006,18 +4006,18 @@
             "nullable": true
           },
           "error_message": {
-            "type": "object",
+            "type": "string",
             "description": "Transport error message, when the request failed",
             "nullable": true
           },
           "duration_ms": {
-            "type": "object",
+            "type": "number",
             "description": "Round-trip time in milliseconds",
             "nullable": true,
             "example": 128
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "description": "Name given when the request was saved; null for unsaved rows",
             "nullable": true
           },
@@ -4216,7 +4216,7 @@
             }
           },
           "avgDurationMs": {
-            "type": "object",
+            "type": "number",
             "description": "Mean round-trip time in milliseconds; null when nothing was executed",
             "nullable": true,
             "example": 143
@@ -4262,29 +4262,29 @@
             "example": 184320
           },
           "width": {
-            "type": "object",
+            "type": "number",
             "description": "Pixel width for images",
             "nullable": true,
             "example": 1920
           },
           "height": {
-            "type": "object",
+            "type": "number",
             "description": "Pixel height for images",
             "nullable": true,
             "example": 1080
           },
           "alt": {
-            "type": "object",
+            "type": "string",
             "description": "Alt text",
             "nullable": true
           },
           "title": {
-            "type": "object",
+            "type": "string",
             "description": "Title",
             "nullable": true
           },
           "blurhash": {
-            "type": "object",
+            "type": "string",
             "description": "Blurhash from the asset metadata; null when it was never computed",
             "nullable": true
           },
@@ -4385,7 +4385,7 @@
             "description": "Whether Studio-session queries also see drafts. The public delivery API ignores this and uses the token scope instead."
           },
           "default_locale": {
-            "type": "object",
+            "type": "string",
             "description": "Default locale for queries",
             "nullable": true,
             "example": "en"
@@ -4460,7 +4460,7 @@
             "example": 3
           },
           "_publishedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -4574,25 +4574,25 @@
             ]
           },
           "expires_at": {
-            "type": "object",
+            "type": "string",
             "description": "Expiry; null means the token never expires",
             "format": "date-time",
             "nullable": true
           },
           "revoked_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the token was revoked; null while it is usable",
             "format": "date-time",
             "nullable": true
           },
           "last_used_at": {
-            "type": "object",
+            "type": "string",
             "description": "Best-effort usage stamp, updated on every successful resolve",
             "format": "date-time",
             "nullable": true
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User who created the token",
             "nullable": true
           },
@@ -4663,25 +4663,25 @@
             ]
           },
           "expires_at": {
-            "type": "object",
+            "type": "string",
             "description": "Expiry; null means the token never expires",
             "format": "date-time",
             "nullable": true
           },
           "revoked_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the token was revoked; null while it is usable",
             "format": "date-time",
             "nullable": true
           },
           "last_used_at": {
-            "type": "object",
+            "type": "string",
             "description": "Best-effort usage stamp, updated on every successful resolve",
             "format": "date-time",
             "nullable": true
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User who created the token",
             "nullable": true
           },
@@ -4750,7 +4750,7 @@
             "description": "True for reference fields"
           },
           "referencedType": {
-            "type": "object",
+            "type": "string",
             "description": "For reference fields, the JSON-Schema `description` (used to carry the target type); null otherwise",
             "nullable": true
           }
@@ -4820,7 +4820,7 @@
             "example": "9f2b1c0e8d4b4c199a771b2c3d4e5f60a1b2c3d4e5f60718293a4b5c6d7e8f90"
           },
           "name": {
-            "type": "object",
+            "type": "string",
             "description": "Optional label for the query",
             "nullable": true
           },
@@ -4847,7 +4847,7 @@
             }
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User who registered the query",
             "nullable": true
           },
@@ -4914,22 +4914,22 @@
             "example": 600
           },
           "alt": {
-            "type": "object",
+            "type": "string",
             "description": "Alt text from the asset",
             "nullable": true
           },
           "title": {
-            "type": "object",
+            "type": "string",
             "description": "Title from the asset",
             "nullable": true
           },
           "base64": {
-            "type": "object",
+            "type": "string",
             "description": "LQIP placeholder — the blurhash from the asset metadata, when present",
             "nullable": true
           },
           "bgColor": {
-            "type": "object",
+            "type": "string",
             "description": "Background color: hex of the first extracted palette color, when present",
             "nullable": true,
             "example": "#2b2b2b"
@@ -5114,7 +5114,7 @@
           },
           "result": {
             "type": "object",
-            "description": "Action-specific result: `{ action, contentId, slug }` for create_content, `{ action, contentId }` for update_content, `{ action, workflowId, status }` for trigger_workflow, `{ action, acknowledged }` for custom.",
+            "description": "Action-specific result: `{ action, contentId, slug, status: 'draft' }` for create_content, `{ action, contentId, version }` for update_content, `{ action, acknowledged }` for custom.",
             "additionalProperties": true
           }
         },
@@ -5176,7 +5176,7 @@
           },
           "action_type": {
             "type": "string",
-            "description": "What the hook does when a signed request arrives",
+            "description": "What the hook does when a signed request arrives. `custom` only records the delivery in the execution log. `trigger_workflow` can no longer be configured (no workflow is started); existing ones answer 422 until changed or deactivated.",
             "enum": [
               "create_content",
               "update_content",
@@ -5186,8 +5186,16 @@
           },
           "config": {
             "type": "object",
-            "description": "Action configuration: `contentTypeId` + `fieldMappings` for content actions, `contentIdPath` for updates, `workflowId` for workflow triggers.",
-            "additionalProperties": true
+            "description": "Action configuration. `create_content`: `contentTypeId` — the content-type ID of this organization (e.g. `news`, not a UUID or display name) — plus `fieldMappings` `{ \"<target path>\": \"<payload path>\" }`, where target paths are dot paths into the content data (`headline.en`, `seo.meta_title`; the key `slug` sets the slug) and payload paths may index arrays (`items[0].title`), and optional `locale`. `update_content`: `contentIdPath` (payload path of the content ID, default `id`), `fieldMappings` (only the mapped paths change), optional `contentTypeId` to restrict updates to one type.",
+            "additionalProperties": true,
+            "example": {
+              "contentTypeId": "news",
+              "fieldMappings": {
+                "headline.en": "title",
+                "article_body.en": "body",
+                "slug": "id"
+              }
+            }
           },
           "is_active": {
             "type": "boolean",
@@ -5208,6 +5216,11 @@
             "type": "number",
             "description": "Successful executions since creation",
             "example": 0
+          },
+          "created_by_id": {
+            "type": "object",
+            "description": "User ID of the admin who set the webhook up. Content the webhook creates or updates is attributed to this user while they are an active admin or editor, otherwise to the organization's longest-standing active admin. Null on webhooks created before migration 004 until an admin saves them.",
+            "nullable": true
           },
           "created_at": {
             "type": "string",
@@ -5394,7 +5407,7 @@
           },
           "action_type": {
             "type": "string",
-            "description": "What the hook does when a signed request arrives",
+            "description": "What the hook does when a signed request arrives. `custom` only records the delivery in the execution log. `trigger_workflow` can no longer be configured (no workflow is started); existing ones answer 422 until changed or deactivated.",
             "enum": [
               "create_content",
               "update_content",
@@ -5404,8 +5417,16 @@
           },
           "config": {
             "type": "object",
-            "description": "Action configuration: `contentTypeId` + `fieldMappings` for content actions, `contentIdPath` for updates, `workflowId` for workflow triggers.",
-            "additionalProperties": true
+            "description": "Action configuration. `create_content`: `contentTypeId` — the content-type ID of this organization (e.g. `news`, not a UUID or display name) — plus `fieldMappings` `{ \"<target path>\": \"<payload path>\" }`, where target paths are dot paths into the content data (`headline.en`, `seo.meta_title`; the key `slug` sets the slug) and payload paths may index arrays (`items[0].title`), and optional `locale`. `update_content`: `contentIdPath` (payload path of the content ID, default `id`), `fieldMappings` (only the mapped paths change), optional `contentTypeId` to restrict updates to one type.",
+            "additionalProperties": true,
+            "example": {
+              "contentTypeId": "news",
+              "fieldMappings": {
+                "headline.en": "title",
+                "article_body.en": "body",
+                "slug": "id"
+              }
+            }
           },
           "is_active": {
             "type": "boolean",
@@ -5426,6 +5447,11 @@
             "type": "number",
             "description": "Successful executions since creation",
             "example": 0
+          },
+          "created_by_id": {
+            "type": "object",
+            "description": "User ID of the admin who set the webhook up. Content the webhook creates or updates is attributed to this user while they are an active admin or editor, otherwise to the organization's longest-standing active admin. Null on webhooks created before migration 004 until an admin saves them.",
+            "nullable": true
           },
           "created_at": {
             "type": "string",
@@ -5476,7 +5502,7 @@
             "format": "date-time"
           },
           "tokenExpiresAt": {
-            "type": "object",
+            "type": "number",
             "description": "Expiry of the socket's JWT as epoch milliseconds; the socket is dropped once it passes. Null when the token carried no `exp`.",
             "nullable": true,
             "example": 1775000000000
@@ -5679,13 +5705,13 @@
             ]
           },
           "status_code": {
-            "type": "object",
+            "type": "number",
             "description": "HTTP status of the last attempt; null for network/timeout errors",
             "nullable": true,
             "example": 502
           },
           "response_body": {
-            "type": "object",
+            "type": "string",
             "description": "Response body of the last attempt, as text",
             "nullable": true
           },
@@ -5698,30 +5724,30 @@
             "nullable": true
           },
           "error_message": {
-            "type": "object",
+            "type": "string",
             "description": "Transport/timeout error of the last attempt; null when the target answered",
             "nullable": true
           },
           "duration_ms": {
-            "type": "object",
+            "type": "number",
             "description": "Duration of the last attempt in milliseconds",
             "nullable": true,
             "example": 143
           },
           "next_retry_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the next attempt is due; only meaningful while status is 'retrying'",
             "format": "date-time",
             "nullable": true
           },
           "last_attempted_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the last attempt was made; null while the delivery has never been attempted",
             "format": "date-time",
             "nullable": true
           },
           "moved_to_dlq_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the delivery entered the dead-letter queue",
             "format": "date-time",
             "nullable": true
@@ -5789,7 +5815,7 @@
             "example": 10
           },
           "avgDurationMs": {
-            "type": "object",
+            "type": "number",
             "description": "Mean attempt duration in milliseconds; null when nothing was ever attempted",
             "nullable": true,
             "example": 187
@@ -5824,7 +5850,7 @@
             "example": 3
           },
           "oldestDlqEntry": {
-            "type": "object",
+            "type": "string",
             "description": "Oldest `moved_to_dlq_at` in the queue; null when the DLQ is empty",
             "format": "date-time",
             "nullable": true
@@ -5944,18 +5970,18 @@
             "description": "Whether to email `alert_email` when a delivery is dead-lettered"
           },
           "alert_email": {
-            "type": "object",
+            "type": "string",
             "description": "Recipient of DLQ alert mails; no alert is sent while this is null",
             "nullable": true
           },
           "auto_disable_after": {
-            "type": "object",
+            "type": "number",
             "description": "Consecutive failures after which the CE webhook is set to `inactive`; null disables auto-disable",
             "nullable": true,
             "example": 10
           },
           "last_alerted_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the last DLQ alert was sent. Used to debounce alerts (`WEBHOOK_DLQ_ALERT_DEBOUNCE_MINUTES`, default 15).",
             "format": "date-time",
             "nullable": true

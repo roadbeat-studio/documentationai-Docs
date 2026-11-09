@@ -2884,7 +2884,7 @@
             "description": "Owning organization id"
           },
           "actor_id": {
-            "type": "object",
+            "type": "string",
             "description": "User that acted; null for system-generated entries (scheduler, release runner)",
             "nullable": true
           },
@@ -2935,12 +2935,12 @@
             "format": "date-time"
           },
           "actor_name": {
-            "type": "object",
+            "type": "string",
             "description": "Actor's display name (name, else email)",
             "nullable": true
           },
           "content_id": {
-            "type": "object",
+            "type": "string",
             "description": "Content the entry is about: `resource_id` for content/workflow entries, `meta.contentId` for comments/schedules",
             "nullable": true
           },
@@ -2963,7 +2963,7 @@
             }
           },
           "content_slug": {
-            "type": "object",
+            "type": "string",
             "description": "Slug of the content",
             "nullable": true
           },
@@ -3024,7 +3024,7 @@
             "nullable": true
           },
           "published_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the layout was last published into CE’s `content_type_layouts`",
             "format": "date-time",
             "nullable": true
@@ -3049,7 +3049,7 @@
             "nullable": true
           },
           "gallery_id": {
-            "type": "object",
+            "type": "string",
             "description": "Gallery entry id this layout was submitted as; null when never submitted",
             "nullable": true
           },
@@ -3119,7 +3119,7 @@
             "nullable": true
           },
           "published_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the layout was last published into CE’s `content_type_layouts`",
             "format": "date-time",
             "nullable": true
@@ -3144,7 +3144,7 @@
             "nullable": true
           },
           "gallery_id": {
-            "type": "object",
+            "type": "string",
             "description": "Gallery entry id this layout was submitted as; null when never submitted",
             "nullable": true
           },
@@ -3301,7 +3301,7 @@
             "example": "Magazine cover story"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Entry description",
             "nullable": true
           },
@@ -3316,7 +3316,7 @@
             "example": 12
           },
           "averageRating": {
-            "type": "object",
+            "type": "number",
             "description": "Mean rating rounded to one decimal; null when never rated",
             "example": 4.5,
             "nullable": true
@@ -3341,7 +3341,7 @@
             ]
           },
           "reviewNote": {
-            "type": "object",
+            "type": "string",
             "description": "Reviewer note — returned only for the caller’s own submissions",
             "nullable": true
           }
@@ -3460,17 +3460,17 @@
             "example": "main"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Sub-path within the repository holding the layout files; null for the root",
             "nullable": true
           },
           "tokenHint": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint of the vault-stored access token (the token itself is never returned); null when no token is stored",
             "nullable": true
           },
           "sovereigntyWarning": {
-            "type": "object",
+            "type": "string",
             "description": "Data-sovereignty advisory when the remote is a known non-EU-hosted forge; null otherwise",
             "nullable": true
           }
@@ -3484,7 +3484,7 @@
         "type": "object",
         "properties": {
           "commitHash": {
-            "type": "object",
+            "type": "string",
             "description": "Commit hash created by the push; null when nothing changed",
             "nullable": true
           },
@@ -3511,7 +3511,7 @@
             "description": "Whether this organization has a Git config row"
           },
           "repoUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Configured Git remote; null when unconfigured",
             "nullable": true
           },
@@ -3521,23 +3521,23 @@
             "example": "main"
           },
           "path": {
-            "type": "object",
+            "type": "string",
             "description": "Sub-path within the repository",
             "nullable": true
           },
           "tokenHint": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint of the vault-stored access token; null when no token is stored",
             "nullable": true
           },
           "lastSync": {
-            "type": "object",
+            "type": "string",
             "description": "When a sync or push last succeeded",
             "format": "date-time",
             "nullable": true
           },
           "commitHash": {
-            "type": "object",
+            "type": "string",
             "description": "Commit hash of the last successful sync/push",
             "nullable": true
           },
@@ -3775,9 +3775,10 @@
             "additionalProperties": true
           },
           "events": {
-            "description": "Event types that trigger this channel; an empty array means \"every event\"",
+            "description": "Events that trigger this channel; an empty array means \"every event\". Accepted values on create/update: `content_published`, `content_updated`, `content_deleted`, `comment_added`, `task_assigned`, `workflow_transition`, `scheduling_action_failed`, `release_failed`, `release_items_removed`.",
             "example": [
-              "content_published"
+              "content_published",
+              "release_failed"
             ],
             "type": "array",
             "items": {
@@ -4208,7 +4209,7 @@
             "example": "1080p H.264"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "What the preset is for",
             "nullable": true
           },
@@ -4221,25 +4222,25 @@
             ]
           },
           "width": {
-            "type": "object",
+            "type": "number",
             "description": "Target width in pixels",
             "example": 1920,
             "nullable": true
           },
           "height": {
-            "type": "object",
+            "type": "number",
             "description": "Target height in pixels",
             "example": 1080,
             "nullable": true
           },
           "video_bitrate": {
-            "type": "object",
+            "type": "string",
             "description": "Target video bitrate, always of the form `NNNNk` — the worker interpolates it into ffmpeg arguments, so the format is constrained at rest (IMP-PRO-MEDIA-03)",
             "example": "4500k",
             "nullable": true
           },
           "audio_bitrate": {
-            "type": "object",
+            "type": "string",
             "description": "Target audio bitrate, same `NNNNk` constraint as `video_bitrate`",
             "example": "128k",
             "nullable": true
@@ -4254,7 +4255,7 @@
             ]
           },
           "max_file_size": {
-            "type": "object",
+            "type": "number",
             "description": "Soft cap for the output size in bytes",
             "example": 209715200,
             "nullable": true
@@ -4304,7 +4305,7 @@
             "example": "de-AT"
           },
           "label": {
-            "type": "object",
+            "type": "string",
             "description": "Player-facing track label",
             "nullable": true
           },
@@ -4334,22 +4335,22 @@
             "description": "Whether players should preselect this track"
           },
           "cue_count": {
-            "type": "object",
+            "type": "number",
             "description": "Number of cues parsed from the WebVTT",
             "nullable": true
           },
           "size_bytes": {
-            "type": "object",
+            "type": "number",
             "description": "Size of the WebVTT document in bytes",
             "nullable": true
           },
           "error_message": {
-            "type": "object",
+            "type": "string",
             "description": "Why an auto-transcription failed; null otherwise",
             "nullable": true
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User that uploaded the track; null for machine-generated tracks",
             "nullable": true
           },
@@ -4388,7 +4389,7 @@
             "example": "de"
           },
           "label": {
-            "type": "object",
+            "type": "string",
             "description": "Player-facing track label",
             "nullable": true
           },
@@ -4438,12 +4439,12 @@
             ]
           },
           "thumbnailKey": {
-            "type": "object",
+            "type": "string",
             "description": "Latest non-null thumbnail storage key across completed jobs",
             "nullable": true
           },
           "transcodeKey": {
-            "type": "object",
+            "type": "string",
             "description": "Latest non-null transcode storage key across completed jobs",
             "nullable": true
           },
@@ -4454,7 +4455,7 @@
             "nullable": true
           },
           "thumbhash": {
-            "type": "object",
+            "type": "string",
             "description": "Latest ThumbHash placeholder",
             "nullable": true
           },
@@ -4507,7 +4508,7 @@
             "description": "Asset the job processes"
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User that queued the job; null once that user was erased (GDPR)",
             "nullable": true
           },
@@ -4555,12 +4556,12 @@
             ]
           },
           "thumbnail_key": {
-            "type": "object",
+            "type": "string",
             "description": "Storage key of the generated thumbnail",
             "nullable": true
           },
           "transcode_key": {
-            "type": "object",
+            "type": "string",
             "description": "Storage key of the transcoded output (single-profile jobs)",
             "nullable": true
           },
@@ -4571,12 +4572,12 @@
             "nullable": true
           },
           "thumbhash": {
-            "type": "object",
+            "type": "string",
             "description": "Base64 ThumbHash used as a blurred video placeholder",
             "nullable": true
           },
           "error_message": {
-            "type": "object",
+            "type": "string",
             "description": "Failure message of the last attempt",
             "nullable": true
           },
@@ -4592,29 +4593,29 @@
             "example": 0
           },
           "heartbeat_at": {
-            "type": "object",
+            "type": "string",
             "description": "Last worker heartbeat. A processing job whose heartbeat is older than 15 minutes counts as abandoned and is requeued or deletable.",
             "format": "date-time",
             "nullable": true
           },
           "caption_locale": {
-            "type": "object",
+            "type": "string",
             "description": "Locale a captions job transcribes into; null falls back to MEDIA_TRANSCRIBE_LOCALE",
             "example": "de",
             "nullable": true
           },
           "started_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "completed_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "processing_time_ms": {
-            "type": "object",
+            "type": "number",
             "description": "Wall-clock processing time of the successful attempt, in milliseconds",
             "example": 42150,
             "nullable": true
@@ -4669,7 +4670,7 @@
             "example": 4
           },
           "avgProcessingTimeMs": {
-            "type": "object",
+            "type": "number",
             "description": "Mean processing time of completed jobs in milliseconds; null when none completed",
             "example": 38400,
             "nullable": true
@@ -4752,7 +4753,7 @@
             "description": "Asset this output belongs to"
           },
           "job_id": {
-            "type": "object",
+            "type": "string",
             "description": "Job that produced it; null once that job was deleted",
             "nullable": true
           },
@@ -4769,31 +4770,31 @@
             "description": "Storage key of the stored object"
           },
           "format": {
-            "type": "object",
+            "type": "string",
             "description": "Container format of the output",
             "example": "mp4",
             "nullable": true
           },
           "width": {
-            "type": "object",
+            "type": "number",
             "description": "Output width in pixels",
             "example": 1280,
             "nullable": true
           },
           "height": {
-            "type": "object",
+            "type": "number",
             "description": "Output height in pixels",
             "example": 720,
             "nullable": true
           },
           "video_bitrate": {
-            "type": "object",
+            "type": "string",
             "description": "Video bitrate used",
             "example": "2500k",
             "nullable": true
           },
           "audio_bitrate": {
-            "type": "object",
+            "type": "string",
             "description": "Audio bitrate used",
             "example": "128k",
             "nullable": true
@@ -4809,12 +4810,12 @@
             "nullable": true
           },
           "size_bytes": {
-            "type": "object",
+            "type": "number",
             "description": "Size of the stored object in bytes",
             "nullable": true
           },
           "profile_id": {
-            "type": "object",
+            "type": "string",
             "description": "Transcode profile that produced it; null for profile-less outputs",
             "nullable": true
           },
@@ -4833,7 +4834,7 @@
             ]
           },
           "superseded_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },

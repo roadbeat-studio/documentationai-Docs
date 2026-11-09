@@ -3224,26 +3224,26 @@
             "format": "date-time"
           },
           "user_id": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "caller": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "editor"
           },
           "task": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "translate"
           },
           "provider_type": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "augmentor"
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "nullable": true,
             "example": "mistral-small-3.1"
           },
@@ -3258,57 +3258,57 @@
             ]
           },
           "tokens_in": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 812
           },
           "tokens_out": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 154
           },
           "cost": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 0.00214
           },
           "latency_ms": {
-            "type": "object",
+            "type": "number",
             "nullable": true,
             "example": 940
           },
           "success": {
-            "type": "object",
+            "type": "boolean",
             "nullable": true,
             "example": true
           },
           "redacted": {
-            "type": "object",
+            "type": "boolean",
             "nullable": true,
             "example": false
           },
           "prompt_hash": {
-            "type": "object",
+            "type": "string",
             "description": "sha256 hex of the serialized prompt.",
             "nullable": true
           },
           "output_hash": {
-            "type": "object",
+            "type": "string",
             "description": "sha256 hex of the model output.",
             "nullable": true
           },
           "raw_prompt": {
-            "type": "object",
+            "type": "string",
             "description": "The raw prompt text, retained only while the org raw-retention window covers this row; NULL otherwise.",
             "nullable": true
           },
           "raw_output": {
-            "type": "object",
+            "type": "string",
             "description": "The raw model output, retained under the same window; NULL otherwise.",
             "nullable": true
           },
           "raw_expires_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the raw text becomes eligible for the hourly purge.",
             "format": "date-time",
             "nullable": true
@@ -3383,30 +3383,30 @@
             "format": "date-time"
           },
           "user_id": {
-            "type": "object",
+            "type": "string",
             "description": "User the call is attributed to.",
             "nullable": true
           },
           "caller": {
-            "type": "object",
+            "type": "string",
             "description": "Who initiated the call ('editor', 'agent', 'mcp', 'flow:<id>', …).",
             "nullable": true,
             "example": "editor"
           },
           "task": {
-            "type": "object",
+            "type": "string",
             "description": "Gateway task.",
             "nullable": true,
             "example": "writeAssist"
           },
           "provider_type": {
-            "type": "object",
+            "type": "string",
             "description": "Provider type that served the call.",
             "nullable": true,
             "example": "augmentor"
           },
           "model": {
-            "type": "object",
+            "type": "string",
             "description": "Resolved model id.",
             "nullable": true,
             "example": "mistral-small-3.1"
@@ -3424,48 +3424,48 @@
             "example": "self_hosted"
           },
           "tokens_in": {
-            "type": "object",
+            "type": "number",
             "description": "Prompt tokens.",
             "nullable": true,
             "example": 812
           },
           "tokens_out": {
-            "type": "object",
+            "type": "number",
             "description": "Completion tokens.",
             "nullable": true,
             "example": 154
           },
           "cost": {
-            "type": "object",
+            "type": "number",
             "description": "Computed cost (NUMERIC(12,5)).",
             "nullable": true,
             "example": 0.00214
           },
           "latency_ms": {
-            "type": "object",
+            "type": "number",
             "description": "End-to-end latency in milliseconds.",
             "nullable": true,
             "example": 940
           },
           "success": {
-            "type": "object",
+            "type": "boolean",
             "description": "Whether the call succeeded.",
             "nullable": true,
             "example": true
           },
           "redacted": {
-            "type": "object",
+            "type": "boolean",
             "description": "Whether PII redaction modified the payload.",
             "nullable": true,
             "example": false
           },
           "prompt_hash": {
-            "type": "object",
+            "type": "string",
             "description": "sha256 hex of the serialized prompt (privacy-preserving; never the text).",
             "nullable": true
           },
           "output_hash": {
-            "type": "object",
+            "type": "string",
             "description": "sha256 hex of the model output.",
             "nullable": true
           },
@@ -3507,7 +3507,7 @@
             "description": "Owning organization id."
           },
           "user_id": {
-            "type": "object",
+            "type": "string",
             "description": "null = org-shared budget; set = per-user budget.",
             "nullable": true
           },
@@ -3521,13 +3521,13 @@
             "example": "month"
           },
           "token_limit": {
-            "type": "object",
+            "type": "number",
             "description": "Token ceiling (BIGINT); null = no token limit.",
             "nullable": true,
             "example": 5000000
           },
           "cost_limit": {
-            "type": "object",
+            "type": "number",
             "description": "Cost ceiling (NUMERIC(12,2)); null = no cost limit.",
             "nullable": true,
             "example": 250
@@ -3548,7 +3548,7 @@
             "example": 80
           },
           "resets_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the hourly sweep zeroes spend and advances the period.",
             "format": "date-time",
             "nullable": true
@@ -3634,7 +3634,7 @@
             "example": "cloud_egress"
           },
           "granted_by": {
-            "type": "object",
+            "type": "string",
             "description": "User id that granted the consent.",
             "nullable": true
           },
@@ -3643,13 +3643,13 @@
             "format": "date-time"
           },
           "revoked_at": {
-            "type": "object",
+            "type": "string",
             "description": "Set when revoked; a consent is active while this is null.",
             "format": "date-time",
             "nullable": true
           },
           "note": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text justification recorded with the grant.",
             "nullable": true
           }
@@ -3731,7 +3731,7 @@
             "description": "Content id of the hit."
           },
           "contentTypeId": {
-            "type": "object",
+            "type": "string",
             "description": "Content type id of the hit; null when the content row has none.",
             "nullable": true
           },
@@ -3926,12 +3926,12 @@
             "nullable": true
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "description": "Failure message (truncated to 2000 chars).",
             "nullable": true
           },
           "created_by": {
-            "type": "object",
+            "type": "string",
             "description": "User id that submitted the job.",
             "nullable": true
           },
@@ -3940,7 +3940,7 @@
             "format": "date-time"
           },
           "finished_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -3976,7 +3976,7 @@
         "type": "object",
         "properties": {
           "rawRetentionUntil": {
-            "type": "object",
+            "type": "string",
             "description": "Until when raw prompt/output text is retained for this org; null when the window is closed (the default — only hashes are stored).",
             "format": "date-time",
             "nullable": true
@@ -4147,7 +4147,7 @@
             "format": "uuid"
           },
           "organization_id": {
-            "type": "object",
+            "type": "string",
             "description": "Owning organization; null = shipped global default (protected from deletion).",
             "nullable": true
           },
@@ -4182,7 +4182,7 @@
             }
           },
           "signature": {
-            "type": "object",
+            "type": "string",
             "description": "Optional Ed25519 signature (base64) over the template, for shipped/global prompts.",
             "nullable": true
           },
@@ -4207,7 +4207,7 @@
         "type": "object",
         "properties": {
           "text": {
-            "type": "object",
+            "type": "string",
             "description": "The rendered prompt, or null when no template exists for the requested key (unknown placeholders are left intact rather than blanked).",
             "nullable": true
           }
@@ -4293,7 +4293,7 @@
             "example": "Augmentor (local)"
           },
           "baseUrl": {
-            "type": "object",
+            "type": "string",
             "description": "Endpoint base URL; null when the adapter default is used.",
             "nullable": true,
             "example": "http://augmentor:8000/v1"
@@ -4334,7 +4334,7 @@
             "example": "org"
           },
           "keyHint": {
-            "type": "object",
+            "type": "string",
             "description": "Masked hint for the vaulted API key (never the key itself); null when no key is stored or no hint was recorded.",
             "nullable": true,
             "example": "supe…-key"
@@ -4492,7 +4492,7 @@
             "description": "Content id of the hit."
           },
           "contentTypeId": {
-            "type": "object",
+            "type": "string",
             "description": "Content type id of the hit; null when the content row has none.",
             "nullable": true
           },

@@ -290,6 +290,7 @@
     "/api/v1/pro/assets/bulk/download/zip": {
       "post": {
         "operationId": "AssetBulkController_bulkDownloadZip",
+        "summary": "Download selected assets as a ZIP archive",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2118,6 +2119,7 @@
     "/api/v1/pro/export/jobs/{id}/download": {
       "get": {
         "operationId": "ExportController_downloadJob",
+        "summary": "Download the file of a completed export job",
         "parameters": [
           {
             "name": "id",
@@ -4779,7 +4781,7 @@
             "example": 204800
           },
           "url": {
-            "type": "object",
+            "type": "string",
             "description": "Short-lived signed download URL (10 minutes). Null when the host has no storage provider or signing failed. Raw storage keys are never returned (IMP-PRO-BULK-05).",
             "nullable": true
           }
@@ -4946,7 +4948,7 @@
             }
           },
           "undone_at": {
-            "type": "object",
+            "type": "string",
             "description": "When the operation was undone; null while it is still reversible",
             "format": "date-time",
             "nullable": true
@@ -5128,7 +5130,7 @@
             "description": "Environment the alias currently points at"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text description",
             "nullable": true
           },
@@ -5333,17 +5335,17 @@
             "format": "date-time"
           },
           "source_content_id": {
-            "type": "object",
+            "type": "string",
             "description": "Content ID this copy was promoted/cloned from; null for items assigned directly to the environment",
             "nullable": true
           },
           "promoted_from_env": {
-            "type": "object",
+            "type": "string",
             "description": "Environment ID the item was promoted from; null when never promoted",
             "nullable": true
           },
           "promoted_at": {
-            "type": "object",
+            "type": "string",
             "description": "Time of the last promotion into this environment",
             "format": "date-time",
             "nullable": true
@@ -5382,7 +5384,7 @@
             "example": "staging"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text description",
             "nullable": true
           },
@@ -5396,7 +5398,7 @@
             "example": "#6366f1"
           },
           "api_url": {
-            "type": "object",
+            "type": "string",
             "description": "Delivery API base URL of this environment, when it has its own",
             "nullable": true
           },
@@ -5566,7 +5568,7 @@
             "description": "Export job ID (UUID text)"
           },
           "error_message": {
-            "type": "object",
+            "type": "string",
             "description": "Why the job failed (first 1000 characters); null unless status is failed",
             "nullable": true
           },
@@ -5625,23 +5627,23 @@
             ]
           },
           "file_content": {
-            "type": "object",
+            "type": "string",
             "description": "The rendered export, inline for small results. Null while pending, once expired, or when the result exceeded the inline limit and went to object storage.",
             "nullable": true
           },
           "file_key": {
-            "type": "object",
+            "type": "string",
             "description": "Storage key when the result exceeded `EXPORT_INLINE_MAX_BYTES`; `file_content` is then null (IMP-PRO-EXPORT-04)",
             "nullable": true
           },
           "file_size": {
-            "type": "object",
+            "type": "number",
             "description": "Size of the rendered export in bytes; null until it completes",
             "nullable": true,
             "example": 524288
           },
           "record_count": {
-            "type": "object",
+            "type": "number",
             "description": "Content items written; null until it completes",
             "nullable": true,
             "example": 1240
@@ -5651,17 +5653,17 @@
             "description": "User who created the job"
           },
           "started_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "completed_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "expires_at": {
-            "type": "object",
+            "type": "string",
             "description": "Retention cutoff — the payload is dropped and the job flipped to `expired` past this time; null until it completes",
             "format": "date-time",
             "nullable": true
@@ -5675,7 +5677,7 @@
             "format": "date-time"
           },
           "user_name": {
-            "type": "object",
+            "type": "string",
             "description": "Name of the creating user, joined in by the job reads; absent on the create response and null when the user was deleted",
             "nullable": true
           }
@@ -5735,18 +5737,18 @@
             "additionalProperties": true
           },
           "secret_ref": {
-            "type": "object",
+            "type": "string",
             "description": "Reference to the vaulted delivery credential. The secret itself never leaves the AES-256-GCM vault and is never returned. Null when delivery needs no credential.",
             "nullable": true
           },
           "next_fire_at": {
-            "type": "object",
+            "type": "string",
             "description": "Next occurrence, advanced by compare-and-swap so exactly one node runs each fire; null while disabled",
             "format": "date-time",
             "nullable": true
           },
           "last_fired_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -5793,7 +5795,7 @@
             "description": "Schedule this run belongs to"
           },
           "job_id": {
-            "type": "object",
+            "type": "string",
             "description": "Export job the run produced; null when it failed before creating one",
             "nullable": true
           },
@@ -5807,18 +5809,18 @@
             ]
           },
           "record_count": {
-            "type": "object",
+            "type": "number",
             "description": "Records exported by this run; null unless it succeeded",
             "nullable": true,
             "example": 1240
           },
           "delivered_to": {
-            "type": "object",
+            "type": "string",
             "description": "Human-readable destination — the S3 object URL or webhook URL; null for `none` delivery or a failed run",
             "nullable": true
           },
           "error_message": {
-            "type": "object",
+            "type": "string",
             "description": "Failure message when status is `failed`",
             "nullable": true
           },
@@ -5827,7 +5829,7 @@
             "format": "date-time"
           },
           "finished_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           }
@@ -5869,7 +5871,7 @@
             "example": "Weekly news drop"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text description",
             "nullable": true
           },
@@ -6041,12 +6043,12 @@
             }
           },
           "file_key": {
-            "type": "object",
+            "type": "string",
             "description": "Storage key of the uploaded file; null for inline imports",
             "nullable": true
           },
           "file_content": {
-            "type": "object",
+            "type": "string",
             "description": "The inline source document, up to 5 MB — returned verbatim by the job reads, so expect large payloads. Null when a `file_key` was used.",
             "nullable": true
           },
@@ -6060,13 +6062,13 @@
             "description": "User who created the job"
           },
           "started_at": {
-            "type": "object",
+            "type": "string",
             "description": "When processing was claimed; null while pending",
             "format": "date-time",
             "nullable": true
           },
           "completed_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -6079,7 +6081,7 @@
             "format": "date-time"
           },
           "user_name": {
-            "type": "object",
+            "type": "string",
             "description": "Name of the creating user, joined in by the list and detail reads; absent on the create response and null when the user was deleted",
             "nullable": true
           }
@@ -6102,7 +6104,7 @@
         "type": "object",
         "properties": {
           "slug": {
-            "type": "object",
+            "type": "string",
             "description": "Slug taken from `config.slugField`; null when unset — the real import then derives one from a title-like field",
             "nullable": true
           },
@@ -6318,7 +6320,7 @@
             "description": "Comment ID"
           },
           "author_name": {
-            "type": "object",
+            "type": "string",
             "description": "Name the reviewer gave, truncated to 100 characters; null when anonymous",
             "nullable": true
           },
@@ -6353,7 +6355,7 @@
             "description": "Content slug"
           },
           "locale": {
-            "type": "object",
+            "type": "string",
             "description": "Content locale",
             "nullable": true,
             "example": "de-DE"
@@ -6549,17 +6551,17 @@
             ]
           },
           "contentId": {
-            "type": "object",
+            "type": "string",
             "description": "Content the token is bound to; set for `content` scope",
             "nullable": true
           },
           "contentTypeId": {
-            "type": "object",
+            "type": "string",
             "description": "Content type the token is bound to; set for `content_type` scope",
             "nullable": true
           },
           "locale": {
-            "type": "object",
+            "type": "string",
             "description": "Locale the token is restricted to; null means any locale",
             "nullable": true,
             "example": "de-DE"
@@ -6583,7 +6585,7 @@
             "example": 4
           },
           "lastUsedAt": {
-            "type": "object",
+            "type": "string",
             "description": "Last successful validation; null when never used",
             "format": "date-time",
             "nullable": true
@@ -6781,7 +6783,7 @@
             "example": "Unpublished news"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "description": "Free-text description",
             "nullable": true
           },
@@ -6813,7 +6815,7 @@
             ]
           },
           "share_role": {
-            "type": "object",
+            "type": "string",
             "description": "Role the view is shared with; required when `share_scope` is `role`",
             "nullable": true,
             "example": "editor"
@@ -6833,7 +6835,7 @@
             "example": 17
           },
           "last_used_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -6904,7 +6906,7 @@
             "description": "Whether a password is required (the hash is never returned)"
           },
           "maxAccesses": {
-            "type": "object",
+            "type": "number",
             "description": "Access cap; null means unlimited within the expiry window",
             "nullable": true,
             "example": 25
@@ -6927,7 +6929,7 @@
             "description": "Whether `accessCount` has reached `maxAccesses`"
           },
           "locale": {
-            "type": "object",
+            "type": "string",
             "description": "Locale the preview is pinned to; null means the content default",
             "nullable": true,
             "example": "de-DE"
@@ -6937,7 +6939,7 @@
             "description": "Whether status and created/updated timestamps are exposed to the reviewer"
           },
           "customMessage": {
-            "type": "object",
+            "type": "string",
             "description": "Note shown to the reviewer on the preview page",
             "nullable": true
           },
@@ -6953,7 +6955,7 @@
             }
           },
           "watermark": {
-            "type": "object",
+            "type": "string",
             "description": "Watermark text rendered by the public preview page; null means none",
             "nullable": true
           },
@@ -6967,7 +6969,7 @@
             "example": 3
           },
           "lastAccessedAt": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
@@ -7025,7 +7027,7 @@
             ]
           },
           "customMessage": {
-            "type": "object",
+            "type": "string",
             "description": "Note the link creator left for the reviewer",
             "nullable": true
           },
@@ -7035,7 +7037,7 @@
             "format": "date-time"
           },
           "accessesRemaining": {
-            "type": "object",
+            "type": "number",
             "description": "Accesses left before exhaustion; null when the link is uncapped",
             "nullable": true,
             "example": 18
@@ -7045,7 +7047,7 @@
             "description": "Whether hashed visitor analytics are on. The consuming page MUST show a data-processing notice when true (IMP-PRO-PREV-01)."
           },
           "watermark": {
-            "type": "object",
+            "type": "string",
             "description": "Watermark text to overlay on the preview; null means none",
             "nullable": true
           }
@@ -7115,7 +7117,7 @@
             "description": "Target environment ID"
           },
           "initiated_by": {
-            "type": "object",
+            "type": "string",
             "description": "User who started the operation; null once that user is erased — the log survives (IMP-PRO-ENV-07)",
             "nullable": true
           },
@@ -7154,17 +7156,17 @@
             }
           },
           "error": {
-            "type": "object",
+            "type": "string",
             "description": "Failure message when status is `failed`; also carries the forced-overwrite note on a successful forced promotion",
             "nullable": true
           },
           "started_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "completed_at": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
