@@ -3,6 +3,22 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-11-11" description="AI apps: personal access tokens and sign-in apps" tags={["feature", "security"]}>
+  ## Connect your own tools to the roadbeat MCP Gateway
+
+  - **Personal access tokens.** *Profile › Connected AI apps › Create MCP
+    access token* creates a token for scripts and jobs that cannot sign in
+    through a browser: access **Read**, **Read and write drafts** or **Read,
+    write and publish**, valid 7–365 days, capped by your role. It is shown
+    once, listed with its expiry under *Connected AI apps* and revoked with
+    **Disconnect**. API: `POST /api/v1/me/oauth-grants/personal-token`.
+  - **Sign-in apps for your organization.** Admins register their
+    organization's own OAuth clients under *Settings › Sign-in apps*
+    (`/api/v1/manage/org-oauth-clients`). Only members of the organization can
+    sign in through them; machine clients stay with platform admins.
+  - New guide: [AI Apps (MCP)](/guides/ai-apps).
+</Update>
+
 <Update label="2026-11-08" description="Consumer area in your language, publishing and Content Pod fixes" tags={["feature", "security", "bugfix", "api"]}>
   ## The consumer area speaks your language, and published content stays in sync
 

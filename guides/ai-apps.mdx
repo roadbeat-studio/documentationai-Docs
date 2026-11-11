@@ -1,0 +1,68 @@
+---
+title: AI Apps (MCP)
+description: Connect AI assistants such as Claude, ChatGPT or Cursor to your organization's content through the roadbeat MCP Gateway — connected apps, personal access tokens and sign-in apps.
+---
+
+## Overview
+
+AI assistants reach roadbeat through the **roadbeat MCP Gateway**. When an assistant wants your organization's content, you sign in with your Studio account and decide what it may do — Studio is the sign-in (OAuth authorization server) for the gateway. The assistant never sees your password, and your **role** caps everything it can do.
+
+<Columns cols={3}>
+  <Card title="Connected AI apps" icon="plug" href="#connected-ai-apps">
+    See and disconnect the AI apps you signed in.
+  </Card>
+  <Card title="Personal access tokens" icon="key-round" href="#personal-access-tokens">
+    For your own scripts and jobs without a browser sign-in.
+  </Card>
+  <Card title="Sign-in apps" icon="building-2" href="#sign-in-apps-for-your-organization">
+    Admins register their organization's own tools.
+  </Card>
+</Columns>
+
+How to connect Claude, ChatGPT, Cursor and other assistants is described in the [MCP Gateway documentation](https://mcp-gateway-docs.roadbeat.net/quickstart).
+
+## Connected AI apps
+
+Open your **Profile › Connected AI apps**. You see every AI app connected to your Studio account and every personal access token you created, with its expiry date.
+
+Select **Disconnect** to cut an app or token off: Studio checks the connection on every request, so access to your organization's content stops at once.
+
+| Your role | An app or token can at most |
+|-----------|-----------------------------|
+| Viewer | Read public content and your organization's content |
+| Editor | + create and edit drafts, publish and unpublish |
+| Admin | + Studio administration |
+
+Your role is checked again whenever an app renews its access to Studio: if your role is lowered, connected apps and tokens can do less from then on.
+
+## Personal access tokens
+
+For tools that cannot run a browser sign-in — an import script, a scheduled job, an agent on a server.
+
+<Steps>
+  <Step title="Create the token">
+    **Profile › Connected AI apps › Create MCP access token**. Enter a name (e.g. *Import script*), the access — **Read**, **Read and write drafts** or **Read, write and publish** — and the lifetime: 7, 30, 90 or 365 days.
+  </Step>
+  <Step title="Copy it">
+    The token is shown **only once**, together with the gateway URL to send it to. Store it like a password.
+  </Step>
+  <Step title="Use it">
+    Your tool sends it as `Authorization: Bearer <token>` to the gateway URL.
+  </Step>
+</Steps>
+
+The token appears under **Connected AI apps** and is revoked there with **Disconnect**. Drafts written through the token need your consent once; publishing asks for a confirmation every time. Details: [Personal Access Tokens](https://mcp-gateway-docs.roadbeat.net/accounts/access-tokens) in the MCP Gateway documentation.
+
+## Sign-in apps for your organization
+
+**Admins** register their organization's own tools as sign-in apps (OAuth clients) under **Settings › Sign-in apps** — also linked from *Profile › Connected AI apps*. A sign-in app needs a client ID, the name shown on the consent screen, the application type (web app, or desktop / command-line app) and its exact redirect URIs.
+
+<Callout kind="info">
+  A sign-in app belongs to your organization: **only members of your organization can sign in through it**, and admins see, change and delete only their own organization's apps. Sign-in apps have no secret (PKCE). Clients that act without a person (machine clients) are registered by platform admins.
+</Callout>
+
+Apps that identify themselves with a Client ID Metadata Document — an HTTPS client ID, as Claude does — need no registration at all.
+
+## Platform administration
+
+Platform admins manage every registered client — including machine clients — under **Platform admin › OAuth clients**. Running Studio as the gateway's authorization server (signing keys, issuer, gateway URLs) is described in [Authorization Servers](https://mcp-gateway-docs.roadbeat.net/self-hosting/authorization-servers) in the MCP Gateway documentation.

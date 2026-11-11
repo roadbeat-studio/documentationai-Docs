@@ -100,6 +100,12 @@
                 "badge": "New"
               },
               {
+                "title": "AI Apps (MCP)",
+                "path": "guides/ai-apps",
+                "icon": "plug",
+                "badge": "New"
+              },
+              {
                 "title": "Users & Roles",
                 "path": "guides/users-and-roles",
                 "icon": "users"
