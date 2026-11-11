@@ -19,6 +19,49 @@ description: Release notes and updates for roadbeat Studio.
   - New guide: [AI Apps (MCP)](/guides/ai-apps).
 </Update>
 
+<Update label="2026-11-11" description="Editing imported content, option labels in every language" tags={["bugfix", "feature"]}>
+  ## Imported content stays intact, and every choice speaks your language
+
+  Found by an end-to-end test that imported 200 registry examples (50 content types) through the MCP Gateway and
+  edited each type in Studio.
+
+  ### Editing imported content
+
+  - **No more overwritten data.** Editing an object field turned it into the text `[object Object]`; lists got a
+    form or editor that did not fit them; imported dates showed blank; list items containing commas were split on
+    the next save. Studio now checks every special widget against the value's shape and falls back to the
+    schema-driven form.
+  - **Save Draft no longer races the auto-save** (no more "changed by someone else" or a 500 after saving).
+  - **Computed fields** (word count, reading time) keep their stored values until the text really changes.
+  - **Length limits:** only the schema's `maxLength` is a hard limit; a stricter form limit shows a counter with a
+    recommendation and never cuts text.
+  - **Extended view** shows plain-language field hints ("Choice", "List of entries") instead of schema type words.
+  - Registry content types of 150–300 KB can be saved (`API_JSON_BODY_LIMIT`, default 5 MB); oversized or
+    malformed bodies answer `413` / `400` instead of `500`.
+
+  ### Option lists and labels
+
+  - **Every option is labelled in the content and UI language** — selects, checkbox groups and the option lists
+    inside objects and lists (the schema sub-form looks up the path-qualified group, e.g. `venue.type`, before the
+    property name). A chosen option keeps the labels of every language.
+  - **Fixed: selects showing English codes in every language** for fields Studio stores at their schema path
+    (check-in activity and mood, point-of-interest category, company size …): labels are now found under the
+    registry field id, each value from the first label group that has it.
+  - A multiple choice of numbers (SDG goals) stores numbers, not text.
+  - **New lists from the Schema Registry** (re-import the content type to get them): SDG goals, cuisines, career
+    level, credit / author / creator roles, organization types, venue categories, price level and more.
+  - **Migrating stored free text to the new lists:** `apps/api/scripts/migrate-option-lists.ts` maps text that
+    names an option (code, label in any language, known spelling) to its code and keeps the rest as `other` with
+    the text preserved. Dry run by default; `--apply` writes a backup first and runs in one transaction.
+
+  ### Previews
+
+  - Object-rich content renders as text — no `[object Object]`, raw `true`, empty labels or broken image boxes.
+  - Localized lists such as keywords show in the content language (they were missing from the 11 default layouts
+    that show keywords).
+  - Default layouts point at the fields the schemas really have (274 bindings to missing fields fixed).
+</Update>
+
 <Update label="2026-11-08" description="Consumer area in your language, publishing and Content Pod fixes" tags={["feature", "security", "bugfix", "api"]}>
   ## The consumer area speaks your language, and published content stays in sync
 
