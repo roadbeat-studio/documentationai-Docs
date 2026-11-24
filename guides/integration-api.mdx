@@ -1,0 +1,231 @@
+---
+title: Integration API
+description: Let another product publish to roadbeat for your users — create and update content by its own id, publish it to Discovery Nodes and receive events, with OAuth or an organization API key.
+---
+
+## Overview
+
+The Integration API (`/api/v1/integration`) is the door for **other products that publish on a user's behalf** — a comic CMS that releases its chapters to roadbeat, a shop that announces its products, an event tool that lists its dates. Such a product:
+
+- creates and updates content **by its own id** (no need to remember Studio's ids),
+- publishes and unpublishes it and reads the outcome per Discovery Node,
+- receives events when something happens to its items.
+
+It is part of the Community Edition.
+
+| You want to … | Use |
+|---|---|
+| Publish from another product, for its users | **Integration API** (this page) |
+| Let an AI assistant work with your content | [AI Apps (MCP)](/guides/ai-apps) |
+| Read published content in a website or app | The Delivery API ([API & Integrations](/guides/api-and-integrations)) |
+| Administer Studio (content types, users, nodes) | The Management API — not reachable for integrations |
+
+An integration only ever **sees and changes the items it manages itself**. Everything else in the organization answers `403 INTEGRATION_NOT_MANAGED`.
+
+## Discovery
+
+A user gives your product their Studio address; everything else is discovered:
+
+```bash
+curl https://studio.example.com/.well-known/roadbeat-studio
+```
+
+```json
+{
+  "issuer": "https://studio.example.com",
+  "integration_api": "https://studio.example.com/api/v1/integration",
+  "integration_api_versions": ["1"],
+  "authorization_servers": ["https://studio.example.com"],
+  "auth_methods": ["oauth", "api_key"],
+  "studio_version": "0.1.0",
+  "edition": "ce"
+}
+```
+
+When `auth_methods` contains `oauth`, the protected-resource metadata (RFC 9728) names the authorization server and the scopes:
+
+```bash
+curl https://studio.example.com/.well-known/oauth-protected-resource/api/v1/integration
+```
+
+## Authentication
+
+<Tabs>
+  <Tab title="OAuth (recommended)" icon="lock">
+    The user signs in to Studio and approves your product once; your product receives tokens that act **for that user, within that user's role**.
+
+    - **Client:** identify your product with a Client ID Metadata Document (an HTTPS client ID), or ask the Studio's admins to register a sign-in app (see [AI Apps (MCP)](/guides/ai-apps#sign-in-apps-for-your-organization)). Hosted Studios vouch for known publishing products by their metadata host (`OAUTH_TRUSTED_CIMD_HOSTS`: the exact host of the client ID, or `*.domain`).
+    - **Flow:** authorization code with PKCE (`S256`). Send `resource=<integration_api>` (RFC 8707) on the authorization and token requests. Tokens for the integration are never mixed with MCP Gateway access in one grant.
+    - **Scopes:**
+
+      | Scope | Allows | Roles |
+      |---|---|---|
+      | `integration:read` | Read types, targets, managed items, publish status | viewer, editor, admin |
+      | `integration:write` | Validate, create and update managed items, upload assets | editor, admin |
+      | `integration:publish` | Publish, unpublish, archive, delete, re-distribute managed items | editor, admin |
+      | `integration:events` | Manage the event subscription | editor, admin |
+
+      Scopes are capped by the user's role at consent and again on every refresh. Asking for no scope grants `integration:read`.
+    - **Tokens:** access tokens are short-lived (15 minutes). Refresh tokens stay valid as long as they are used (they expire after 90 days without use). There are no client-credentials tokens: an integration always acts for a person who approved it.
+    - **Yearly approval:** the user's approval lasts one year. Two weeks before it ends, the user gets a notification and an e-mail with a one-click renewal (*Profile › Connected apps › Renew*). Disconnecting the app ends its access at once.
+  </Tab>
+  <Tab title="Organization API key" icon="key">
+    For Studios without the authorization server, or for a product the organization runs itself, an **admin** creates an organization API key under *Settings › API Keys*:
+
+    | Permission | Allows |
+    |---|---|
+    | `content.read` | Read types, targets, managed items, publish status |
+    | `content.write` | Validate, create and update managed items, upload assets |
+    | `content.publish` | Publish, unpublish, archive and delete managed items |
+    | `events.write` | Manage the event subscription |
+    | `pod.write` | Reserved for the Content Pod bundle endpoints |
+
+    Keys with write permissions **expire within two years** (one year by default), and Studio warns when one is created: anyone holding the key can change and publish content. The key acts for the admin who created it (or the organization's owner) and never reaches the Management API.
+
+    ```bash
+    curl https://studio.example.com/api/v1/integration/me \
+      -H "Authorization: Bearer rbk_..."
+    ```
+  </Tab>
+</Tabs>
+
+`GET /api/v1/integration/me` answers who you are: the organization, the acting user or key, the role, the granted scopes and your limits. `expiresAt` says when access ends unless it is renewed: the end of the user's yearly approval for OAuth, or the API key's expiry (`null` for a key without one). Show it in your product and remind your users before it passes.
+
+## Managed content
+
+### Create or update by your own id
+
+```bash
+PUT /api/v1/integration/content/{typeId}/external/{externalId}
+{
+  "data": { "title": { "en": "The Lighthouse Keeper — Chapter 3" }, "...": "..." },
+  "slug": "the-lighthouse-keeper-chapter-3",
+  "locale": "en",
+  "changeNote": "Chapter 3 released",
+  "manageUrl": "https://cms.example.com/works/42"
+}
+```
+
+- The **first call creates** the item, later calls **update** it. The external id is your product's id for the item: letters, digits and `. _ : -`, up to 200 characters; it is unique per organization and content type.
+- Sending **the same document again is a no-op** (`unchanged: true`) — safe to repeat after a timeout.
+- Send `expectedVersion` to get `409` when someone else changed the item in between.
+- The response carries `id`, `version`, `status`, `created`, `unchanged` and the **validation publish would apply** (`validation.valid`, `validation.problems`). A draft may be incomplete; publishing is strict.
+- `POST /content/validate` checks data against a type without storing anything (always `200`, with `problems[]`).
+- `GET /content-types` lists the organization's types; `GET /content-types/{typeId}` returns the metadata schema, the teaser mapping and the `schemaVersion` your data must follow.
+
+### What editors see
+
+The item is **managed by your product**. In Studio's editor a banner says so ("Managed by …; changes made here are overwritten by its next update"), with a link to `manageUrl` when that URL is on your client's registered origin. Editors can still change the item; your product learns of it through the `content.updated` event. The version history shows each of your changes as "via" followed by your product's name.
+
+## Publishing
+
+| Request | Does |
+|---|---|
+| `POST /content/{id}/publish` | Publishes with strict validation: `422` with `problems` when the data is incomplete, `403 ACTION_PREVENTED` when a plugin vetoes |
+| `POST /content/{id}/unpublish` | Withdraws the teasers from the Discovery Nodes and the Content Pod |
+| `POST /content/{id}/archive` | Archives (withdraws like unpublish) |
+| `DELETE /content/{id}` | Deletes a managed item; items other content references stay protected |
+| `GET /content/{id}/publish-status` | Per Discovery Node: status, teaser id, time, error, circuit state |
+| `POST /content/{id}/distribute` | Pushes the teaser of a published item to its nodes again |
+| `GET /publishing/targets` | The organization's Discovery Nodes (incl. whether it is connected as a publisher) and its Content Pod |
+
+`POST` requests honour an `Idempotency-Key` header (8–128 characters of letters, digits and `. _ : -`) for 24 hours: a retried request with the same key returns the first answer instead of acting twice.
+
+### Assets
+
+`POST /api/v1/integration/assets` uploads a file (multipart form field `file`, up to 50 MB) and returns `{ id, url }` to reference in your item's data.
+
+### Content Pod bundles
+
+A product that is a registered reader (for example PanelWave for interactive comics) can host a **signed reader package** of a managed item on the organization's Content Pod. The pod serves it from its own bundle origin, `https://{subdomain}--b.pods.roadbeat.net/{bundleId}/`, and roadbeat clients frame it like the reader itself.
+
+```bash
+POST /api/v1/integration/pod/bundles
+{
+  "contentId": "3f6c…",
+  "sourceUrl": "https://app.example.com/packages/tok_abc/package-manifest.json",
+  "digest": "<sha256 of package-manifest.json>",
+  "reader": "panelwave"
+}
+```
+
+Studio pulls the package: `package-manifest.json` must hash to `digest`, carry an Ed25519 signature by a key the reader's Schema Registry entry publishes, and fit into the pod's free space (`413 POD_BUNDLE_TOO_LARGE` with `neededBytes` and `freeBytes`). The answer is `202` with the bundle (`status: "importing"`). Every listed file is then downloaded and checked (size and SHA-256); files you list relative to the manifest are fetched with the manifest's query string, so a token in `sourceUrl` covers them. Only when all files match does the bundle go live; a failed import leaves the previous bundle as it was. Files that did not change since the live bundle are not downloaded again.
+
+Dot files in the file list, such as `.htaccess` (hosting hints for Apache), are covered by the signature but neither downloaded nor served. Paths with `..`, a leading `/` or empty segments are refused, and a package needs at least one servable file. Size and file count limits apply to the imported files only.
+
+| Request | Does |
+|---|---|
+| `GET /pod/bundles/{id}` | Status (`importing`, `active`, `failed`), `live`, `url`, `entryUrl`, size, digest, last error |
+| `DELETE /pod/bundles/{id}` | Removes the bundle from the pod (unpublishing or deleting the item removes it too) |
+
+`GET /publishing/targets` reports `pod.bundles` (`supported`, `origin`, `maxFileBytes`, `freeBytes`), so you can tell the user before an import whether the work fits. Sources must be HTTPS on public hosts; redirects are followed only on the same host. Unsigned packages are refused.
+
+## Events
+
+Subscribe once per organization (`integration:events` or `events.write`); the URL must be HTTPS:
+
+```bash
+POST /api/v1/integration/webhooks
+{ "url": "https://cms.example.com/hooks/roadbeat", "events": ["publishing.completed", "content.updated"] }
+```
+
+The response contains the **signing secret — shown once**. A second subscription answers `409 INTEGRATION_SUBSCRIPTION_EXISTS`; read it with `GET /webhooks`, remove it with `DELETE /webhooks/{id}`. The subscription does not count against the organization's webhook limit.
+
+| Event | Sent when | Data |
+|---|---|---|
+| `content.published`, `content.unpublished`, `content.deleted` | One of your items changes status | `contentId`, `contentTypeId`, `externalId`, `version` (+ `status`) |
+| `content.updated` | **Someone other than your product** changed one of your items | as above |
+| `publishing.completed` | Publishing finished on all nodes (also when no node accepts the type) | `contentId`, `externalId`, `version`, `results[]` per node (`published`, `failed`, `skipped`, `teaserId`, `error`), `pod` |
+| `publishing.withdrawn` | The teasers were withdrawn (also after a delete) | `contentId`, `externalId`, `results[]` |
+| `pod.bundle.ready`, `pod.bundle.failed` | A Content Pod bundle went live, or its import failed | `contentId`, `externalId`, `bundle` (status, `url`, `entryUrl`, size, digest, `error`) |
+| `integration.revoked` | The user disconnected your product, or the API key was revoked | `clientId`, `reason` |
+
+Deliveries are signed and retried exactly like Studio's [webhooks](/guides/webhooks): body `{ "event", "data", "timestamp" }`, headers `X-Webhook-Signature` (`sha256=` HMAC over `<timestamp>.<rawBody>`), `X-Webhook-Timestamp`, `X-Webhook-Event`, `X-Webhook-Delivery`, three attempts with backoff.
+
+## Discovery Nodes: publishing with the organization's own key
+
+Each organization publishes to a Discovery Node with **its own publisher key**, so many organizations of one (hosted) Studio can publish to the same node. Admins manage this under **Settings › Discovery Nodes**:
+
+<Steps>
+  <Step title="Connect" icon="plug">
+    **Connect** registers the organization on the node under its own id. If the node's operator already registered the organization by hand, Studio asks for the key the operator issued instead.
+  </Step>
+  <Step title="Verify" icon="badge-check">
+    The organization starts as an **unverified** publisher. **Verify domain** (with the DNS token from the node) or **Verify pod** (through the organization's Content Pod) raises the node's limits.
+  </Step>
+</Steps>
+
+On a hosted Studio, new organizations are connected to the default nodes (`DISCOVERY_DEFAULT_NODES`) automatically, as unverified publishers. This applies both to organizations created through onboarding and to organizations a platform admin creates under *Platform › Organizations*. Publisher keys are stored encrypted (`SECRETS_ENCRYPTION_KEY`) and are never shown again.
+
+For a node that is not in the list yet (a self-hosted Studio, or an organization without default nodes), use **Add a Discovery Node**: enter a name and the node's address and click **Add node**. The new node accepts every content type. Then **Connect** it as above.
+
+## Limits and errors
+
+Per integration and organization: **120 writes** and **30 publish actions per minute** (`429 INTEGRATION_RATE_LIMITED`, with `retryAfterSeconds` in the error body; operators change them with `INTEGRATION_RATE_WRITES_PER_MIN` and `INTEGRATION_RATE_PUBLISHES_PER_MIN`).
+
+| Code | Status | Meaning |
+|---|---|---|
+| `INTEGRATION_NOT_MANAGED` | 403 | The item exists but your product does not manage it |
+| `INTEGRATION_SCOPE_MISSING` | 403 | The token or key lacks the scope this route needs |
+| `INTEGRATION_RATE_LIMITED` | 429 | Too many writes or publish actions this minute |
+| `EXTERNAL_ID_INVALID` | 400 | The external id has characters outside `A–Z a–z 0–9 . _ : -` or is too long |
+| `INTEGRATION_SUBSCRIPTION_EXISTS` | 409 | Your product already has an event subscription |
+| `ACTION_PREVENTED` | 403 | A plugin refused the action |
+| `BUNDLE_DIGEST_MISMATCH`, `BUNDLE_UNSIGNED`, `BUNDLE_SIGNATURE_INVALID`, `BUNDLE_SIGNING_KEY_UNKNOWN` | 422 | The package is not the one you named, or not signed by the reader |
+| `BUNDLE_MANIFEST_INVALID`, `BUNDLE_READER_NOT_ALLOWED`, `BUNDLE_CONTENT_TYPE` | 422 | Unsafe or malformed file list; the reader does not take pod bundles or this content type |
+| `POD_BUNDLE_TOO_LARGE` | 413 | The package does not fit into the pod's free space |
+| `BUNDLE_IMPORT_RUNNING` | 409 | An import of this bundle is still running |
+
+Errors use Studio's standard error body (see [Error Codes](/api-reference/error-codes)). The endpoints are listed in the API reference under **Publishing & Distribution**.
+
+## Reference client
+
+The Studio repository contains a runnable reference client, `docs/integration-api/reference-client.mjs` (Node 18+, no dependencies). It walks through the whole life cycle against a running Studio: discovery, `me`, content types, targets, an optional event subscription, validate, upsert (twice, to show the no-op), publish with an `Idempotency-Key`, publish status, unpublish and delete.
+
+```bash
+STUDIO_URL=https://studio.example.com \
+STUDIO_TOKEN=rbk_... \
+node docs/integration-api/reference-client.mjs
+```
+
+Optional: `CONTENT_TYPE` (a type id), `HOOK_URL` (an HTTPS URL that should receive the events), `KEEP=1` (keep the item).

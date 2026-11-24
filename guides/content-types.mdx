@@ -127,6 +127,7 @@ Each field supports validation rules, enforced **on the server** against the con
 - **Unique** — value must be unique across all content of this type
 - **Cross-field ordering** — one field's date/number must be on-or-after another (`after_field`) or on-or-before it (`before_field`) — e.g. an event's `end_date` must be on or after its `start_date`
 - **Conditional required** — a field can be required only when another field meets a condition: `requiredIf` (e.g. `phone` required when `contact_method` is `phone`) or `requiredUnless` (e.g. `price` required unless `is_free` is true)
+- **Registry cross-field rules** — registry form schemas keep such rules in a top-level `cross_field_validation` list. Studio enforces their `conditional_required` rules unless they are only warnings (see below)
 - **Referenced-item existence** — a **Media** field must point at an asset that exists in your organization, and a **Reference** field at existing content (of an allowed type when the field restricts it). Dangling ids are rejected so they never reach a published teaser
 - **Modular blocks** — block count limits and required inner fields for **Blocks** fields
 
@@ -135,6 +136,34 @@ Validation failures come back as a single `422 Unprocessable Entity` with a per-
 Invalid **drafts** are tolerated where the content type allows it, but **publishing is always strict** — invalid content (including dangling asset/reference ids) can never go live. The content type definition itself is also validated when you save it: an uncompilable schema, an invalid version, or a form/teaser mapping that points at a missing property is rejected with a clear error.
 
 In the content editor, a rejected save or publish lists every error against the **label of the field** it belongs to, so editors can fix the item without reading JSON paths — see [Content Editor → Validation](/editors/content-editor#validation).
+
+### Cross-field rules from the registry
+
+A registry form schema can list rules that span several fields. The comic release, for example, needs a series unless it is a one-shot or a graphic novel:
+
+```json
+{
+  "cross_field_validation": [
+    {
+      "rule_id": "series_required_unless_standalone",
+      "type": "conditional_required",
+      "condition": { "field": "release_type.kind", "operator": "not_in", "value": ["one_shot", "graphic_novel"] },
+      "required_fields": ["series"],
+      "severity": "error",
+      "error_message": {
+        "en": "Please select the series. Only one-shots and graphic novels can be published without a series.",
+        "de": "Bitte wählen Sie die Serie. Nur One-Shots und Graphic Novels können ohne Serie erscheinen."
+      }
+    }
+  ]
+}
+```
+
+- While the condition holds, every field in `required_fields` must have a value; the error carries `keyword: "conditional_required"` and the rule's English `error_message`.
+- Operators: `equals`, `not_equals`, `in`, `not_in`, `not_empty` / `is_not_empty`, `empty` / `is_empty`, `greater_than`, `less_than`. A rule with an unknown operator is skipped rather than guessed.
+- `not_equals` and `not_in` hold only when the referenced field is set, so an item without a release type gets the schema's own "required" error, not the rule's.
+- Rules with severity `error`, or without a severity, are enforced. Rules with severity `warning` and rules of other types are advisory and not enforced.
+- When a rule reports a field, the generic schema error "must have required property …" for the same field is not repeated, and the companion error "must match "else" schema" is dropped.
 
 ### Schema enforcement
 
@@ -199,6 +228,32 @@ The form schema controls how the content editor renders. It supports:
 ```
 
 Registry form schemas address their fields with **JSONPath-style** paths (`$.time.start`); Studio normalizes these to plain property paths for form fields and teaser mappings.
+
+#### Conditional tabs and sections
+
+A tab or section can carry `visible_if` to appear only while a field meets a condition. The artist profile shows its Music tab only for musical artist types:
+
+```json
+{
+  "id": "music",
+  "label": "Music",
+  "visible_if": {
+    "field": "artist_type",
+    "operator": "not_in",
+    "value": ["comic_creator", "writer", "illustrator", "cartoonist", "studio", "publisher"]
+  },
+  "sections": [ ... ]
+}
+```
+
+| Operator | Visible when |
+|---|---|
+| `equals`, `in` | The field is set and matches the value (or one of the values) |
+| `not_equals`, `not_in` | The field is empty, or does not match — a tab is hidden only once the condition clearly fails |
+| `not_empty` | The field has a value |
+| `empty` | The field has no value |
+
+Select values stored as `{ code, label }` are compared by their code, and a list matches when one of its items does. The condition is evaluated on the form data while you edit, so the tab appears or disappears as soon as the field changes.
 
 ### Storage paths
 

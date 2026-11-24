@@ -132,6 +132,12 @@
                 "badge": "New"
               },
               {
+                "title": "Integration API",
+                "path": "guides/integration-api",
+                "icon": "cable",
+                "badge": "New"
+              },
+              {
                 "title": "Search",
                 "path": "guides/search",
                 "icon": "search"
@@ -166,6 +172,12 @@
                 "title": "Consumer Features",
                 "path": "guides/consumer-features",
                 "icon": "compass"
+              },
+              {
+                "title": "Interactive Editions",
+                "path": "guides/interactive-editions",
+                "icon": "book-open",
+                "badge": "New"
               }
             ]
           },

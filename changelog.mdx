@@ -3,6 +3,178 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-11-23" description="Form rules, media pickers, Discovery Nodes for new organizations" tags={["feature", "bugfix"]}>
+  ## Registry forms behave the way their content types intend
+
+  Found by an end-to-end test of the publisher portal (comic releases, artist profiles).
+
+  ### Content editor
+
+  - **Cross-field rules from the Schema Registry are enforced.** Registry forms
+    keep rules such as "the series is required unless the release is a one-shot
+    or a graphic novel" in a top-level `cross_field_validation` list (42
+    `conditional_required` rules in 46 forms). Studio now checks them on save
+    and publish and answers with the type's own message. Operators: `equals`,
+    `not_equals`, `in`, `not_in`, `not_empty`, `empty`, `greater_than`,
+    `less_than`.
+  - **Readable validation errors.** When a rule already reports a field, the
+    generic "must have required property …" for the same field is dropped, and
+    so is the companion error "must match "else" schema".
+  - **Tabs and sections that depend on a field.** Form layout tabs and sections
+    may carry `visible_if: { field, operator, value }`. For example, the artist
+    profile shows its Music tab only for musical artist types.
+  - **Media pickers fit role-typed images.** When a media object's `type` is a
+    list of roles (`cover`, `thumbnail`, `preview` …), picking a file stores the
+    field's own role instead of `image`, which failed publishing. Width and
+    height come from the asset. Text you entered next to the file, such as an
+    image's `alt_text`, is kept when you pick another file.
+  - **Fixed: repeatable lists wrote inputs to the wrong item.** In a
+    `repeatable_list` (for example a band's members), every name went to the
+    first member and later fields went to other items or nowhere. Each input
+    now writes to its own item, and clearing an input removes its key instead of
+    storing `null`, which failed publishing.
+
+  ### Discovery Nodes
+
+  - **Organizations created in Platform are connected to the default nodes**,
+    like organizations created through onboarding (`DISCOVERY_DEFAULT_NODES`).
+    Before, they had no Discovery Node at all.
+  - **Add a Discovery Node.** *Settings › Discovery Nodes* now has a form (name
+    and address) for self-hosted Studios and organizations without default
+    nodes. The new node accepts every content type; **Connect** it as usual to
+    publish there.
+
+  See [Content Editor → Validation](/editors/content-editor#validation) and
+  [Publishing → Discovery Nodes](/guides/publishing#discovery-nodes).
+</Update>
+
+<Update label="2026-11-20" description="Content Pods on your own storage" tags={["feature", "security"]}>
+  ## Pod content and reader bundles on your own storage
+
+  - **Storage tab** in the pod dashboard: keep a static pod on an S3-compatible bucket (AWS S3, MinIO, Hetzner, Contabo) or an SFTP server, and reader bundles on a bundle origin of your own.
+  - **Checked before use.** Save and check writes, reads back and fetches probe files; a bundle origin must also send `frame-ancestors` and serve JavaScript modules correctly. An unchecked storage is never used and never replaced by the Studio's disk.
+  - **Safe connections.** Credentials are write-only and encrypted; endpoints must be public addresses; the SFTP host key is pinned at the first check.
+  - **Bundles** are uploaded under a folder per version and go live only when complete; the previous version is removed afterwards.
+  - API: `GET/PUT/DELETE /api/v1/manage/content-pod/storage/{role}`, `POST …/check`. Migration `20261120100000_pod_storage_targets`.
+</Update>
+
+<Update label="2026-11-19" description="Interactive editions in the content reader" tags={["feature", "security", "api"]}>
+  ## Interactive comics play inside roadbeat
+
+  ### Content reader and Discover
+
+  - **External readers.** An item whose digital edition names a registered
+    reader (today the PanelWave player for interactive comics) plays in the
+    content reader in place of the hero image. Studio loads the reader list from
+    the Schema Registry, checks its signatures when
+    `SCHEMA_REGISTRY_VERIFY_SIGNATURES=true`, keeps it for an hour and falls back
+    to a bundled copy. Only addresses on the reader's registered origins, or on
+    a Content Pod's bundle origin, are framed. New guide:
+    [Interactive Editions](/guides/interactive-editions).
+  - **Privacy first.** The player gets only the sandbox and permissions the
+    registry allows, counts reads only with your roadbeat analytics consent and
+    never starts playing on its own. The new privacy switch *Load interactive
+    content from external readers* (on by default) opens editions in a new tab
+    instead.
+  - **More about the work.** The reader shows series, credits, age rating, the
+    AI disclosure and the edition languages.
+  - **Teaser cards.** An **Interactive** badge marks items with an interactive
+    edition. Chips below the synopsis show the edition's access ("Free", "Free
+    preview · €4.99", "Subscription" …) and the publisher's AI use ("No AI",
+    "AI-assisted", "AI-generated"), in all 24 languages.
+  - **Editor preview.** `embed` regions in the layout preview (comic release and
+    series layouts) show the same player while you edit, or the cover with a
+    **Read** link and the reason it is not framed.
+  - API: `GET /consumer/discover/readers` lists the registered readers,
+    `POST /consumer/discover/readers/approve` checks an edited item, and the
+    reader response carries `externalReader`. Teasers carry `readerKind`,
+    `editionAccess` and `aiUse`.
+
+  ### Publishing
+
+  - **Teasers carry the edition's access and price.** The generator reads
+    `access` (`is_free`, `access_type`, `min_price`, `currency`) from the type's
+    teaser mapping. A `value_map` translates the type's codes into the node-wide
+    vocabulary (`free_preview` → `freemium`). Before this fix, every comic was
+    indexed as free.
+  - **Media flags and canonical URL from the mapping.** `media_flags` can set
+    `has_audio`, `has_video` and `has_images`, and `canonical_url_fallback`
+    names an https page used when the item has no pod and no configured base
+    URL.
+  - **Fixed: teasers with hero image dimensions were rejected.** Discovery Nodes
+    index `hero_image` strictly (`url`, `thumbnail_url`, `alt_text`), so teasers
+    whose image carried width and height (comic covers) failed. Teasers no
+    longer send them.
+
+  ### Security
+
+  - **Publisher HTML in the content reader is sanitized on the server.**
+    Article bodies from Content Pods and from Studio items are reduced to an
+    allow-list (text structure, links, http(s) images, tables, code): no
+    scripts, styles, frames, forms, event handlers, `javascript:` or `data:`
+    URLs. The browser sanitizes them a second time. Before this fix, publisher
+    markup was inserted unchecked.
+
+  Configuration: `POD_BUNDLE_DOMAIN_PATTERNS` and `EXTERNAL_READER_DEV_ORIGINS`.
+  See [Configuration](/deployment/configuration#external-readers-and-pod-bundles).
+</Update>
+
+<Update label="2026-11-19" description="Content Pod bundles for registered readers" tags={["feature", "security"]}>
+  ## Interactive works served from your own Content Pod
+
+  - **Pod bundles.** A registered reader (for example PanelWave) can place a
+    signed package of an item on the organization's Content Pod through the
+    Integration API (`POST /api/v1/integration/pod/bundles`). Studio pulls it,
+    checks the signature against the reader's published keys and every file's
+    SHA-256, and only then switches it live. Unsigned packages are refused.
+  - **Own origin.** Bundles are served from the pod's bundle origin
+    (`{subdomain}--b.pods.roadbeat.net`), never from the pod's own pages, and
+    roadbeat clients may frame them.
+  - **Quota.** Bundles count toward the pod's storage; the import checks the
+    size first and `GET /publishing/targets` reports the free space.
+  - **Dot files.** A package may list dot files such as `.htaccess` (PanelWave
+    packages do). They are covered by the signature but neither downloaded nor
+    served; `..`, absolute and empty path segments are still refused.
+  - **Fixed: pod settings failed on databases built with `prisma migrate deploy`.**
+    The quota columns of `content_pod_configs` were only created by a
+    development script. Migration `20261119145000_content_pod_quota_columns`
+    adds them and leaves databases that already have them unchanged.
+
+  See [Integration API → Content Pod bundles](/guides/integration-api#content-pod-bundles).
+</Update>
+
+<Update label="2026-11-19" description="Integration API and per-organization publisher keys" tags={["feature", "security"]}>
+  ## Other products can publish to roadbeat for your users
+
+  - **Integration API** (`/api/v1/integration`). A product creates and
+    updates content by its own id (`PUT /content/{typeId}/external/{externalId}`,
+    repeat-safe), publishes, unpublishes and deletes it, reads the outcome per
+    Discovery Node and receives signed events (`publishing.completed`,
+    `content.updated` when an editor changed its item, `integration.revoked`, …).
+    It reaches only the items it manages. Discovery:
+    `GET /.well-known/roadbeat-studio`. New guide:
+    [Integration API](/guides/integration-api).
+  - **Managed by.** Items a product manages show a banner in the editor, and
+    the version history names who made each change ("via …", also for AI
+    assistants).
+  - **OAuth for integrations.** Studio's authorization server issues tokens for
+    the Integration API with the scopes `integration:read`, `write`, `publish`
+    and `events`, capped by your role. Your approval lasts a year; Studio
+    reminds you two weeks before and *Profile › Connected apps › Renew*
+    extends it in one click.
+  - **When access ends.** `GET /integration/me` reports `expiresAt`: the end of
+    the user's approval for OAuth, or the API key's expiry. Products can show it
+    and remind their users before access stops.
+  - **Write-capable API keys.** Organization API keys can now carry
+    `content.publish` and `events.write`. Keys that can write expire within two
+    years (one by default), and Studio warns when you create one.
+  - **Your own publisher key per Discovery Node.** *Settings › Discovery
+    Nodes* connects the organization to each node under its own id and
+    verifies it by DNS or through the Content Pod, so several organizations of
+    one Studio can publish to the same node. Keys are stored encrypted
+    (`SECRETS_ENCRYPTION_KEY`).
+</Update>
+
 <Update label="2026-11-11" description="AI apps: personal access tokens and sign-in apps" tags={["feature", "security"]}>
   ## Connect your own tools to the roadbeat MCP Gateway
 
@@ -60,6 +232,28 @@ description: Release notes and updates for roadbeat Studio.
   - Localized lists such as keywords show in the content language (they were missing from the 11 default layouts
     that show keywords).
   - Default layouts point at the fields the schemas really have (274 bindings to missing fields fixed).
+</Update>
+
+<Update label="2026-11-09" description="Discover across several nodes: paging, node status, node allow-list" tags={["bugfix", "security", "api"]}>
+  ## Every page of a multi-node search, and nodes that really are online
+
+  - **Fixed: later pages came back short or empty.** With several Discovery
+    Nodes, Studio asked each node for `page × limit` hits, and nodes refuse more
+    than 100. Each node is now asked for its top hits (at most 100); the results
+    are merged by score or by the requested sort, deduplicated and paged, and
+    their facets are merged.
+  - **Incomplete results are flagged.** Search responses carry `partial` and
+    `nodeErrors` (`timeout`, `unreachable`, `HTTP <status>`) when a node failed.
+    `resultWindow` and `pageLimitReached` mark the end of what a multi-node
+    search can page through; Discover's pagination stops there.
+  - **Fixed: every node showed as offline.** Node status now comes from the
+    node's `/health` and `/api/web/v1/node-info`: `online`, `degraded` or
+    `offline`.
+  - **Security:** `POST /consumer/discover/search` requested a caller-supplied
+    `nodeUrl` as is. It must now be one of the configured nodes, otherwise the
+    answer is `400 UNKNOWN_DISCOVERY_NODE`.
+
+  See [Consumer Features → Search API](/guides/consumer-features#search-api).
 </Update>
 
 <Update label="2026-11-08" description="Consumer area in your language, publishing and Content Pod fixes" tags={["feature", "security", "bugfix", "api"]}>

@@ -136,7 +136,7 @@
         },
         "responses": {
           "201": {
-            "description": "One page of teasers with aggregated facets. Empty result (total 0, no nodes) when no Discovery Node is configured or reachable.",
+            "description": "One page of teasers with aggregated facets. Empty result (total 0, no nodes) when no Discovery Node is configured or reachable. Nodes that failed are listed in `nodeErrors` (`partial: true`). With several nodes the merged result can be paged within the first `resultWindow` (100) hits; a page beyond it is cut off and flagged `pageLimitReached`. A `nodeUrl` that is not a configured node is rejected with 400 UNKNOWN_DISCOVERY_NODE.",
             "content": {
               "application/json": {
                 "schema": {
@@ -201,7 +201,7 @@
         },
         "responses": {
           "201": {
-            "description": "Same shape as the federated search: the goal content queries are translated into node filters before the fan-out.",
+            "description": "Same shape as the federated search (incl. `nodeErrors` / `partial` and, with several nodes, `resultWindow` / `pageLimitReached`): the goal content queries are translated into node filters before the fan-out.",
             "content": {
               "application/json": {
                 "schema": {
@@ -337,6 +337,119 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer/discover"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/consumer/discover/readers": {
+      "get": {
+        "operationId": "DiscoverController_readers",
+        "summary": "External readers the content reader may frame (from the Schema Registry)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Registered readers and players (e.g. PanelWave) with the origins they are framed from and their privacy rules. From the Schema Registry, cached for an hour; the bundled list when the registry cannot be reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsumerExternalReaderSummaryDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "consumer/discover"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/consumer/discover/readers/approve": {
+      "post": {
+        "operationId": "DiscoverController_approveReader",
+        "summary": "Check an edited item against the reader registry (Studio editor preview)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveReaderRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The approved reader for the item, or null when its digital edition has no registered reader or the address is not on an allowed origin. Same rules as the content reader.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ConsumerExternalReaderDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -4130,6 +4243,25 @@
       }
     },
     "schemas": {
+      "ApproveReaderRequestDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "description": "Content type of the item",
+            "example": "comic-release"
+          },
+          "item": {
+            "type": "object",
+            "description": "The item data (at least `digital_edition`), as edited",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "contentType",
+          "item"
+        ]
+      },
       "CdAccountStatusResponse": {
         "type": "object",
         "properties": {
@@ -4899,6 +5031,15 @@
             "type": "boolean",
             "description": "Signature verification outcome; null when the content carries no `_signature` block",
             "nullable": true
+          },
+          "externalReader": {
+            "description": "Registered external reader (e.g. the PanelWave player) the client may frame for this item; null when the item has no digital edition with a matching, approved reader",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsumerExternalReaderDto"
+              }
+            ]
           }
         },
         "required": [
@@ -5075,7 +5216,7 @@
           },
           "status": {
             "type": "string",
-            "description": "Reachability of the node as probed just now",
+            "description": "Reachability of the node as probed just now (the node's `/health` and `/api/web/v1/node-info`): `online` = healthy, `degraded` = reachable but not all of its components are up, `offline` = no answer",
             "enum": [
               "online",
               "offline",
@@ -5130,6 +5271,218 @@
           "name",
           "regionCode",
           "countryCode"
+        ]
+      },
+      "ConsumerExternalReaderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Registry id of the reader",
+            "example": "panelwave"
+          },
+          "name": {
+            "type": "string",
+            "example": "PanelWave"
+          },
+          "homepage": {
+            "type": "string",
+            "example": "https://panelwave.org"
+          },
+          "protocol": {
+            "type": "string",
+            "description": "Embed protocol the host speaks",
+            "example": "panelwave-embed/4"
+          },
+          "sandbox": {
+            "type": "string",
+            "description": "iframe sandbox tokens (registry entry, reduced to an allow-list)",
+            "example": "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          },
+          "allow": {
+            "type": "string",
+            "description": "iframe permissions policy",
+            "example": "autoplay; fullscreen"
+          },
+          "embedUrl": {
+            "type": "string",
+            "description": "Address to frame, checked against the entry's origins (or a pod bundle origin when the entry allows them)"
+          },
+          "readerUrl": {
+            "type": "string",
+            "description": "Address for \"Open in a new tab\""
+          },
+          "origin": {
+            "type": "string",
+            "description": "Origin of `embedUrl`, for postMessage checks",
+            "example": "https://read.panelwave.org"
+          },
+          "tracking": {
+            "type": "string",
+            "description": "Tracking rule of the reader: `host_consent` = counts reads only when the host passes consent",
+            "example": "host_consent"
+          },
+          "thirdPartyRequests": {
+            "description": "Hosts the reader contacts",
+            "example": [
+              "read.panelwave.org"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "policyUrl": {
+            "type": "string",
+            "description": "Privacy policy of the reader"
+          },
+          "purchaseUi": {
+            "type": "object",
+            "description": "Purchase UI per platform: `in_place`, `link_out` or `hidden`",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "web": "in_place",
+              "android": "link_out",
+              "ios": "hidden"
+            }
+          },
+          "editions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerExternalReaderEditionDto"
+            }
+          },
+          "features": {
+            "description": "`digital_edition.features` of the item",
+            "example": [
+              "sound",
+              "voices"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "access": {
+            "type": "object",
+            "description": "Access model of the edition",
+            "additionalProperties": true,
+            "example": {
+              "model": "free",
+              "isFree": true
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "protocol",
+          "sandbox",
+          "allow",
+          "embedUrl",
+          "readerUrl",
+          "origin",
+          "tracking",
+          "thirdPartyRequests",
+          "purchaseUi",
+          "editions",
+          "features",
+          "access"
+        ]
+      },
+      "ConsumerExternalReaderEditionDto": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string",
+            "description": "Two-letter language of the edition",
+            "example": "de"
+          },
+          "locale": {
+            "type": "string",
+            "description": "BCP 47 locale the reader expects",
+            "example": "de-DE"
+          },
+          "readerUrl": {
+            "type": "string",
+            "description": "Approved reader address of this edition (omitted when it is not on an allowed origin)"
+          },
+          "original": {
+            "type": "boolean",
+            "description": "True for the original-language edition"
+          }
+        },
+        "required": [
+          "language"
+        ]
+      },
+      "ConsumerExternalReaderSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "panelwave"
+          },
+          "name": {
+            "type": "string",
+            "example": "PanelWave"
+          },
+          "homepage": {
+            "type": "string",
+            "example": "https://panelwave.org"
+          },
+          "contentTypes": {
+            "example": [
+              "comic-release",
+              "comic-series"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "origins": {
+            "description": "Origins the reader is framed from",
+            "example": [
+              "https://read.panelwave.org"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "protocol": {
+            "type": "string",
+            "example": "panelwave-embed/4"
+          },
+          "tracking": {
+            "type": "string",
+            "example": "host_consent"
+          },
+          "thirdPartyRequests": {
+            "example": [
+              "read.panelwave.org"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "policyUrl": {
+            "type": "string",
+            "example": "https://panelwave.org/legal/privacy"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "contentTypes",
+          "origins",
+          "protocol",
+          "tracking",
+          "thirdPartyRequests"
         ]
       },
       "ConsumerFacetBucketDto": {
@@ -5780,6 +6133,28 @@
           "token"
         ]
       },
+      "ConsumerNodeErrorDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Base URL of the Discovery Node that failed"
+          },
+          "error": {
+            "type": "string",
+            "description": "Short reason: `timeout`, `unreachable`, `HTTP <status>` or `request failed`",
+            "example": "timeout"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status the node answered with, if it answered"
+          }
+        },
+        "required": [
+          "url",
+          "error"
+        ]
+      },
       "ConsumerNotificationDto": {
         "type": "object",
         "properties": {
@@ -6370,6 +6745,28 @@
               "type": "string"
             }
           },
+          "partial": {
+            "type": "boolean",
+            "description": "True when at least one queried Discovery Node failed, so the result is incomplete (see `nodeErrors`). Absent when every node answered.",
+            "example": true
+          },
+          "nodeErrors": {
+            "description": "The Discovery Nodes that failed, with a short reason. Absent when every node answered.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumerNodeErrorDto"
+            }
+          },
+          "resultWindow": {
+            "type": "number",
+            "description": "Multi-node search only: the merged result can be paged within the first `resultWindow` hits — a Discovery Node answers at most 100 hits per request. Narrow the query to reach results beyond it.",
+            "example": 100
+          },
+          "pageLimitReached": {
+            "type": "boolean",
+            "description": "True when the requested page reaches beyond `resultWindow`: its teasers are cut off at the window (empty when the page starts beyond it).",
+            "example": true
+          },
           "_debug": {
             "type": "object",
             "description": "Raw requests sent to each Discovery Node — returned only while debug output is enabled",
@@ -6840,6 +7237,25 @@
               "type": "string"
             }
           },
+          "readerKind": {
+            "type": "string",
+            "description": "Kind of digital edition (`type_filters.reader_kind`): `interactive_player`, `page_viewer`, `vertical_scroll` or `download`. Absent for items without one.",
+            "example": "interactive_player"
+          },
+          "editionAccess": {
+            "type": "object",
+            "description": "Access of the digital edition for the card chip: `model` (`free`, `free_preview`, `purchase`, `subscription`, `rent`) from `type_filters.edition_access`, else from the teaser access; `minPrice` with `currency` (ISO 4217) when known.",
+            "example": {
+              "model": "free_preview",
+              "minPrice": 4.99,
+              "currency": "EUR"
+            }
+          },
+          "aiUse": {
+            "type": "string",
+            "description": "The publisher's AI disclosure level (`type_filters.ai_disclosure`): `none`, `assisted` or `generated`.",
+            "example": "assisted"
+          },
           "slug": {
             "type": "string",
             "description": "URL slug of the content item"
@@ -7097,6 +7513,25 @@
             "items": {
               "type": "string"
             }
+          },
+          "readerKind": {
+            "type": "string",
+            "description": "Kind of digital edition (`type_filters.reader_kind`): `interactive_player`, `page_viewer`, `vertical_scroll` or `download`. Absent for items without one.",
+            "example": "interactive_player"
+          },
+          "editionAccess": {
+            "type": "object",
+            "description": "Access of the digital edition for the card chip: `model` (`free`, `free_preview`, `purchase`, `subscription`, `rent`) from `type_filters.edition_access`, else from the teaser access; `minPrice` with `currency` (ISO 4217) when known.",
+            "example": {
+              "model": "free_preview",
+              "minPrice": 4.99,
+              "currency": "EUR"
+            }
+          },
+          "aiUse": {
+            "type": "string",
+            "description": "The publisher's AI disclosure level (`type_filters.ai_disclosure`): `none`, `assisted` or `generated`.",
+            "example": "assisted"
           }
         },
         "required": [
@@ -7534,7 +7969,7 @@
           },
           "nodeUrl": {
             "type": "string",
-            "description": "Target Discovery Node URL (omit for federated)"
+            "description": "Restrict the search to one of the configured Discovery Nodes (omit for federated). Must match a configured node URL (compared normalised: scheme/host case, default port, trailing slash) — any other URL is rejected with 400 UNKNOWN_DISCOVERY_NODE."
           }
         }
       },

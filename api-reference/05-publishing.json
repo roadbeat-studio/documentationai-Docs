@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "roadbeat Studio API — Publishing & Distribution",
-    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Publishing & Distribution.** Publishing to discovery nodes and content pods, the public Delivery API, exports and outgoing webhooks.",
+    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Publishing & Distribution.** Publishing to discovery nodes and content pods, the public Delivery API, exports, outgoing webhooks and the Integration API for outside products.",
     "version": "0.1.0",
     "contact": {}
   },
@@ -19,6 +19,9 @@
   "tags": [
     {
       "name": "publishing"
+    },
+    {
+      "name": "integration"
     },
     {
       "name": "discovery-nodes"
@@ -781,6 +784,232 @@
         "responses": {
           "204": {
             "description": "No content — the operation succeeded."
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "content-pod"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/content-pod/storage": {
+      "get": {
+        "operationId": "ContentPodController_getStorage",
+        "summary": "Own storage of the pod: content and reader bundles",
+        "description": "An S3-compatible bucket or an SFTP server per role. Credentials are never returned (`hasSecret`).",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PodStorageOverviewDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "content-pod"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/content-pod/storage/{role}": {
+      "put": {
+        "operationId": "ContentPodController_saveStorage",
+        "summary": "Save the own storage for content or bundles",
+        "description": "Every change needs a new check (`POST …/check`) before the storage is used. Omit the secret to keep the stored one. 409 `POD_REMOTE_STATIC_ONLY` for dynamic pods; 400 `POD_BUNDLE_ORIGIN_SHARED` when bundles would share an origin with the pod.",
+        "parameters": [
+          {
+            "name": "role",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "content",
+                "bundles"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PodStorageTargetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PodStorageTargetViewDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "content-pod"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ContentPodController_removeStorage",
+        "summary": "Remove the own storage for content or bundles",
+        "description": "The files on the storage stay. 409 `POD_STORAGE_IN_USE` while bundles are served from it.",
+        "parameters": [
+          {
+            "name": "role",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "content",
+                "bundles"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content — the operation succeeded."
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "content-pod"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/content-pod/storage/{role}/check": {
+      "post": {
+        "operationId": "ContentPodController_checkStorage",
+        "summary": "Check the own storage and use it once it passes",
+        "description": "Writes probe files, reads them back through the storage and from the public address, and for bundles checks frame-ancestors, JavaScript module types and an origin of their own. A passing content check moves the pod address to the storage; publish everything again to fill it.",
+        "parameters": [
+          {
+            "name": "role",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "content",
+                "bundles"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PodStorageTargetViewDto"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Missing or invalid authentication credentials.",
@@ -2912,6 +3141,157 @@
         ]
       }
     },
+    "/api/v1/manage/discovery-nodes/{id}/connect": {
+      "post": {
+        "operationId": "DiscoveryNodesController_connect",
+        "summary": "Connect the organization to the node as a publisher",
+        "description": "Registers the organization on the node under its own id (with proof of its signing key) and keeps the returned publisher key sealed, so the organization publishes with its own credentials. With `publisherKey`, stores a key the node operator issued instead (checked with the node first).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Discovery node ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectDiscoveryNodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The node with `publisherConnected: true`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/DiscoveryNodeDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "discovery-nodes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/discovery-nodes/{id}/verify": {
+      "post": {
+        "operationId": "DiscoveryNodesController_verify",
+        "summary": "Ask the node to verify the organization's domain or Content Pod",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Discovery node ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPublisherDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Whether the node verified the publisher; verified publishers get higher rate limits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PublisherVerificationResultDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "discovery-nodes"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/manage/discovery-nodes/{id}/enable": {
       "post": {
         "operationId": "DiscoveryNodesController_enable",
@@ -3599,6 +3979,1245 @@
         },
         "tags": [
           "publishing"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/me": {
+      "get": {
+        "operationId": "IntegrationController_me",
+        "summary": "Organization, acting user or key, role, scopes and limits of this integration",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content-types": {
+      "get": {
+        "operationId": "IntegrationController_contentTypes",
+        "summary": "Content types of the organization (id, name, schemaVersion)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content-types/{typeId}": {
+      "get": {
+        "operationId": "IntegrationController_contentType",
+        "summary": "Metadata schema, teaser mapping and schemaVersion of a content type",
+        "parameters": [
+          {
+            "name": "typeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/publishing/targets": {
+      "get": {
+        "operationId": "IntegrationController_targets",
+        "summary": "The organization's Discovery Nodes and Content Pod status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/validate": {
+      "post": {
+        "operationId": "IntegrationController_validate",
+        "summary": "Validate data against a content type; always 200 with problems[]",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateManagedContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/{typeId}/external/{externalId}": {
+      "put": {
+        "operationId": "IntegrationController_upsert",
+        "summary": "Create or update an item by the integration's own id",
+        "description": "Creates the item on the first call and updates it afterwards. The same document again is a no-op (`unchanged: true`). `expectedVersion` answers 409 on mismatch. Drafts tolerate invalid data; `validation` reports what publish would refuse.",
+        "parameters": [
+          {
+            "name": "typeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "externalId",
+            "required": true,
+            "in": "path",
+            "description": "The integration's id for the item (letters, digits, . _ : -)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertManagedContentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "IntegrationController_getByExternalId",
+        "summary": "An item by the integration's own id",
+        "parameters": [
+          {
+            "name": "typeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "externalId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/{id}": {
+      "get": {
+        "operationId": "IntegrationController_get",
+        "summary": "An item this integration manages (version, status, managedBy)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "IntegrationController_remove",
+        "summary": "Delete an item this integration manages (items others reference stay protected)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/{id}/publish": {
+      "post": {
+        "operationId": "IntegrationController_publish",
+        "summary": "Publish (strict validation: 422 with problems; a plugin veto: 403 ACTION_PREVENTED)",
+        "description": "Returns once the item is published; distribution to nodes and pod follows (publish-status, events).",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/{id}/unpublish": {
+      "post": {
+        "operationId": "IntegrationController_unpublish",
+        "summary": "Unpublish (withdraws the teasers from the nodes and the pod)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/{id}/archive": {
+      "post": {
+        "operationId": "IntegrationController_archive",
+        "summary": "Archive (withdraws published content like unpublish)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/{id}/publish-status": {
+      "get": {
+        "operationId": "IntegrationController_publishStatus",
+        "summary": "Per node: status, teaser id, time, error, circuit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/content/{id}/distribute": {
+      "post": {
+        "operationId": "IntegrationController_distribute",
+        "summary": "Re-push the teaser of a published item to its nodes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/pod/bundles": {
+      "post": {
+        "operationId": "IntegrationController_importBundle",
+        "summary": "Import a signed reader bundle into the Content Pod (pull; signed packages only)",
+        "description": "Fetches the signed `package-manifest.json` from `sourceUrl`, checks it against `digest` and against the signing keys named by the reader's Schema Registry entry, checks the size against the pod's tier quota (413 POD_BUNDLE_TOO_LARGE with neededBytes/freeBytes), then downloads every file in the background, verifying size and SHA-256, and switches the bundle live on the pod's bundle origin (`https://{subdomain}--b.pods.roadbeat.net/{bundleId}/`). Outcome: events pod.bundle.ready / pod.bundle.failed, or GET pod/bundles/:bundleId. The same digest again answers `unchanged: true`.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportPodBundleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/pod/bundles/{bundleId}": {
+      "get": {
+        "operationId": "IntegrationController_bundle",
+        "summary": "A bundle: status, live URL, size, digest, last error",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "IntegrationController_removeBundle",
+        "summary": "Remove a bundle from the Content Pod (unpublish removes it too)",
+        "parameters": [
+          {
+            "name": "bundleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/webhooks": {
+      "get": {
+        "operationId": "IntegrationController_listWebhooks",
+        "summary": "This integration's event subscription",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "IntegrationController_subscribe",
+        "summary": "Subscribe to events (one subscription per integration; the signing secret is returned once)",
+        "description": "Events: content.published, content.unpublished, content.deleted, content.updated (someone else changed a managed item), publishing.completed, publishing.withdrawn, pod.bundle.ready, pod.bundle.failed, integration.revoked. Deliveries carry X-Webhook-Signature (sha256= over \"<timestamp>.<rawBody>\"), X-Webhook-Timestamp, X-Webhook-Event, X-Webhook-Delivery; three attempts with backoff.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscribeIntegrationEventsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/webhooks/{id}": {
+      "delete": {
+        "operationId": "IntegrationController_unsubscribe",
+        "summary": "Delete the event subscription",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/integration/assets": {
+      "post": {
+        "operationId": "IntegrationController_upload",
+        "summary": "Upload a file (form field \"file\", Studio limits: 50 MB) → { id, url }",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "integration"
         ],
         "security": [
           {
@@ -4693,6 +6312,24 @@
           "errors"
         ]
       },
+      "ConnectDiscoveryNodeDto": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "Publisher domain on the node (default: the organization's domain, else <slug>.roadbeat.app)",
+            "example": "comics.example.org"
+          },
+          "verificationToken": {
+            "type": "string",
+            "description": "DNS verification token, when _roadbeat.<domain> already has the TXT record"
+          },
+          "publisherKey": {
+            "type": "string",
+            "description": "An rb_pub_… key the node operator issued for this organization (publisher created by hand)"
+          }
+        }
+      },
       "ContentPodConfigRecordDto": {
         "type": "object",
         "properties": {
@@ -5593,6 +7230,21 @@
             "type": "boolean",
             "description": "Whether publishing to this node is enabled"
           },
+          "publisherId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The organization's publisher id on the node (its organization id once connected)"
+          },
+          "publisherVerification": {
+            "type": "string",
+            "nullable": true,
+            "example": "unverified",
+            "description": "Verification status on the node: unverified, domain_verified or pod_verified"
+          },
+          "publisherConnected": {
+            "type": "boolean",
+            "description": "Whether the organization publishes with its own key on this node (else the instance-wide key is used)"
+          },
           "priority": {
             "type": "number",
             "description": "Publish priority — higher nodes are attempted first",
@@ -5649,6 +7301,7 @@
           "contentTypes",
           "regions",
           "enabled",
+          "publisherConnected",
           "priority",
           "consecutiveFailures",
           "createdAt",
@@ -5704,6 +7357,21 @@
             "type": "boolean",
             "description": "Whether publishing to this node is enabled"
           },
+          "publisherId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The organization's publisher id on the node (its organization id once connected)"
+          },
+          "publisherVerification": {
+            "type": "string",
+            "nullable": true,
+            "example": "unverified",
+            "description": "Verification status on the node: unverified, domain_verified or pod_verified"
+          },
+          "publisherConnected": {
+            "type": "boolean",
+            "description": "Whether the organization publishes with its own key on this node (else the instance-wide key is used)"
+          },
           "priority": {
             "type": "number",
             "description": "Publish priority — higher nodes are attempted first",
@@ -5748,6 +7416,7 @@
           "contentTypes",
           "regions",
           "enabled",
+          "publisherConnected",
           "priority",
           "consecutiveFailures",
           "createdAt",
@@ -5945,6 +7614,34 @@
           "contentTypes",
           "content",
           "assets"
+        ]
+      },
+      "ImportPodBundleDto": {
+        "type": "object",
+        "properties": {
+          "contentId": {
+            "type": "string",
+            "description": "The item (managed by this integration) the bundle belongs to"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "description": "URL of the signed `package-manifest.json`, or of the package folder ending in `/`. Files are fetched relative to it, each with its query string. https, public hosts, redirects only on the same host.",
+            "example": "https://app.panelwave.org/api/channel-packages/tok_abc/package-manifest.json"
+          },
+          "digest": {
+            "type": "string",
+            "description": "SHA-256 (hex) of `package-manifest.json`"
+          },
+          "reader": {
+            "type": "string",
+            "description": "The reader the package is for (Schema Registry reader id); its entry names the signing keys",
+            "default": "panelwave"
+          }
+        },
+        "required": [
+          "contentId",
+          "sourceUrl",
+          "digest"
         ]
       },
       "ImportValidationResultDto": {
@@ -6831,6 +8528,216 @@
           "status"
         ]
       },
+      "PodStorageCheckDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PodStorageCheckStepDto"
+            }
+          },
+          "warnings": {
+            "description": "Headers a bundle origin should send but does not (CORS, Range, nosniff).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "steps",
+          "warnings",
+          "at"
+        ]
+      },
+      "PodStorageCheckStepDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "connect, write, read, public_read, mime_html, mime_js, https, own_origin, frame_ancestors (bundles), cleanup"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "description": "Why the step failed."
+          }
+        },
+        "required": [
+          "id",
+          "ok"
+        ]
+      },
+      "PodStorageOverviewDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PodStorageTargetViewDto"
+              }
+            ]
+          },
+          "bundles": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PodStorageTargetViewDto"
+              }
+            ]
+          },
+          "secretsEnabled": {
+            "type": "boolean",
+            "description": "Credentials are sealed (SECRETS_ENCRYPTION_KEY set); without it production refuses to store them."
+          }
+        },
+        "required": [
+          "secretsEnabled"
+        ]
+      },
+      "PodStorageTargetDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "s3",
+              "hetzner",
+              "contabo",
+              "sftp"
+            ]
+          },
+          "publicUrl": {
+            "type": "string",
+            "description": "https address the files are read from (bucket website, CDN or the web server of the SFTP folder), without a trailing slash",
+            "example": "https://pod.example.org"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "`s3`: the endpoint (`https://s3.eu-central-1.amazonaws.com`, a MinIO URL); `contabo`: the S3 URL of the storage"
+          },
+          "region": {
+            "type": "string",
+            "description": "`hetzner`: fsn1, nbg1 or hel1; `s3`: the region (default us-east-1)"
+          },
+          "bucket": {
+            "type": "string"
+          },
+          "accessKeyId": {
+            "type": "string"
+          },
+          "secretAccessKey": {
+            "type": "string",
+            "description": "Write-only."
+          },
+          "forcePathStyle": {
+            "type": "boolean",
+            "description": "Path-style bucket addresses (default true; MinIO needs them)."
+          },
+          "host": {
+            "type": "string",
+            "description": "Host name or address of the SFTP server."
+          },
+          "port": {
+            "type": "number",
+            "default": 22
+          },
+          "username": {
+            "type": "string"
+          },
+          "basePath": {
+            "type": "string",
+            "description": "Folder the files go to (default `/`)."
+          },
+          "password": {
+            "type": "string",
+            "description": "Write-only."
+          },
+          "privateKey": {
+            "type": "string",
+            "description": "Write-only. An unencrypted OpenSSH or PEM private key."
+          }
+        },
+        "required": [
+          "type",
+          "publicUrl"
+        ]
+      },
+      "PodStorageTargetViewDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "content",
+              "bundles"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "s3",
+              "hetzner",
+              "contabo",
+              "sftp"
+            ]
+          },
+          "publicUrl": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "object",
+            "description": "Non-secret settings: endpoint, region, bucket, accessKeyId, forcePathStyle | host, port, username, basePath, hostKeySha256"
+          },
+          "hasSecret": {
+            "type": "boolean",
+            "description": "A credential is stored (never returned)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unchecked",
+              "ok",
+              "failed"
+            ]
+          },
+          "lastCheck": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PodStorageCheckDto"
+              }
+            ]
+          },
+          "checkedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "type",
+          "publicUrl",
+          "settings",
+          "hasSecret",
+          "status",
+          "updatedAt"
+        ]
+      },
       "PodSwitchModeResultDto": {
         "type": "object",
         "properties": {
@@ -7099,6 +9006,27 @@
           "createdAt"
         ]
       },
+      "PublisherVerificationResultDto": {
+        "type": "object",
+        "properties": {
+          "verified": {
+            "type": "boolean",
+            "description": "Whether the node verified the publisher"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why the node did not verify it"
+          },
+          "node": {
+            "$ref": "#/components/schemas/DiscoveryNodeDto"
+          }
+        },
+        "required": [
+          "verified",
+          "node"
+        ]
+      },
       "RepublishAllResultDto": {
         "type": "object",
         "properties": {
@@ -7212,6 +9140,30 @@
           "publicKey",
           "algorithm",
           "previousKeysValidUntil"
+        ]
+      },
+      "SubscribeIntegrationEventsDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "https URL that receives the events (signed like Studio webhooks)"
+          },
+          "events": {
+            "description": "Events to receive (default: all)",
+            "example": [
+              "publishing.completed",
+              "publishing.withdrawn",
+              "content.updated"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "url"
         ]
       },
       "TeaserPreviewDto": {
@@ -7420,6 +9372,77 @@
           "name",
           "endpoint",
           "contentTypes"
+        ]
+      },
+      "UpsertManagedContentDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "The item's data, validated against the content type schema"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL slug; generated on create when omitted",
+            "example": "the-lighthouse-keeper"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Locale (only on create)",
+            "example": "en"
+          },
+          "expectedVersion": {
+            "type": "number",
+            "description": "Answer 409 when the stored version differs",
+            "example": 3
+          },
+          "changeNote": {
+            "type": "string",
+            "description": "Stored on the version history"
+          },
+          "manageUrl": {
+            "type": "string",
+            "description": "Page in the integration where the item is managed; shown in Studio's banner when it is on the client's registered origin"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ValidateManagedContentDto": {
+        "type": "object",
+        "properties": {
+          "contentTypeId": {
+            "type": "string",
+            "example": "comic-release"
+          },
+          "data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "contentTypeId",
+          "data"
+        ]
+      },
+      "VerifyPublisherDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "domain",
+              "pod"
+            ],
+            "description": "DNS TXT record or the Content Pod well-known document"
+          },
+          "token": {
+            "type": "string",
+            "description": "DNS verification token (method domain)"
+          }
+        },
+        "required": [
+          "method"
         ]
       },
       "WebhookDeadLetterDto": {

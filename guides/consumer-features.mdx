@@ -270,6 +270,17 @@ GET /api/v1/consumer/discover/facets/:contentType
 - **`sort` / `sortOrder`** are applied by the Discovery Node, and results merged from several nodes keep that order. Both are ignored in random mode.
 - **`matchedGoalIds`** on each hit names the goals whose content queries matched it — the server-side answer to "why am I seeing this?". It is filled when the content queries in the request carry a `goal_id` (the Discovery Node names each query `goal:<goal_id>:cq:<n>` and reports the names that matched).
 
+**Searching several nodes.** Each Discovery Node answers at most 100 hits per request. With more than one node, Studio asks every node for its top `min(page × limit, 100)` hits, merges them by score (or by the requested sort), removes duplicates, pages the merged list and merges the facets. The response says how far that reaches and whether it is complete:
+
+| Field | Meaning |
+|---|---|
+| `resultWindow` | Multi-node search only: the merged result can be paged within the first `resultWindow` (100) hits. Narrow the query to reach results beyond it |
+| `pageLimitReached` | The requested page reaches beyond `resultWindow`; its teasers are cut off there (empty when the page starts beyond it). Discover's pagination stops at the window |
+| `partial` | At least one node failed, so the result is incomplete |
+| `nodeErrors` | The nodes that failed, each with `error` (`timeout`, `unreachable`, `HTTP <status>`, `request failed`) and the `status` it answered with |
+
+A `nodeUrl` in the request must be one of the configured nodes (`GET /discover/nodes`), otherwise the answer is `400 UNKNOWN_DISCOVERY_NODE`. Node status comes from each node's `/health` and `/api/web/v1/node-info`: `online`, `degraded` (reachable, but not all of its components are up) or `offline`.
+
 Suggestions come from the Discovery Node's `GET /api/v1/search/suggestions`. Facets are the aggregations of a search restricted to the content type (global facets plus the type's own fields, with multilingual labels) — the Discovery Node has no separate facet-definition endpoint.
 
 <Callout kind="info" collapsed="false">
@@ -289,6 +300,8 @@ Suggestions come from the Discovery Node's `GET /api/v1/search/suggestions`. Fac
 - **View modes** — 8 modes organized in grouped toggle: Activity Feed (social-media timeline with big images), Compact List, Large List (detailed rows with larger thumbnails), Compact Tiles (4 per row), Large Tiles (3 per row with more info), Calendar, Map (interactive Leaflet/OpenStreetMap with marker clustering), 3D Globe (interactive Mapbox globe with custom markers)
 
 - **Sort controls** — by relevance, date, or title. Each field starts in its natural direction (newest first, title A→Z); Relevance has no direction toggle.
+
+- **Edition badges and chips** — items with a digital edition show an **Interactive** badge (interactive players such as PanelWave comics), the edition's access ("Free", "Free preview · €4.99", "Subscription" …) and the publisher's AI use ("No AI", "AI-assisted", "AI-generated") on every card variant. See [Interactive Editions](/guides/interactive-editions#teaser-cards).
 
 - **"Why am I seeing this?"** — transparency drawer explaining content matching and goal relevance
 
@@ -706,7 +719,9 @@ While the reader is open, the address bar shows a link to the item, and these li
 
 - **Hero image** with alt text, resolved against the pod base URL
 
-- **Article body** rendered as sanitized HTML with relative asset URLs rewritten to absolute pod URLs
+- **Interactive editions** — an item whose digital edition has a registered reader (for example a PanelWave comic) plays in that reader in place of the hero image, together with series, credits, age rating, AI use and edition languages. See [Interactive Editions](/guides/interactive-editions)
+
+- **Article body** rendered as sanitized HTML with relative asset URLs rewritten to absolute pod URLs. The API reduces publisher HTML (from Content Pods and from this Studio's own items) to an allow-list — text structure, links (opened with `rel="noopener noreferrer nofollow"`), http(s) images, tables and code — and drops scripts, styles, frames, forms, event handlers and `javascript:` / `data:` URLs. The browser sanitizes it a second time
 
 - **Publisher metadata** — name, publication date, reading time, word count
 
@@ -725,8 +740,15 @@ The reader understands both the reader content shape (headline, article body, me
 ### Content Reader API
 
 ```bash
-# Fetch full content for the reader
+# Fetch full content for the reader (with `externalReader` when an interactive edition is approved)
 GET /api/v1/consumer/discover/content/:contentType/:slug
+
+# Registered external readers (origins, protocol, privacy rules)
+GET /api/v1/consumer/discover/readers
+
+# Check an edited item against the reader registry (editor layout preview)
+POST /api/v1/consumer/discover/readers/approve
+{ "contentType": "comic-release", "item": { "digital_edition": { "...": "..." } } }
 
 # Proxy dynamic pod interactions
 POST /api/v1/consumer/discover/pod-proxy
@@ -929,7 +951,7 @@ The **Discover Settings** page (`/consumer/settings`) is a unified settings expe
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | **Discover Profile**    | Display name (editable), email (read-only, managed by Studio account), CD link status                                               |
 | **Language & Region**   | Preferred locale (24 EU languages), country and region — both selects with names in the UI language                                 |
-| **Privacy**             | Toggles for goal sync, follows sync, bookmarks sync, location sharing, analytics consent — all off until the user turns them on     |
+| **Privacy**             | Toggles for goal sync, follows sync, bookmarks sync, location sharing, analytics consent — all off until the user turns them on. **Load interactive content from external readers** is on by default and kept per account in this browser; turned off, interactive editions open in a new tab |
 | **Notifications**       | Goal digest frequency (daily/weekly/off), publisher updates, bookmark reminders, system announcements (browser push only where the host supports it — not in Studio) |
 | **Content Preferences** | Enable/disable content types in Discover feed (news, events, jobs, courses, recipes, real estate, press releases)                   |
 | **Tip Budget**          | Monthly budget slider (10–500), auto-tip toggle, delay slider (10–120s), auto-tip multiplier (1x–5x), spending stats, clear history |

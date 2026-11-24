@@ -68,11 +68,73 @@ Category values may be plain codes or `{ code, label }` objects — the teaser a
 
 Country values in content may be ISO codes or English country names. The teaser's `geographic.country_codes` always holds **ISO 3166-1 alpha-2** codes: two-letter codes are upper-cased (`de` → `DE`), names are converted (`Germany` → `DE`), duplicates are dropped, and values that cannot be resolved are kept as they are. This keeps country filters on Discovery Nodes — such as the Web Client's "Only from my country" — complete.
 
+### Access and price
+
+| Teaser field | Source, in order |
+|---|---|
+| `access.access_type` | The mapped `access.access_type` → the content's own `access.access_type` → `free` |
+| `access.is_free` | The mapped `access.is_free` → derived from a mapped `access_type` (`free` = free) → the content's own `access.is_free` → `true` |
+| `access.min_price` | The mapped `access.min_price`, when it is a number of 0 or more |
+| `access.currency` | The mapped `access.currency`, when it is an ISO 4217 code (`EUR`) |
+
+A mapping value is either a field path or `{ "field": "…", "value_map": { … } }`. The value map translates the type's own codes into the vocabulary all Discovery Nodes share. A code the map does not name is left out, so it never reaches a node's filters unchecked. The comic types (teaser mapping 1.1.0), for example, map their edition's access model and its first offer:
+
+```json
+{
+  "access": {
+    "is_free": "digital_edition.access.is_free",
+    "access_type": {
+      "field": "digital_edition.access.model",
+      "value_map": {
+        "free": "free",
+        "free_preview": "freemium",
+        "purchase": "one_time_purchase",
+        "subscription": "subscription",
+        "rent": "pay_per_view"
+      }
+    },
+    "min_price": "digital_edition.access.offers.0.price.amount",
+    "currency": "digital_edition.access.offers.0.price.currency"
+  },
+  "media_flags": {
+    "has_audio": { "field": "digital_edition.features", "any_of": ["audio", "music", "voice"] },
+    "has_video": { "field": "digital_edition.features", "any_of": ["video", "animation"] },
+    "has_images": true
+  },
+  "canonical_url_fallback": "digital_edition.reader.reader_url"
+}
+```
+
+Discovery Nodes index `min_price` and `currency`, so readers can filter by price.
+
+### Media flags
+
+`metadata.has_video`, `has_audio` and `has_images` are true when the content's `media` block holds that kind of media. The type's `media_flags` mapping can add to this: `true` for a type that always has the medium, or `{ "field": "…", "any_of": [ … ] }` for a list of codes. In the example above, a comic whose edition features include `voice` gets `has_audio`.
+
+### Hero image
+
+The teaser's `overview.hero_image` carries `url`, `thumbnail_url` and `alt_text` only. Discovery Nodes index it with a strict mapping and reject a teaser that sends more, such as the image's width and height.
+
+### Canonical URL
+
+| Order | Source |
+|---|---|
+| 1 | The organization's Content Pod: `{podBaseUrl}/content/{type}/{slug}/` |
+| 2 | A configured base: the organization's `canonicalUrlBase`, else `CANONICAL_URL_BASE` |
+| 3 | The type's `canonical_url_fallback` mapping, when the field holds an `https` URL (the comic types point at the edition's reading address) |
+| 4 | `https://{orgSlug}.roadbeat.app/{type}/{slug}` |
+
 ## Discovery Nodes
 
 Discovery Nodes are the search infrastructure of the roadbeat network. You configure which nodes to publish to in **Settings → Discovery Nodes**.
 
+New organizations start with the operator's default nodes (`DISCOVERY_DEFAULT_NODES`), whether they are created through onboarding or by a platform admin under *Platform › Organizations*. Each organization then **connects** to a node with its own publisher key and can **verify** its domain or Content Pod there. See [Integration API → Discovery Nodes](/guides/integration-api#discovery-nodes-publishing-with-the-organizations-own-key).
+
 ### Adding a Discovery Node
+
+In **Settings → Discovery Nodes**, **Add a Discovery Node** takes a name and the node's address (`https://…`). The new node accepts every content type. Click **Connect** afterwards to register the organization on it; until then nothing is published there.
+
+The same through the API:
 
 ```bash
 POST /api/v1/manage/discovery-nodes

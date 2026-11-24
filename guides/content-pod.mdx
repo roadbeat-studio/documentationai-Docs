@@ -346,6 +346,28 @@ Each entry of the `orphans` list carries `id`, `contentType`, `slug`, `title`, `
 
 Shows whether a custom domain is configured and verified for this pod. Custom domains are available from the Starter tier upward.
 
+### Storage Tab
+
+A static pod can live on storage of the organization's own instead of the Studio's disk: an S3-compatible bucket (AWS S3, MinIO or any compatible service, Hetzner Object Storage, Contabo Object Storage) or an SFTP server. There are two storages, each optional:
+
+| Storage | Holds | Read from |
+|---|---|---|
+| **Pod content** | The pod: `manifest.json`, items and their media | Its public address, which becomes the pod's address |
+| **Reader bundles** | Signed packages of registered readers (for example PanelWave comics), see [Integration API](/guides/integration-api) | Its public address, the bundle origin |
+
+**Save and check** stores the settings and checks the storage at once. Studio writes two small files under `_roadbeat-check/`, reads them back through the storage and from the public address, and deletes them. A storage is used only once its check passed: after every change it waits for a new check, and while it waits, publishing to the pod is refused rather than written to the Studio's disk.
+
+- **Credentials** are write-only. Leave the secret empty to keep the stored one. They are encrypted with `SECRETS_ENCRYPTION_KEY`; without it production refuses to store them.
+- **SFTP**: the server's host key is pinned at the first passing check and shown as a SHA-256 fingerprint. A connection with another key is refused; a new host or port needs a new check. Use a password or an unencrypted private key.
+- **Pod content**: after a passing check the pod's address moves to the storage. Click **Publish All** to fill it. Removing the storage gives the pod its roadbeat address back; the files on the storage stay. Own storage holds static pods only.
+- **Reader bundles** run reader code, so the bundle origin must be an https host of its own (never the pod's pages) and send `Content-Security-Policy: frame-ancestors`. JavaScript modules must be served as JavaScript. A plain bucket cannot send these headers: put a CDN or a web server in front. Missing `Access-Control-Allow-Origin`, `Accept-Ranges: bytes` and `X-Content-Type-Options: nosniff` are shown as warnings. Each bundle version is uploaded under its own folder before it goes live, and the previous version is deleted afterwards. A pod on its own content storage without a bundle storage serves no bundles. The bundle storage cannot be removed while bundles are served from it.
+
+<Callout kind="info">
+  Endpoints and SFTP hosts must be public addresses. Development Studios can allow private ones with `WEBHOOK_ALLOW_PRIVATE_TARGETS=true`.
+</Callout>
+
+API (organization admins; not available to OAuth tokens): `GET /api/v1/manage/content-pod/storage`, `PUT …/storage/{content|bundles}`, `POST …/storage/{role}/check`, `DELETE …/storage/{role}`.
+
 ---
 
 ## Pod Manifest

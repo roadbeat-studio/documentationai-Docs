@@ -34,6 +34,8 @@ Click a tab to switch between sections. Fields in the current tab are validated 
 
 Fields that the content type defines but its form layout doesn't place anywhere are not dropped: they appear in a **More fields** tab (or section), so every field of the schema can be edited.
 
+Some tabs and sections appear only when they apply. The artist profile, for example, shows its **Music** tab only for musical artist types: change the artist type and the tab appears or disappears while you edit. See [Content Types → Form Schema](/guides/content-types#form-schema) for the `visible_if` rule behind this.
+
 ## Basic vs Extended Mode
 
 Many content types have fields marked as **extended** — advanced fields that most editors don't need daily. Toggle between modes using the **Basic / Extended** switch in the toolbar.
@@ -175,6 +177,7 @@ Fields are validated both inline (as you type) and on save/publish:
 - **Min/max length** — character count shown for text fields
 - **Pattern validation** — regex patterns for emails, URLs, etc.
 - **Cross-field date validation** — an `after_field` rule on a date field ensures it cannot be set before the referenced field (e.g. end date must be after start date); the field border turns red and an inline error message appears
+- **Rules from the Schema Registry** — registry content types can require a field only in some cases, for example "select the series unless the release is a one-shot or a graphic novel" for a comic release. The server checks these rules on save and publish and reports them with the content type's own message
 - **Custom rules** — content-type-specific validation
 
 Validation errors are shown inline below each field.
@@ -182,6 +185,8 @@ Validation errors are shown inline below each field.
 ### Schema errors from the server
 
 The server validates every save and publish against the content type's full JSON Schema (see [Schema enforcement](/guides/content-types#schema-enforcement)). When it rejects the item (`422`), the editor opens a panel titled *"The content does not match its content type schema"* that lists **each problem next to the label of its field**, instead of a single toast.
+
+Each problem is listed once, in the clearest words available: when a content type rule already explains a missing field, the generic "must have required property …" for the same field is left out, and so is the technical companion message "must match "else" schema".
 
 <Callout kind="info">
   Publishing is only possible once the listed fields are fixed. Where the content type allows invalid drafts, you can still save the item as a draft in the meantime.
@@ -226,7 +231,11 @@ A picked asset is stored in the shape the field's schema asks for:
 
 - a field that expects a URL string stores the asset's URL
 - a field based on the common **media asset** schema stores `url`, `type`, `asset_id`, `mime_type` and `file_size_bytes` (plus the editor's own keys where the schema allows extra properties)
+- images also get their `width` and `height` from the asset, where the schema has them
+- when the schema's `type` is a list of **roles** rather than media kinds — a comic's `cover`, `thumbnail` or `preview` image, a video's `poster` — the picker stores the field's own role (picking into `images.cover` stores `type: "cover"`), not `image`
 - galleries use the schema of their items; collection objects (`{ items: [...] }`) keep their other properties
+
+Picking another file replaces only what comes from the file (address, type, ids, size, dimensions). What you entered next to it, such as an image's `alt_text`, stays.
 
 This keeps media fields valid for strict publish validation. Coordinates picked with [Location Search](#location-search) are likewise written where the schema expects them (for example `location.coordinates` as `{ latitude, longitude }`); older items with root-level `lat`/`lng` are still read and are converted on the next edit.
 
@@ -341,6 +350,7 @@ The editor includes a **live layout preview** panel on the right side (on wide s
 - **Video galleries** — rendered as stacked video players with filename labels
 - **Date/datetime values** — ISO strings (e.g. `2026-03-31T19:00`) are formatted as readable dates (`Mar 31, 2026, 7:00 PM`)
 - **Enum labels** — i18n labels are displayed instead of raw enum codes
+- **Interactive editions** — an `embed` region (comic release and series layouts) shows the edition in its registered reader, the same player readers see, once the reader registry approves the item's `digital_edition`. Otherwise it shows the cover with a **Read** link and the reason it is not framed. See [Interactive Editions](/guides/interactive-editions#preview-in-the-editor)
 - **Breakpoint toggle** — switch between desktop, tablet, and mobile previews
 
 ## Keyboard Shortcuts

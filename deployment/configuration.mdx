@@ -115,8 +115,43 @@ Redis is used for caching, session storage, and BullMQ job queues.
 |----------|---------|-------------|
 | `SCHEMA_REGISTRY_URL` | `http://localhost:3200` | Schema Registry endpoint |
 | `DISCOVERY_NODE_URLS` | `http://localhost:3300` | Comma-separated Discovery Node URLs (also the nodes the consumer Discover screens search) |
-| `DISCOVERY_NODE_PUBLISHER_KEY` | — | Publisher key sent as `X-Publisher-Key` with every teaser push. The Discovery Node must have a `publishers` row whose `api_key_hash` is the SHA-256 of this key — without it every push is rejected with `401` |
+| `DISCOVERY_NODE_PUBLISHER_KEY` | — | Instance-wide publisher key sent as `X-Publisher-Key` with every teaser push, for nodes the organization has not **connected** with its own key. The Discovery Node must have a `publishers` row whose `api_key_hash` is the SHA-256 of this key — without it every push is rejected with `401` |
+| `DISCOVERY_DEFAULT_NODES` | — | Hosted Studios: comma-separated base URLs of the nodes every new organization is registered on, whether it is created through onboarding or under *Platform › Organizations*. Empty = no default nodes; admins add nodes under *Settings › Discovery Nodes* |
+| `HOSTED_PUBLISHER_DOMAIN` | `roadbeat.app` | Domain a new publisher gets on the default nodes when it has no domain of its own (`{orgSlug}.roadbeat.app`) |
 | `PUBLISHING_MAX_RETRIES` | `3` | Max retry attempts for failed publishes |
+
+## Secrets
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SECRETS_ENCRYPTION_KEY` | — | 32-byte key (hex-64 or base64) that seals stored credentials: each organization's Discovery Node publisher keys and the credentials of a Content Pod's own storage. **Required in production** — without it, storing such a credential fails with `503 SECRETS_KEY_MISSING`. Development Studios store them unsealed and seal them on their next write once a key is set |
+
+## Integration API
+
+See the [Integration API guide](/guides/integration-api).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OAUTH_INTEGRATION_RESOURCE` | `<OAUTH_ISSUER>/api/v1/integration` | The resource identifier products request tokens for (`resource=` on the authorization and token requests) |
+| `INTEGRATION_RATE_WRITES_PER_MIN` | `120` | Writes per minute, per integration and organization |
+| `INTEGRATION_RATE_PUBLISHES_PER_MIN` | `30` | Publish actions per minute, per integration and organization |
+| `OAUTH_TRUSTED_CIMD_HOSTS` | — | Hosts of client ID metadata documents Studio vouches for on the consent screen: the exact host of the client ID, or `*.domain`. Hosted Studios add the publishing products they trust, e.g. `claude.ai,anthropic.com,app.panelwave.org` |
+
+## External Readers and Pod Bundles
+
+See [Interactive Editions](/guides/interactive-editions) and [Integration API → Content Pod bundles](/guides/integration-api#content-pod-bundles).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SCHEMA_REGISTRY_VERIFY_SIGNATURES` | `false` | Check the Ed25519 signatures of schemas and reader entries from the Schema Registry with `SCHEMA_REGISTRY_PUBLIC_KEY` |
+| `POD_BUNDLE_DOMAIN_PATTERNS` | `*--b.pods.roadbeat.net` | Comma-separated host patterns of Content Pod bundle origins the content reader may frame readers from |
+| `EXTERNAL_READER_DEV_ORIGINS` | — | Extra frame origins for local development (e.g. `http://localhost:4300`). Ignored when `NODE_ENV=production` |
+| `CONTENT_POD_BUNDLES_PATH` | `<CONTENT_POD_DEV_PODS_PATH>/bundles` | Root folder of the bundles, separate from the pods' own files. In production, a path on the volume the bundle host serves |
+| `POD_BUNDLE_PUBLIC_URL_TEMPLATE` | `http://localhost:3405/{orgSlug}` | Public address of a pod's bundle origin. Production: `https://{subdomain}--b.pods.roadbeat.net` |
+| `POD_BUNDLE_MAX_FILE_BYTES` | `2147483648` (2 GB) | Largest single file in a bundle |
+| `POD_BUNDLE_MAX_FILES` | `20000` | Most files in a bundle |
+| `POD_BUNDLE_DOWNLOAD_CONCURRENCY` | `4` | Files downloaded in parallel during an import (1–8) |
+| `POD_BUNDLE_KEYS_URLS` | — | Development only: signing keys of a reader from elsewhere, e.g. `panelwave=http://localhost:4300/.well-known/panelwave-keys.json`. Local package sources (http, localhost) also need `WEBHOOK_ALLOW_PRIVATE_TARGETS=true` |
 
 ## Content Types
 
@@ -323,6 +358,8 @@ STORAGE_PROVIDER=local
 SCHEMA_REGISTRY_URL=http://localhost:3200
 DISCOVERY_NODE_URLS=http://localhost:3300
 DISCOVERY_NODE_PUBLISHER_KEY=your-publisher-key
+# Seals per-organization publisher keys and pod storage credentials; required in production
+# SECRETS_ENCRYPTION_KEY=<hex-64-or-base64-32-byte-key>
 
 # Consumer
 CONTEXT_DIRECTORY_URL=http://localhost:3100
@@ -391,6 +428,8 @@ LOG_PRETTY=true
 - [ ] `FEDERATION_GATEWAY_URL` points to a secured gateway (HTTPS, not publicly reachable without auth)
 - [ ] `FED_ADMIN_TOKEN` is a unique, random string (min 64 chars)
 - [ ] `DISCOVERY_NODE_PUBLISHER_KEY` is set and registered on every Discovery Node you publish to
+- [ ] `SECRETS_ENCRYPTION_KEY` is set (32 random bytes) — without it, organizations cannot connect to Discovery Nodes with their own key or use their own pod storage
+- [ ] Hosted Studios with reader bundles: `CONTENT_POD_BUNDLES_PATH` and `POD_BUNDLE_PUBLIC_URL_TEMPLATE` point at the bundle host, which serves an origin of its own
 - [ ] `CONTEXT_DIRECTORY_SERVICE_KEY` is set to the same value as the Context Directory's `CD_SERVICE_KEY` (consumer features)
 - [ ] `DISCOVER_DEBUG` is unset or `false`
 - [ ] `CRASH_LOG_FILE` points at a persistent, writable path if you want a crash log next to your log shipping

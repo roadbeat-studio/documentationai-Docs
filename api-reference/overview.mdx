@@ -5,12 +5,13 @@ description: Overview of the roadbeat Studio REST APIs — Management API and De
 
 ## Overview
 
-roadbeat Studio exposes two distinct REST APIs:
+roadbeat Studio exposes three REST APIs:
 
 1. **Management API** — full CRUD for content, assets, users, and settings (JWT auth)
 2. **Delivery API** — read-only access to published content for frontends and apps (API key auth)
+3. **Integration API** — for other products that create, update and publish content on a user's behalf (OAuth or organization API key); see the [Integration API guide](/guides/integration-api)
 
-Both APIs are versioned under `/api/v1/` and return JSON responses.
+All three are versioned under `/api/v1/` and return JSON responses.
 
 <Callout kind="info">
   Interactive Swagger documentation is available at `http://localhost:3000/api/docs` when running the dev server.
@@ -184,6 +185,12 @@ X-Api-Key: rbk_your_api_key_here
 ```
 
 See [Delivery API](/api-reference/delivery-api) for details.
+
+## Integration API
+
+The Integration API (`/api/v1/integration`) lets another product publish for a user: it creates and updates content by its own id, publishes and unpublishes it, reads the outcome per Discovery Node and receives events. It reaches only the items it manages. Authentication is an OAuth access token for the integration resource or an organization API key; `GET /.well-known/roadbeat-studio` tells a product which one a Studio supports.
+
+Its endpoints are listed under **Publishing & Distribution**. See the [Integration API guide](/guides/integration-api) for scopes, managed content, events and limits.
 
 ## Rate Limiting
 

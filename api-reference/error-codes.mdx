@@ -97,6 +97,24 @@ Errors that do not carry a specific code get one derived from their status, so `
 | `SSO_TOKEN_INVALID` | 401 | The one-time sign-in link (Web Client → Studio handover) is invalid |
 | `SSO_TOKEN_EXPIRED` | 401 | The sign-in link has expired (valid for 5 minutes) |
 | `SSO_TOKEN_USED` | 401 | The sign-in link has already been used |
+| `AUTH_GRANT_REVOKED` | 401 | The app (AI app or integration) was disconnected from this account, so its token no longer works |
+
+## OAuth authorization server
+
+Studio's authorization server for the MCP Gateway and the [Integration API](/guides/integration-api).
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `OAUTH_DISABLED` | 404 | OAuth is not enabled on this Studio |
+| `OAUTH_INTERACTION_NOT_FOUND` | 404 | The sign-in or consent step is unknown or has expired — start the authorization again |
+| `OAUTH_INTERACTION_INVALID` | 400 | The sign-in or consent step cannot be completed this way |
+| `OAUTH_CLIENT_INVALID` | 400 | The client metadata is invalid; `message` names the problem |
+| `OAUTH_CLIENT_JWKS_INVALID` | 400 | `jwks` must hold 1–5 public keys (EC, RSA or OKP) and no private key material |
+| `OAUTH_CLIENT_ID_TAKEN` | 409 | This `client_id` is already in use |
+| `OAUTH_CLIENT_NOT_FOUND` | 404 | The client was not found |
+| `OAUTH_CLIENT_CONFIGURED` | 403 | The client comes from `OAUTH_CLIENTS` and cannot be removed in the UI |
+| `OAUTH_MACHINE_CLIENTS_OFF` | 400 | Machine clients are off — set `OAUTH_CLIENT_CREDENTIALS_SCOPES` first |
+| `OAUTH_MACHINE_CLIENTS_PLATFORM_ONLY` | 403 | Machine clients are registered by platform admins only |
 
 ## API keys & metrics
 
@@ -108,6 +126,7 @@ Errors that do not carry a specific code get one derived from their status, so `
 | `API_KEY_RATE_LIMITED` | 429 | Too many invalid API key attempts from this client — try again later |
 | `API_KEY_PERMISSION_INVALID` | 400 | Unknown scope (`params.permission`) when creating or updating a key; the message lists the valid ones |
 | `API_KEY_NOT_FOUND` | 404 | The API key was not found |
+| `API_KEY_EXPIRY_TOO_LONG` | 400 | A key with write permissions must expire within two years |
 | `METRICS_TOKEN_INVALID` | 401 | Missing or wrong bearer token for `/metrics` |
 
 ## Users, organizations & limits
@@ -222,6 +241,12 @@ Errors that do not carry a specific code get one derived from their status, so `
 | `DISCOVERY_NODE_NOT_FOUND` | 404 | The Discovery Node was not found |
 | `DISCOVERY_NODE_IN_USE` | 409 | Content is still published to this node (`params.count`) — unpublish it or disable the node first |
 | `PUBLISH_RECORD_NOT_FOUND` | 404 | There is no failed publication to retry for this item and node |
+| `DISCOVERY_NODE_UNAVAILABLE` | 502 | The Discovery Node could not be reached or refused the request while connecting or verifying the organization |
+| `PUBLISHER_ALREADY_REGISTERED` | 409 | The organization (or its domain) is already registered on the node — connect with the publisher key the node's operator issued |
+| `PUBLISHER_KEY_FOREIGN` | 400 | The publisher key belongs to another publisher on this node |
+| `PUBLISHER_NOT_CONNECTED` | 400 | Connect the node before verifying |
+| `VERIFICATION_TOKEN_REQUIRED` | 400 | Domain verification needs the DNS verification token from the node |
+| `ORGANIZATION_NOT_FOUND` | 404 | The organization to register on the node was not found |
 | `PUBLISHER_KEY_NOT_FOUND` | 404 | The publisher key was not found |
 | `PUBLISHER_KEY_REVOKED` | 404 | The publisher key has been revoked |
 | `POD_NOT_CONFIGURED` | 404 | No Content Pod is set up for this organization |
@@ -231,6 +256,66 @@ Errors that do not carry a specific code get one derived from their status, so `
 | `POD_MODE_UNCHANGED` | 400 | The pod is already in this mode |
 | `POD_NOT_DYNAMIC` | 400 | Scripts can only be deployed to dynamic pods |
 | `POD_HOSTING_ERROR` | status of the Pod Hosting API (default 502) | The Pod Hosting API reported an error |
+| `POD_STORAGE_INVALID` | 400 | The own storage settings are incomplete or not allowed (https address, bucket, Hetzner region, endpoint, SFTP folder) |
+| `POD_STORAGE_SECRET_REQUIRED` | 400 | A new storage, or another storage type, needs its secret key, password or private key |
+| `POD_STORAGE_NOT_FOUND` | 404 | No own storage for this role (`content` or `bundles`) |
+| `POD_STORAGE_NOT_READY` | 409 | The own storage has not passed its check yet; nothing is written until it does |
+| `POD_STORAGE_IN_USE` | 409 | Bundles are served from this storage; remove them first (`params.bundles`) |
+| `POD_REMOTE_STATIC_ONLY` | 409 | Own storage holds static pods only |
+| `POD_BUNDLE_ORIGIN_SHARED` | 400 | The bundle storage would share an origin with the pod's pages |
+| `POD_BUNDLE_TARGET_MISSING` | 403 | The pod is on its own storage and has no bundle storage, so it serves no bundles |
+| `BUNDLE_TARGET_FAILED` | 502 | The bundle storage could not be written or a bundle could not be removed from it; the live version is untouched |
+| `SECRETS_KEY_MISSING` | 503 | `SECRETS_ENCRYPTION_KEY` is not set; production refuses to store a credential |
+
+## Integration API
+
+See the [Integration API guide](/guides/integration-api#limits-and-errors).
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `INTEGRATION_AUTH_MISSING` | 401 | Send an OAuth access token for the integration resource or an organization API key |
+| `INTEGRATION_AUTH_INVALID` | 401 | The token or key is invalid or expired |
+| `INTEGRATION_AUTH_RATE_LIMITED` | 429 | Too many invalid credentials from this client — try again later |
+| `INTEGRATION_SCOPE_MISSING` | 403 | The token or key lacks the scope this route needs |
+| `INTEGRATION_NO_ACTING_USER` | 403 | The API key has no active user of the organization to act for |
+| `INTEGRATION_NOT_MANAGED` | 403 | The item exists but your product does not manage it |
+| `INTEGRATION_RATE_LIMITED` | 429 | Too many writes or publish actions this minute; `retryAfterSeconds` says when to try again |
+| `EXTERNAL_ID_INVALID` | 400 | External ids are 1–200 characters of letters, digits and `. _ : -` |
+| `EXTERNAL_ID_CONFLICT` | 409 | A concurrent call with the same external id got in between — retry the call |
+| `IDEMPOTENCY_KEY_INVALID` | 400 | `Idempotency-Key` must be 8–128 characters of letters, digits and `. _ : -` |
+| `INTEGRATION_EVENT_UNKNOWN` | 400 | The subscription names an event that does not exist |
+| `INTEGRATION_SUBSCRIPTION_EXISTS` | 409 | The integration already has its event subscription — delete it first |
+| `POD_BUNDLES_UNAVAILABLE` | 403 | Content Pod bundles are not available in this Studio |
+
+## Content Pod bundles
+
+Returned by `POST /api/v1/integration/pod/bundles` and the bundle routes. See [Content Pod bundles](/guides/integration-api#content-pod-bundles).
+
+| Code | Status | Meaning |
+|------|--------|---------|
+| `POD_NOT_CONFIGURED` | 403 | The organization has no active Content Pod |
+| `POD_BUNDLE_ORIGIN_UNAVAILABLE` | 403 | The Content Pod has no subdomain, so it has no bundle origin |
+| `POD_BUNDLE_TOO_LARGE` | 413 | The package does not fit into the pod's free space (`params.neededBytes`, `params.freeBytes`, `params.quotaBytes`) |
+| `BUNDLE_DIGEST_INVALID` | 422 | `digest` must be the SHA-256 (hex) of `package-manifest.json` |
+| `BUNDLE_DIGEST_MISMATCH` | 422 | The `package-manifest.json` at the source is not the one `digest` names (`params.expected`, `params.actual`) |
+| `BUNDLE_MANIFEST_INVALID` | 422 | The manifest is not valid JSON, lists unsafe paths, or lists no servable files |
+| `BUNDLE_FORMAT_UNSUPPORTED` | 422 | Unknown package format |
+| `BUNDLE_FILE_TOO_LARGE` | 422 | A listed file is larger than `POD_BUNDLE_MAX_FILE_BYTES` |
+| `BUNDLE_TOO_MANY_FILES` | 422 | The package lists more files than `POD_BUNDLE_MAX_FILES` |
+| `BUNDLE_UNSIGNED` | 422 | The package is not signed; Content Pods serve signed bundles only |
+| `BUNDLE_SIGNATURE_INVALID` | 422 | The signature does not match the file list: changed, or not made by the reader |
+| `BUNDLE_SIGNING_KEY_UNKNOWN` | 422 | The signing key is not among the reader's published keys |
+| `BUNDLE_READER_UNKNOWN` | 422 | The named reader is not registered |
+| `BUNDLE_READER_UNVERIFIED` | 422 | The reader's registry entry does not carry a valid signature |
+| `BUNDLE_READER_NOT_ALLOWED` | 422 | The reader does not take pod bundles |
+| `BUNDLE_CONTENT_TYPE` | 422 | The reader's bundles are not for this content type |
+| `BUNDLE_KEYS_UNAVAILABLE` | 503 | The reader's signing keys could not be loaded |
+| `BUNDLE_SOURCE_INVALID`, `BUNDLE_SOURCE_PRIVATE`, `BUNDLE_SOURCE_REDIRECT` | 422 | The source is not a valid `https` URL, carries credentials, points at a private address, or redirects to another host or too often |
+| `BUNDLE_SOURCE_TOO_LARGE` | 413 | A file at the source is larger than allowed |
+| `BUNDLE_SOURCE_HTTP`, `BUNDLE_SOURCE_TIMEOUT`, `BUNDLE_SOURCE_UNREACHABLE` | 502 | The source answered with an error (`params.sourceStatus`), timed out or could not be reached |
+| `BUNDLE_IMPORT_RUNNING` | 409 | An import of this bundle is still running — wait for `pod.bundle.ready` or `pod.bundle.failed` |
+| `BUNDLE_NOT_FOUND` | 404 | The bundle was not found |
+| `BUNDLE_IMPORT_INTERRUPTED` | — | Not an HTTP error: the `errorCode` of a bundle whose import was cut off by a Studio restart. Start the import again |
 
 ## Webhooks
 
@@ -275,6 +360,7 @@ Errors that do not carry a specific code get one derived from their status, so `
 | `SYNC_CODE_INVALID` | 404 | The short pairing code is invalid, expired or already used |
 | `PUBLISHER_NOT_FOUND` | 404 | The publisher was not found on the Discovery Nodes |
 | `POD_PROXY_FAILED` | 400 | Loading the full content from the publisher's Content Pod failed |
+| `UNKNOWN_DISCOVERY_NODE` | 400 | The search's `nodeUrl` is not one of the configured Discovery Nodes (see `GET /consumer/discover/nodes`) |
 
 ## Plugins
 

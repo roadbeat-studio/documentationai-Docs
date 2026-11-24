@@ -66,7 +66,7 @@ Organization settings are stored in the `settings` JSON column. Currently suppor
 ```
 
 <Callout kind="tip">
-  `canonicalUrlBase` controls the base URL used when generating canonical URLs for published content. If not set, Studio falls back to the `CANONICAL_URL_BASE` environment variable, then to `https://{orgSlug}.roadbeat.app`.
+  `canonicalUrlBase` controls the base URL used when generating canonical URLs for published content, unless the organization has a Content Pod (its address comes first). If not set, Studio falls back to the `CANONICAL_URL_BASE` environment variable, then to the content type's `canonical_url_fallback` mapping, then to `https://{orgSlug}.roadbeat.app`. See [Publishing → Canonical URL](/guides/publishing#canonical-url).
 </Callout>
 
 ## Roles and Access Levels

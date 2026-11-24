@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "roadbeat Studio API — Authentication, Users & Organizations",
-    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Authentication, Users & Organizations.** Login and token flows, user accounts, organization management and Delivery-API keys.",
+    "description": "Self-hosted headless CMS — Content Management & Publishing API\n\n**Authentication, Users & Organizations.** Login and token flows, user accounts, organization management, Delivery-API keys and the OAuth authorization server (connected apps).",
     "version": "0.1.0",
     "contact": {}
   },
@@ -28,6 +28,9 @@
     },
     {
       "name": "api-keys"
+    },
+    {
+      "name": "oauth"
     }
   ],
   "paths": {
@@ -1197,6 +1200,821 @@
         },
         "tags": [
           "auth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/oauth/interactions/{uid}": {
+      "get": {
+        "operationId": "OAuthInteractionController_describe",
+        "summary": "What an AI app asks for (client, scopes, role caps)",
+        "parameters": [
+          {
+            "name": "uid",
+            "required": true,
+            "in": "path",
+            "description": "Interaction id from the consent URL",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/oauth/interactions/{uid}/ticket": {
+      "post": {
+        "operationId": "OAuthInteractionController_ticket",
+        "summary": "Allow or deny; returns the one-time URL that completes the sign-in",
+        "parameters": [
+          {
+            "name": "uid",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthTicketRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/oauth-grants": {
+      "get": {
+        "operationId": "OAuthGrantsController_list",
+        "summary": "AI apps you connected to your Studio account",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "OAuthGrantsController_revokeAll",
+        "summary": "Disconnect every AI app",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/oauth-grants/{id}/renew": {
+      "post": {
+        "operationId": "OAuthGrantsController_renew",
+        "summary": "Approve a connected integration again: its approval lasts another year (feature 113)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/oauth-grants/{id}": {
+      "delete": {
+        "operationId": "OAuthGrantsController_revoke",
+        "summary": "Disconnect an AI app (revokes its refresh tokens and upstream access)",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/oauth-grants/personal-token": {
+      "post": {
+        "operationId": "OAuthGrantsController_createPersonalToken",
+        "summary": "Create a personal MCP access token (shown once)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalTokenRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/oauth-clients": {
+      "get": {
+        "operationId": "OAuthClientsController_list",
+        "summary": "Pre-registered OAuth clients (configuration + admin-managed)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "OAuthClientsController_save",
+        "summary": "Register or update a client: a public sign-in app (PKCE, no secret) or a machine client (client credentials, private_key_jwt)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/oauth-clients/settings": {
+      "get": {
+        "operationId": "OAuthClientsController_settings",
+        "summary": "Whether machine clients (client credentials) are enabled, and the scopes they can get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/oauth-clients/{clientId}": {
+      "delete": {
+        "operationId": "OAuthClientsController_remove",
+        "summary": "Remove a pre-registered client",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/org-oauth-clients": {
+      "get": {
+        "operationId": "OrgOAuthClientsController_list",
+        "summary": "Your organization's OAuth clients",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "OrgOAuthClientsController_save",
+        "summary": "Register or update a sign-in app (PKCE, no secret) for your organization",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthClientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — the request body does not match the documented schema (unknown properties are rejected).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/manage/org-oauth-clients/{clientId}": {
+      "delete": {
+        "operationId": "OrgOAuthClientsController_remove",
+        "summary": "Remove one of your organization's clients",
+        "parameters": [
+          {
+            "name": "clientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. JSON responses are wrapped in the standard envelope: `{ \"data\": ... }`, with optional `meta` (e.g. pagination) on list endpoints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "The response payload"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Optional metadata (pagination, counts) — present on list endpoints"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
         ],
         "security": [
           {
@@ -2997,6 +3815,96 @@
           "recoveryCodes"
         ]
       },
+      "OAuthClientDto": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "example": "cursor-desktop"
+          },
+          "client_name": {
+            "type": "string",
+            "example": "Cursor"
+          },
+          "redirect_uris": {
+            "example": [
+              "http://127.0.0.1/callback"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "application_type": {
+            "type": "string",
+            "enum": [
+              "web",
+              "native"
+            ],
+            "default": "web"
+          },
+          "client_uri": {
+            "type": "string"
+          },
+          "logo_uri": {
+            "type": "string"
+          },
+          "policy_uri": {
+            "type": "string"
+          },
+          "tos_uri": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "public",
+              "machine"
+            ],
+            "default": "public",
+            "description": "public: a sign-in app (authorization code + PKCE). machine: a client without a user (client credentials, private_key_jwt with `jwks`) — only while OAUTH_CLIENT_CREDENTIALS_SCOPES is set."
+          },
+          "jwks": {
+            "type": "object",
+            "description": "Machine clients: the public keys (JWKS) the client signs its token requests with. Never private keys.",
+            "example": {
+              "keys": [
+                {
+                  "kty": "EC",
+                  "crv": "P-256",
+                  "x": "…",
+                  "y": "…",
+                  "kid": "ops-1"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "client_id",
+          "client_name",
+          "redirect_uris"
+        ]
+      },
+      "OAuthTicketRequestDto": {
+        "type": "object",
+        "properties": {
+          "approve": {
+            "type": "boolean",
+            "description": "true = allow, false = deny"
+          },
+          "scopes": {
+            "description": "Scopes the user kept (default: every requested scope the role allows)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "approve"
+        ]
+      },
       "OrgSelectionDto": {
         "type": "object",
         "properties": {
@@ -3262,6 +4170,35 @@
           "createdAt",
           "updatedAt",
           "_count"
+        ]
+      },
+      "PersonalTokenRequestDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Import script",
+            "description": "Shown in Connected AI apps"
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "read",
+              "write",
+              "publish"
+            ],
+            "description": "read: discovery, schemas and Studio read · write: + drafts · publish: + publishing (capped by your role)"
+          },
+          "expiresInDays": {
+            "type": "number",
+            "example": 30,
+            "description": "Lifetime in days (1–365)"
+          }
+        },
+        "required": [
+          "label",
+          "access",
+          "expiresInDays"
         ]
       },
       "RefreshTokenDto": {
