@@ -3,6 +3,28 @@ title: Changelog
 description: Release notes and updates for roadbeat Studio.
 ---
 
+<Update label="2026-11-26" description="Deferred publishing, per-client request limits" tags={["feature", "bugfix"]}>
+  ## A node that asks to wait no longer counts as failed
+
+  Found when a company sent its catalogue through the Integration API and the Discovery Node's daily teaser limit refused the rest.
+
+  ### Publishing
+
+  - **Deferred, not failed.** When a Discovery Node answers `429` (or `503` with `Retry-After`), Studio records the node as `deferred` and sends the teaser again at the time the node named. It no longer counts towards the node's circuit breaker, and further teasers for that node wait without calling it.
+  - **Nothing is lost while a node is paused.** A node skipped for its open circuit gets a `skipped` record with the time Studio tries again. A retry job sends deferred and skipped teasers every minute (`PUBLISH_RETRY_BATCH`, default 50), safely with several Studio instances.
+  - **Withdrawing finds every teaser.** Unpublishing and deleting also withdraw the older teaser of a deferred, skipped or failed update.
+  - **Fix:** *Retry* on a node signed the teaser in a form the node could not verify. It is now signed like every publish, and it also works for deferred and skipped nodes.
+  - **Fix:** *Republish to this node* found no content for nodes that accept every type (`*`).
+  - The editor sidebar shows deferred and skipped nodes with the time of the next attempt.
+
+  ### Integration API
+
+  - `publish-status` reports `deferred` and `skipped` with `retryAfter`; `publishing.completed` carries `retryAfter`, and a later attempt sends it again with `retry: true`. See [When a node asks to wait](/guides/integration-api#when-a-node-asks-to-wait).
+  - **Request limit per client.** The general limit of 100 requests per minute now counts per OAuth client and user (or per API key) instead of per server address, and `GET /me` reports it as `limits.requestsPerMinute`.
+
+  Migration: `20261126120000_publish_deferral`.
+</Update>
+
 <Update label="2026-11-23" description="Form rules, media pickers, Discovery Nodes for new organizations" tags={["feature", "bugfix"]}>
   ## Registry forms behave the way their content types intend
 
