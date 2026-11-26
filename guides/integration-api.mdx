@@ -125,11 +125,27 @@ The item is **managed by your product**. In Studio's editor a banner says so ("M
 | `POST /content/{id}/unpublish` | Withdraws the teasers from the Discovery Nodes and the Content Pod |
 | `POST /content/{id}/archive` | Archives (withdraws like unpublish) |
 | `DELETE /content/{id}` | Deletes a managed item; items other content references stay protected |
-| `GET /content/{id}/publish-status` | Per Discovery Node: status, teaser id, time, error, circuit state |
+| `GET /content/{id}/publish-status` | Per Discovery Node: status, teaser id, time, error, `retryAfter`, circuit state (see [below](#when-a-node-asks-to-wait)) |
 | `POST /content/{id}/distribute` | Pushes the teaser of a published item to its nodes again |
 | `GET /publishing/targets` | The organization's Discovery Nodes (incl. whether it is connected as a publisher) and its Content Pod |
 
 `POST` requests honour an `Idempotency-Key` header (8–128 characters of letters, digits and `. _ : -`) for 24 hours: a retried request with the same key returns the first answer instead of acting twice.
+
+`DELETE /content/{id}` withdraws a published item's teasers itself; there is no need to unpublish it first.
+
+### When a node asks to wait
+
+A Discovery Node may refuse a teaser for now, for example when the organization has used up its daily teaser limit there. Studio then does not count the node as failed: it sends the teaser again when the node said, without your product doing anything. `publish-status` shows each node as one of:
+
+| `status` | Meaning | Also set |
+|---|---|---|
+| `published` | The node took the teaser | `teaserId`, `publishedAt` |
+| `deferred` | The node asked to come back later; Studio sends the teaser again at `retryAfter` | `retryAfter`, `error` (the node's answer) |
+| `skipped` | The node failed repeatedly and is paused; Studio sends the teaser again at `retryAfter` | `retryAfter`, `circuitOpenUntil` |
+| `failed` | The node refused the teaser; it is not sent again by itself | `error` |
+| `unpublished` | The teaser was withdrawn | — |
+
+Show `deferred` and `skipped` items as on their way, not as errors. When the later attempt reaches an outcome, you get another `publishing.completed` with `retry: true` and only that node in `results`. An item that was published before keeps its older teaser on the node (`teaserId`) until the new one arrives.
 
 ### Assets
 
@@ -175,7 +191,7 @@ The response contains the **signing secret — shown once**. A second subscripti
 |---|---|---|
 | `content.published`, `content.unpublished`, `content.deleted` | One of your items changes status | `contentId`, `contentTypeId`, `externalId`, `version` (+ `status`) |
 | `content.updated` | **Someone other than your product** changed one of your items | as above |
-| `publishing.completed` | Publishing finished on all nodes (also when no node accepts the type) | `contentId`, `externalId`, `version`, `results[]` per node (`published`, `failed`, `skipped`, `teaserId`, `error`), `pod` |
+| `publishing.completed` | Publishing finished on all nodes (also when no node accepts the type), and again when a deferred or skipped node took the teaser later or refused it (`retry: true`, that node only) | `contentId`, `externalId`, `version`, `results[]` per node (`published`, `failed`, `deferred`, `skipped`, `teaserId`, `error`, `retryAfter`), `pod`, `retry` |
 | `publishing.withdrawn` | The teasers were withdrawn (also after a delete) | `contentId`, `externalId`, `results[]` |
 | `pod.bundle.ready`, `pod.bundle.failed` | A Content Pod bundle went live, or its import failed | `contentId`, `externalId`, `bundle` (status, `url`, `entryUrl`, size, digest, `error`) |
 | `integration.revoked` | The user disconnected your product, or the API key was revoked | `clientId`, `reason` |
@@ -202,6 +218,12 @@ For a node that is not in the list yet (a self-hosted Studio, or an organization
 ## Limits and errors
 
 Per integration and organization: **120 writes** and **30 publish actions per minute** (`429 INTEGRATION_RATE_LIMITED`, with `retryAfterSeconds` in the error body; operators change them with `INTEGRATION_RATE_WRITES_PER_MIN` and `INTEGRATION_RATE_PUBLISHES_PER_MIN`).
+
+On top of that, **every call** (reads and `publish-status` polls included) counts against **100 requests per minute**, per OAuth client and user or per API key. A product that serves many organizations from one server gets this budget once per connected user, not once for its server. `GET /me` reports all three in `limits`:
+
+```json
+{ "requestsPerMinute": 100, "writesPerMinute": 120, "publishesPerMinute": 30, "maxUploadBytes": 52428800 }
+```
 
 | Code | Status | Meaning |
 |---|---|---|
